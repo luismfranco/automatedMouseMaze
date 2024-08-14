@@ -19,10 +19,24 @@ import pyfirmata
 import serial
 import simpleaudio as sa
 
+# Visual stimulus module
+import visualStimulus
+
 # Data modules
+import json
 import time
 import numpy as np
 import pandas as pd
+
+
+"""
+Configuration
+
+"""
+
+f = open("package.json")
+configurationData = json.load(f)
+f.close()
 
 
 """
@@ -312,24 +326,25 @@ class mazeGUI:
         
         """
         
-        self.port = "COM5" # Upload Firmata > StandardFirmata in Arduino IDE
+        # Upload Firmata > StandardFirmata in Arduino IDE
+        self.port = configurationData["teensyConfiguration"]["port"]
         self.boardName = "Teensy 4.0"
         
         # Door sensors
-        self.leftStartIRsensor = 22
-        self.rightStartIRsensor = 20
-        self.leftDecisionIRsensor = 18
-        self.rightDecisionIRsensor = 16
+        self.leftStartIRsensor = int(configurationData["teensyConfiguration"]["leftStartIRsensor"])
+        self.rightStartIRsensor = int(configurationData["teensyConfiguration"]["rightStartIRsensor"])
+        self.leftDecisionIRsensor = int(configurationData["teensyConfiguration"]["leftDecisionIRsensor"])
+        self.rightDecisionIRsensor = int(configurationData["teensyConfiguration"]["rightDecisionIRsensor"])
         
         # Door actuators
-        self.leftStartDoor = 5
-        self.rightStartDoor = 7
-        self.leftDecisionDoor = 9
-        self.rightDecisionDoor = 11
+        self.leftStartDoor = int(configurationData["teensyConfiguration"]["leftStartDoor"])
+        self.rightStartDoor = int(configurationData["teensyConfiguration"]["rightStartDoor"])
+        self.leftDecisionDoor = int(configurationData["teensyConfiguration"]["leftDecisionDoor"])
+        self.rightDecisionDoor = int(configurationData["teensyConfiguration"]["rightDecisionDoor"])
         
         # Water ports
-        self.leftWaterPort = 1
-        self.rightWaterPort = 3
+        self.leftWaterPort = int(configurationData["teensyConfiguration"]["leftWaterPort"])
+        self.rightWaterPort = int(configurationData["teensyConfiguration"]["rightWaterPort"])
     
     
     """
@@ -350,8 +365,12 @@ class mazeGUI:
     
     def connectToTeensy(self):
         
+        # Check if Teensy 4.0 is available before attempting to connect
         boardAvailable = self.checkIfPortAvailable()
+        
+        # Connect to Teensy 4.0
         if boardAvailable is True:
+            # Set up board layout
             print("Setting up the connection to",self.boardName,"...")
             self.board = pyfirmata.Arduino(self.port)
             teensyLayout = {
@@ -364,10 +383,7 @@ class mazeGUI:
             self.board.setup_layout(teensyLayout)
             it = pyfirmata.util.Iterator(self.board)
             it.start()
-            
-            # time.sleep(0.01)
-            
-            # Setup pins
+            # Set up pins
             self.board.get_pin('d:'+str(self.leftDecisionIRsensor)+':i')
             self.board.get_pin('d:'+str(self.rightDecisionIRsensor)+':i')
             self.board.get_pin('d:'+str(self.leftStartIRsensor)+':i')
@@ -385,9 +401,13 @@ class mazeGUI:
     
     def disconnectFromTeensy(self):
         
+        # Check if Teensy 4.0 is 'not' available before attempting to disconnect
         boardAvailable = self.checkIfPortAvailable()
+        
+        # Disconnect from Teensy 4.0
         if boardAvailable is False:
             try:
+                # Reset maze GUI and Doors
                 doorNames = [self.leftStartDoor,self.rightStartDoor,self.leftDecisionDoor,self.rightDecisionDoor]
                 for i in range(len(doorNames)):
                     self.board.digital[doorNames[i]].write(0)
@@ -399,9 +419,7 @@ class mazeGUI:
                 self.rightDecisionValue.config(text = 0)
                 self.leftStartValue.config(text = 0)
                 self.rightStartValue.config(text = 0)
-                
-                
-                
+                # Disconnect Teensy 4.0
                 self.board.exit()
                 print("Connection with",self.boardName,"is now closed...")
             except:
@@ -466,8 +484,6 @@ class mazeGUI:
         self.RD = self.board.digital[self.rightDecisionIRsensor].read()
         self.LS = self.board.digital[self.leftStartIRsensor].read()
         self.RS = self.board.digital[self.rightStartIRsensor].read()
-        
-        # time.sleep(0.01)
         
         # Update door values in GUI
         doorLabelValues = [self.leftStartValue,self.rightStartValue,self.leftDecisionValue,self.rightDecisionValue]
@@ -542,7 +558,7 @@ class mazeGUI:
         # Task
         self.trialID = 0
         self.runningTask = False
-        self.interTrialTimeOut = 3  # possibly add more time out for incorrect trials
+        self.interTrialTimeOut = 3          # possibly add more time out for incorrect trials
         self.probabilityTargetLeft = 0.5
         
         # Behavior stats
@@ -608,7 +624,6 @@ class mazeGUI:
         print("          Animal ID:",self.animalID)
         print("          Rig ID:",self.rigID)
         print("          AutoSave:",self.autoSave)
-        
         print(" ")
         
         # Initialize connection with Teensy 4.0
@@ -629,6 +644,9 @@ class mazeGUI:
             self. mazeState = 0
             self.updateDoors()
             
+        # Initialize visual stimulus
+        self.visualStimulus = visualStimulus.driftingGratings()
+        
     def cancelTask(self):
         
         boardAvailable = self.checkIfPortAvailable()
@@ -639,6 +657,7 @@ class mazeGUI:
             
     def resetTask(self):
         
+        # Disconnect Teensy 4.0
         boardAvailable = self.checkIfPortAvailable()
         if boardAvailable is False:
             # Reset maze
@@ -658,6 +677,9 @@ class mazeGUI:
             self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Black', bg ='#A9C6E3'))
             self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Black', bg ='SystemButtonFace'))
             self.readyButton.update_idletasks()
+        
+        # Close visual stimulus window
+        self.visualStimulus.closeWindow()
         
         # Save experiment data
         if self.autoSave is True:
@@ -681,7 +703,7 @@ class mazeGUI:
         print("     Trial ", self.trialID," started...", " Target -> ", self.targetLocation)
         
         # Display visual stimulus
-            # code this...
+        self.visualStimulus.startStimulus(display = True, target = self.targetLocation)
             
         # Append experiment data to data frame
         self.dataFrameTrial.append(self.trialID)
@@ -696,6 +718,9 @@ class mazeGUI:
         
         # Trial outcome
         self.triggerTrialOutcome()
+        
+        # End visual stimulus
+        self.visualStimulus.stopStimulus(display = False)
         
         # Append experiment data to data frame
         self.dataFrameDecision.append(self.lastDecision)
@@ -824,6 +849,7 @@ class mazeGUI:
             self.mainWindow.update()
             self.readPinStates()
             self.updateMazeState()
+            self.visualStimulus.updateStimulus()
             currentTime =  time.time()
             if currentTime > self.taskTimeStart + self.timeout:
                 self.runningTask = False
@@ -866,7 +892,6 @@ class mazeGUI:
         else:
             if not os.path.isfile(fileName + self.fileExtension):
                 df.to_pickle(fileName + self.fileExtension)
-                print("Experiment data have been saved successfully.", )
             else:
                 isNotSaved = True
                 while isNotSaved is True:
@@ -876,9 +901,11 @@ class mazeGUI:
                     fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + str(blockID)
                     if not os.path.isfile(fileName + self.fileExtension):
                         df.to_pickle(fileName + self.fileExtension)
-                        print("Experiment data have been saved successfully.")
+                        
                         isNotSaved = False
+            print("Experiment data have been saved successfully.")
             print(" ")
+            messagebox.showinfo("Data Saved", "Experiment data have been saved at " + self.pathForSavingData)
         
     def closeMainWindow(self):
         
@@ -890,7 +917,12 @@ class mazeGUI:
             self.mainWindow.destroy()
             self.mainWindow.quit()
         
-    
+
+"""
+Run Application
+
+"""
+
 mainWindow = tk.Tk()
 mazeGUI(mainWindow)
 mainWindow.mainloop()
