@@ -38,7 +38,6 @@ f = open("package.json")
 configurationData = json.load(f)
 f.close()
 
-
 """
 Application
 
@@ -62,7 +61,7 @@ class mazeGUI:
         
         # Geometry
         self.mainWindow = mainWindow
-        self.mainWindow.title('The Mouse Maze Project')
+        self.mainWindow.title('Automated Mouse Maze')
         windowWidth = 800
         windowHeight = 450
         screenWidth = self.mainWindow.winfo_screenwidth()
@@ -92,7 +91,7 @@ class mazeGUI:
         frame31.place(anchor = "c", relx = 0.5, rely = 0.35)
         
         # Logo
-        imagePath = "D:\mouseMazeProject\Lib\site-packages\mazeGUIimage.png"
+        imagePath = "assets/mazeGUIimage.png"
         img = Image.open(imagePath)
         img = img.resize((150, 150))
         self.img = ImageTk.PhotoImage(master = frame21, width = 150, height = 150, image = img)
@@ -104,12 +103,12 @@ class mazeGUI:
         
         
         """
-        The Doors
+        Doors
         
         """
         
         # Door labels
-        tk.Label(frame11, font = buttonFont, text = "The Doors", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame11, font = buttonFont, text = "Doors", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
         labelList = ["start left","start right","decision left","decision right"]
         nrow = 1
         for i in range(len(labelList)):
@@ -224,7 +223,7 @@ class mazeGUI:
         # Path entry
         userName = os.getlogin()
         self.currentDate = datetime.today().strftime("%y%m%d")
-        self.pathForSavingData = "C:\\Users\\" + userName + "\\Documents\\mouseMazeProject\\Data\\" + self.currentDate + "\\"
+        self.pathForSavingData = "C:\\Users\\" + userName + "\\Documents\\automatedMouseMaze\\Data\\" + self.currentDate + "\\"
         self.pathEntry = tk.Entry(frame22, font = 8, width = 14)
         self.pathEntry.insert(0, self.pathForSavingData)
         self.pathEntry.grid(row = 3, column = 3, sticky ='w')
