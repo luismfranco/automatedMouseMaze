@@ -21,20 +21,50 @@ In the Command Prompt:
 ``cd C:\Users\<yourUser>\Documents\automatedMouseMaze\Application\``
 3. Clone this repository:  
 ``git clone https://github.com/luismfranco/automatedMouseMaze.git``
-4. Install dependencies:  
+4. Install dependencies in your environment:  
 ``pip install .``
 5. This code was developed for Python - Teensy 4.0 communication. pyfirmata was developed for Arduino. There is bug in pyfirmata when trying to input the Teensy 4.0 layout. To fix it, run:  
-``python debugPyFirmata`` 
+``python src\debugPyFirmata.py`` 
 
-# How to run it
-In the Command Prompt, cd to the location where this app was installed, and then type:  
-``python mazeGUI.py``
-
-Or, create a batch file:  
-``add this later``
-
-
+If everything went well, you should be able to run the GUI:  
+``python automatedMouseMaze.py``
 <p align="center">
 <img width="800" height="450" src="assets/mazeGUI.png">
 </p>
+
+However, this app requires a connection with a Teensy 4.0 board in order to work. Also, the automated maze has several other components, such as IR sensors, solenoid valves, a speaker, and LEDs. To build your own maze, follow this tutorial:  
+[maze construction](docs/howToBuildYourOwnMaze.md)
+
+# How to run this app
+In the Command Prompt, activate your environment. Example:  
+``conda activate automatedMouseMaze``
+Then, cd to the location where this app was installed, and then type:  
+``python automatedMouseMaze.py``
+
+You could also create a batch file. Example:  
+``call activate automatedMouseMaze``  
+``cd C:\Users\Niell Lab\Documents\automatedMouseMaze\Application\``  
+``python automatedMouseMaze.py``  
+
+# Prepare your experiment
+Describe entry fields...
+
+
+
+# Run an experiment
+Initialize connection...
+Start experiment...
+Save data...
+
+
+# What's in the data pickle file?
+Describe data fields...
+
+
+
+
+
+
+
+
 
