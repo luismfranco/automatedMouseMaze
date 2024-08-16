@@ -40,7 +40,7 @@ However, this app requires a connection with a Teensy board in order to work. Al
 
 # How to run this app
 In the Command Prompt, activate your environment. Example:  
-``conda activate automatedMouseMaze``
+``conda activate automatedMouseMaze``  
 Then, cd to the location where this app was installed, and then type:  
 ``python automatedMouseMaze.py``
 
