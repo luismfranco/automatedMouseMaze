@@ -16,14 +16,17 @@ Currently under development in the Niell Lab (https://nielllab.uoregon.edu/)
 ### Step by step:
 In the Command Prompt:
 1. Create your environment. Example:  
-``conda create -n "automatedMouseMaze" python=3.10.14 pip``
-2. Choose a location where you would like to copy this repo. Example:  
-``cd C:\Users\<yourUser>\Documents\automatedMouseMaze\Application\``
-3. Clone this repository:  
-``git clone https://github.com/luismfranco/automatedMouseMaze.git``
-4. Install dependencies in your environment:  
+``conda create -n automatedMouseMaze python=3.10.14 pip``
+2. Activate your environment:  
+``conda activate automatedMouseMaze``
+3. Choose a location where you would like to copy this repo. Example:  
+``mkdir Documents\automatedMouseMaze\Application``  
+``cd Documents\automatedMouseMaze\Application\``
+4. Clone this repository:  
+``git clone https://github.com/luismfranco/automatedMouseMaze.git .``
+5. Install dependencies in your environment:  
 ``pip install .``
-5. This code was developed for Python - Teensy 4.0 communication. pyfirmata was developed for Arduino. There is bug in pyfirmata when trying to input the Teensy 4.0 layout. To fix it, run:  
+6. This code was developed for Python - Teensy 4.0 communication. pyfirmata was developed for Arduino. There is bug in pyfirmata when trying to input the Teensy 4.0 layout. To fix it, run:  
 ``python src\debugPyFirmata.py`` 
 
 If everything went well, you should be able to run the GUI:  
@@ -32,7 +35,7 @@ If everything went well, you should be able to run the GUI:
 <img width="800" height="450" src="assets/mazeGUI.png">
 </p>
 
-However, this app requires a connection with a Teensy 4.0 board in order to work. Also, the automated maze has several other components, such as IR sensors, solenoid valves, a speaker, and LEDs. To build your own maze, follow this tutorial:  
+However, this app requires a connection with a Teensy board in order to work. Also, the automated maze has several other components, such as IR sensors, solenoid valves, a speaker, and LEDs. To build your own maze, follow this tutorial:  
 [maze construction](docs/howToBuildYourOwnMaze.md)
 
 # How to run this app
@@ -47,6 +50,8 @@ You could also create a batch file. Example:
 ``python automatedMouseMaze.py``  
 
 # Prepare your experiment
+Make sure your Teensy board is properly [configured](config/package.json).
+
 Describe entry fields...
 
 
