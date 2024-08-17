@@ -12,6 +12,7 @@ Currently under development in the Niell Lab (https://nielllab.uoregon.edu/)
 ### Requirements:
 1. Operating System: Windows
 2. Anaconda (https://www.anaconda.com/)
+3. Microsoft Visual C++ 14.0 or greater (https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 ### Step by step:
 In the Command Prompt:
