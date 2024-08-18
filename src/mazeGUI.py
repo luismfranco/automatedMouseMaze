@@ -1,4 +1,3 @@
-
 """
 Modules
 
@@ -17,6 +16,7 @@ from pathlib import Path
 # Teensy modules
 import pyfirmata
 import serial
+import serial.tools.list_ports
 import simpleaudio as sa
 
 # Visual stimulus module
@@ -63,30 +63,30 @@ class mazeGUI:
         buttonFont = tkFont.Font(family = 'helvetica', size = 12)
         
         # Frames
-        frame1 = tk.Frame(self.mainWindow, width = 250, height = 500) #, bg='red')
+        frame1 = tk.Frame(self.mainWindow, width = 250, height = 500)
         frame1.grid(row = 0, rowspan = 3, column = 0, sticky = 'news')
         frame11 = tk.Frame(frame1, width = 250, height = 200)
         frame11.place(anchor = "c", relx = 0.5, rely = 0.2)
         frame12 = tk.Frame(frame1, width = 250, height = 250)
         frame12.place(anchor = "c", relx = 0.5, rely = 0.6)
-        frame2 = tk.Frame(self.mainWindow, width = 550, height = 350) #, bg='blue')
+        frame2 = tk.Frame(self.mainWindow, width = 550, height = 350)
         frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
         frame21 = tk.Frame(frame2, width = 550, height = 150)
         frame21.grid(row = 0, column = 0)
         frame22 = tk.Frame(frame2, width = 550, height = 150)
         frame22.grid(row = 1, column = 0)
-        frame3 = tk.Frame(self.mainWindow, width = 550, height = 150) #, bg='green')
+        frame3 = tk.Frame(self.mainWindow, width = 550, height = 150)
         frame3.grid(row = 2, column = 1, sticky = 'news')
         frame31 = tk.Frame(frame3, width = 550, height = 150)
         frame31.place(anchor = "c", relx = 0.5, rely = 0.35)
         
         # Logo
-        imagePath = "assets/mazeGUIimage.png"
+        imagePath = "assets/mazeGUIlogo.png"
         img = Image.open(imagePath)
-        img = img.resize((150, 150))
+        img = img.resize((420, 150))
         self.img = ImageTk.PhotoImage(master = frame21, width = 150, height = 150, image = img)
         logo = tk.Label(frame21, image = self.img)
-        logo.pack(fill = 'both', expand = 'yes')
+        logo.place(anchor = "c", relx = 0.5, rely = 0.5)
             
         # Save data
         self.fileExtension = ".pickle "
@@ -335,6 +335,17 @@ class mazeGUI:
         self.leftWaterPort = int(configurationData["teensyConfiguration"]["leftWaterPort"])
         self.rightWaterPort = int(configurationData["teensyConfiguration"]["rightWaterPort"])
     
+        # Check available serial ports
+        availableSerialPorts = serial.tools.list_ports.comports()
+        portIDs = []
+        for port, desc, hwid in sorted(availableSerialPorts):
+            portIDs.append(port[3])
+        
+        if not self.port[3] in portIDs:
+            self.closeGUIWithoutCheckouts = True
+            messagebox.showinfo("Error", "Make sure the serial port for Teensy 4.0 in 'config/package.json' is correct before initializing maze.")
+        else:
+            self.closeGUIWithoutCheckouts = False
     
     """
     Teensy 4.0 Functions
@@ -617,7 +628,7 @@ class mazeGUI:
         
         # Initialize connection with Teensy 4.0
         if not self.taskName in self.taskList:
-            messagebox.showinfo("Error", "Please select a task before initializing maze")
+            messagebox.showinfo("Error", "Please select a task before initializing maze.")
         else:
             # Update startButton: connecting to board...
             self.readyButton.config(fg = 'Black', bg = '#A9C6E3', text = 'Connecting...', relief = 'sunken')
@@ -900,8 +911,8 @@ class mazeGUI:
         
         # Kill GUI
         boardAvailable = self.checkIfPortAvailable()
-        if boardAvailable is False:
+        if boardAvailable is False and self.closeGUIWithoutCheckouts is False:
             print("Please click on 'End Task' before closing this program.")
-        elif boardAvailable is True:
+        elif boardAvailable is True or self.closeGUIWithoutCheckouts is True:
             self.mainWindow.destroy()
             self.mainWindow.quit()
