@@ -6,7 +6,7 @@ Modules
 # GUI modules
 import tkinter as tk
 from tkinter import font as tkFont
-from tkinter import messagebox,ttk
+from tkinter import messagebox, ttk
 from threading import Thread
 from PIL import ImageTk, Image
 import os
@@ -20,7 +20,8 @@ import serial.tools.list_ports
 import simpleaudio as sa
 
 # Visual stimulus module
-import visualStimulus
+import driftingGratings
+import objectDiscrimination
 
 # Data modules
 import time
@@ -102,7 +103,7 @@ class mazeGUI:
         labelList = ["start left","start right","decision left","decision right"]
         nrow = 1
         for i in range(len(labelList)):
-            tk.Label(frame11, font = buttonFont, text=labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
+            tk.Label(frame11, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
             nrow += 1
             
         # Maze state
@@ -140,8 +141,8 @@ class mazeGUI:
         entryLabels2 = ["rig","animal","path","autoSave"," "]
         nrow = 1
         for i in range(len(entryLabels0)):
-            tk.Label(frame22, font = buttonFont, text=entryLabels0[i], width = 8, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
-            tk.Label(frame22, font = buttonFont, text=entryLabels2[i], width = 8, anchor  = 'e').grid(row = nrow, column = 2, padx = 10)
+            tk.Label(frame22, font = buttonFont, text = entryLabels0[i], width = 8, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
+            tk.Label(frame22, font = buttonFont, text = entryLabels2[i], width = 8, anchor  = 'e').grid(row = nrow, column = 2, padx = 10)
             nrow += 1
         
         # Maximum number of trials entry
@@ -234,7 +235,7 @@ class mazeGUI:
         labelList = ["performance","bias index","correct","incorrect","left decisions","right decisions", "reward (μL)"]
         nrow = 1
         for i in range(len(labelList)):
-            tk.Label(frame12, font = buttonFont, text=labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
+            tk.Label(frame12, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
             nrow += 1
             
         # Behavior parameters
@@ -645,8 +646,11 @@ class mazeGUI:
             self.updateDoors()
             
         # Initialize visual stimulus
-        self.visualStimulus = visualStimulus.driftingGratings()
-        
+        if self.taskName == "driftingGratings":
+            self.visualStimulus = driftingGratings()
+        elif self.taskName == "objectDiscrimination":
+            self.visualStimulus = objectDiscrimination()
+            
     def cancelTask(self):
         
         boardAvailable = self.checkIfPortAvailable()
