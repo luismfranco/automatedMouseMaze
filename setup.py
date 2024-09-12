@@ -22,6 +22,10 @@ setup(
                           "pandas == 2.2.2",
                           "numpy == 1.25.2",
                           "psychopy == 2024.2.1",
+                          "moderngl == 5.11.1",
+                          "pyglm == 2.7.1",
+                          "pygame == 2.6.0",
+                          "pywavefront == 1.3.3",
        ],
       
       # Classifiers
