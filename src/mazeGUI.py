@@ -647,9 +647,9 @@ class mazeGUI:
             
         # Initialize visual stimulus
         if self.taskName == "driftingGratings":
-            self.visualStimulus = driftingGratings()
+            self.visualStimulus = driftingGratings.driftingGratings()
         elif self.taskName == "objectDiscrimination":
-            self.visualStimulus = objectDiscrimination()
+            self.visualStimulus = objectDiscrimination.objectDiscrimination()
             
     def cancelTask(self):
         

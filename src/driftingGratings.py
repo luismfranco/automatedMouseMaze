@@ -17,7 +17,7 @@ class driftingGratings:
     def __init__(self):
     
         # Create a window
-        self.stimulusWindow = visual.Window(size=(1920, 1080), fullscr = True, monitor = "testMonitor", units = "deg")
+        self.stimulusWindow = visual.Window(size=(1024, 600), monitor = "testMonitor", fullscr = True, screen = 1, units = "deg")
         
         # Orientation
         self.leftTarget = 90

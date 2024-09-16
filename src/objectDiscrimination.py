@@ -20,7 +20,7 @@ Graphics Engine
 
 class GraphicsEngine:
     
-    def __init__(self, win_size=(1600, 900)):
+    def __init__(self, win_size=(900, 500)):
         
         # Initialize pygame modules
         pg.init()
@@ -34,7 +34,7 @@ class GraphicsEngine:
         pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
         
         # Create opengl context
-        pg.display.set_mode(self.WIN_SIZE, flags = pg.OPENGL | pg.DOUBLEBUF)
+        pg.display.set_mode(self.WIN_SIZE, display = 1, flags = pg.OPENGL | pg.DOUBLEBUF)
         
         # mouse settings (DELETE LATER!!)
         pg.event.set_grab(True)
@@ -248,10 +248,8 @@ class Texture:
         
         # Load textures
         self.textures = {}
-        self.textures[0] = self.get_texture(path = 'assets/cheese.png')
-        self.textures[1] = self.get_texture(path = 'assets/banana.png')
-        self.textures['banana'] = self.get_texture(path = 'objects/banana/banana.png')
-        self.textures['cheese'] = self.get_texture(path = 'objects/cheese/cheese_piece_colors.png')
+        self.textures['banana'] = self.get_texture(path = 'assets/banana/banana.png')
+        self.textures['cheese'] = self.get_texture(path = 'assets/cheese/cheese.png')
         self.textures['depth_texture'] = self.get_depth_texture()
         
         # self.textures['skybox'] = self.get_texture_cube(dir_path='assets/skybox/', ext='png')
@@ -322,10 +320,10 @@ class ShaderProgram:
 
     def get_program(self, shader_program_name):
         
-        with open(f'asets/shaders/{shader_program_name}.vert') as file:
+        with open(f'assets/shaders/{shader_program_name}.vert') as file:
             vertex_shader = file.read()
 
-        with open(f'asets/shaders/{shader_program_name}.frag') as file:
+        with open(f'assets/shaders/{shader_program_name}.frag') as file:
             fragment_shader = file.read()
 
         program = self.ctx.program(vertex_shader = vertex_shader, fragment_shader = fragment_shader)
@@ -494,7 +492,7 @@ class BananaVBO(BaseVBO):
         self.attribs = ['in_texcoord_0', 'in_normal', 'in_position']
 
     def get_vertex_data(self):
-        objs = pywavefront.Wavefront('objects/banana/export_banana.obj', cache = True, parse = True)
+        objs = pywavefront.Wavefront('assets/banana/banana.obj', cache = True, parse = True)
         obj = objs.materials.popitem()[1]
         vertex_data = obj.vertices
         vertex_data = np.array(vertex_data, dtype='f4')
@@ -508,7 +506,7 @@ class CheeseVBO(BaseVBO):
         self.attribs = ['in_texcoord_0', 'in_normal', 'in_position']
 
     def get_vertex_data(self):
-        objs = pywavefront.Wavefront('objects/cheese/cheese.obj', cache=True, parse=True)
+        objs = pywavefront.Wavefront('assets/cheese/cheese.obj', cache = True, parse = True)
         obj = objs.materials.popitem()[1]
         vertex_data = obj.vertices
         vertex_data = np.array(vertex_data, dtype='f4')

@@ -1,6 +1,6 @@
 # Blender v2.80 (sub 75) OBJ File: 'banana.blend'
 # www.blender.org
-mtllib export_banana.mtl
+mtllib banana.mtl
 o banana_mesh_quad.001
 v 0.005026 0.122250 0.074676
 v -0.028345 0.122031 0.075130
