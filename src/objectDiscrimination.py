@@ -8,7 +8,6 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame as pg
 import moderngl as mgl
 import glm
-import sys
 import numpy as np
 import pywavefront
 
@@ -17,16 +16,17 @@ import pywavefront
 Graphics Engine
 
 """
-
+# Event checker disabled (not needed)
+# Updating the game is handled by the master object, which is in turn controlled by the maze GUI
 class GraphicsEngine:
     
-    def __init__(self, win_size=(900, 500)):
+    def __init__(self, stimulusScreen):
         
         # Initialize pygame modules
         pg.init()
         
         # Window size
-        self.WIN_SIZE = win_size
+        self.WIN_SIZE = (1024, 600)
         
         # Set opengl attributes
         pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)
@@ -34,11 +34,7 @@ class GraphicsEngine:
         pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
         
         # Create opengl context
-        pg.display.set_mode(self.WIN_SIZE, display = 1, flags = pg.OPENGL | pg.DOUBLEBUF)
-        
-        # mouse settings (DELETE LATER!!)
-        pg.event.set_grab(True)
-        pg.mouse.set_visible(True)
+        pg.display.set_mode(self.WIN_SIZE, display = stimulusScreen-1, flags = pg.OPENGL | pg.DOUBLEBUF | pg.FULLSCREEN)
         
         # Detect and use existing opengl context
         self.ctx = mgl.create_context()
@@ -63,14 +59,10 @@ class GraphicsEngine:
         
         # Renderer
         self.scene_renderer = SceneRenderer(self)
-
-    def check_events(self):
-        for event in pg.event.get():
-            if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
-                self.mesh.destroy()
-                self.scene_renderer.destroy()
-                pg.quit()
-                sys.exit()
+        
+        # # mouse settings (DELETE LATER!!)
+        # pg.event.set_grab(True)
+        # pg.mouse.set_visible(True)
 
     def render(self):
         
@@ -87,14 +79,21 @@ class GraphicsEngine:
         
         self.time = pg.time.get_ticks() * 0.001
 
-    def run(self):
+    # def run(self):
+    #     while True:
+    #         self.get_time()
+    #         self.check_events()
+    #         self.camera.update()
+    #         self.render()
+    #         self.delta_time = self.clock.tick(60) # frame rate
         
-        while True:
-            self.get_time()
-            self.check_events()
-            self.camera.update()
-            self.render()
-            self.delta_time = self.clock.tick(60) # frame rate
+    # def check_events(self):
+    #     for event in pg.event.get():
+    #         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
+    #             self.mesh.destroy()
+    #             self.scene_renderer.destroy()
+    #             pg.quit()
+    #             sys.exit()
 
 
 """
@@ -124,16 +123,16 @@ class Camera:
         self.app = app
         self.aspect_ratio = app.WIN_SIZE[0] / app.WIN_SIZE[1]
         
-        # Computer mouse settings
-        self.SPEED = 0.005
-        self.SENSITIVITY = 0.04
-        
         # View matrix
         self.m_view = self.get_view_matrix()
         
         # Projection matrix
         self.m_proj = self.get_projection_matrix()
-
+        
+        # # Computer mouse settings
+        # self.SPEED = 0.005
+        # self.SENSITIVITY = 0.04
+        
     def update(self):
         
         # self.move()
@@ -193,7 +192,7 @@ Environment Light
 
 class Light:
     
-    def __init__(self, position = (50, 50, -10), color = (1, 1, 1)):
+    def __init__(self, position = (-10, 10, 20), color = (1, 1, 1)):
         
         # Light settings
         self.position = glm.vec3(position)
@@ -357,23 +356,18 @@ class SceneRenderer:
         # Shadow
         self.depth_fbo.clear()
         self.depth_fbo.use()
-        for obj in self.scene.objects:
-            obj.render_shadow()
+        
+        # Target object (shadow)
+        if self.app.showVisualStimulus is True:
+            self.scene.objects[0].render_shadow()
 
     def main_render(self):
         
         self.app.ctx.screen.use()
-                
-        # Target object
-        if self.app.targetLocation == 0:
-            self.scene.objects[0].render()
-        elif self.app.targetLocation == 1:
-            self.scene.objects[1].render()
         
-        # for obj in self.scene.objects:
-        #     obj.render()
-            
-        # self.scene.skybox.render()
+        # Target object
+        if self.app.showVisualStimulus is True:
+            self.scene.objects[0].render()
 
     def render(self):
         
@@ -437,7 +431,7 @@ class VAO:
 
     def get_vao(self, program, vbo):
         
-        vao = self.ctx.vertex_array(program, [(vbo.vbo, vbo.format, *vbo.attribs)], skip_errors=True)
+        vao = self.ctx.vertex_array(program, [(vbo.vbo, vbo.format, *vbo.attribs)], skip_errors = True)
         return vao
 
     def destroy(self):
@@ -729,36 +723,13 @@ class Scene:
         # Load scene
         self.app = app
         self.objects = []
-        self.load()
-        
-        # # skybox (environment)
-        # self.skybox = SkyBox(app)
-
-    def add_object(self, obj):
-        
-        self.objects.append(obj)
-
-    def load(self):
-        
-        # Add objects
-        app = self.app
-        add = self.add_object
-
-        # Left target object
-        self.moving_cheese = Cheese(app, pos = (0, 0, 0), scale = (5, 5, 5))
-        add(self.moving_cheese)
-        
-        # Right target object
-        self.moving_banana = Banana(app, pos = (0, 0, 0), scale = (5, 5, 5))
-        add(self.moving_banana)
 
     def update(self):
 
         if self.app.targetLocation == 0:
-            self.moving_cheese.rot.xyz = self.app.time
+            self.app.leftTarget.rot.xyz = self.app.time
         elif self.app.targetLocation == 1:
-            self.moving_banana.rot.xyz = self.app.time
-
+            self.app.rightTarget.rot.xyz = self.app.time
 
 """
 Object Discrimination
@@ -767,39 +738,52 @@ Object Discrimination
 
 class objectDiscrimination:
     
-    def __init__(self):
+    def __init__(self, stimulusScreen):
         
         # Loads the game and all its perks
-        self.app = GraphicsEngine()
+        self.app = GraphicsEngine(stimulusScreen)
+        self.app.leftTarget = Cheese(self.app, pos = (0, 0, 0), scale = (4, 4, 4)) # Left target object
+        self.app.rightTarget = Banana(self.app, pos = (0, 0, 0), scale = (5, 5, 5)) # Right target object
+        self.app.showVisualStimulus = False
         self.app.targetLocation = 2 # blank
-        self.app.run()
+        self.app.render()
         
     def startStimulus(self, **kwargs):
         
         # Start stimulus
         self.app.showVisualStimulus = kwargs['display']
         self.app.targetLocation = kwargs['target']
-            
+        if self.app.showVisualStimulus is True:
+            if self.app.targetLocation == 0:
+                self.app.scene.objects.append(self.app.leftTarget)
+            elif self.app.targetLocation == 1:
+                self.app.scene.objects.append(self.app.rightTarget)
+
     # Update the stimulus
     def updateStimulus(self):
-            
-        '''
-        The graphics engine will do it itself
         
-        '''
+        if self.app.showVisualStimulus is True:
+            self.app.get_time()
+            
+            # self.app.camera.update()
+            
+            self.app.render()
+            self.app.delta_time = self.app.clock.tick(60) # frame rate
             
     def stopStimulus(self, **kwargs):
         
-        self.showVisualStimulus = kwargs['display']
-        if self.showVisualStimulus is False:
-            self.app.targetLocation = 2
-    
+        self.app.showVisualStimulus = kwargs['display']
+        if self.app.showVisualStimulus is False:
+            if self.app.targetLocation == 0:
+                self.app.scene.objects.remove(self.app.leftTarget)
+                self.app.render()
+            elif self.app.targetLocation == 1:
+                self.app.scene.objects.remove(self.app.rightTarget)
+                self.app.render()
+                
     # Cleanup
     def closeWindow(self):
         
-        self.mesh.destroy()
-        self.scene_renderer.destroy()
+        self.app.mesh.destroy()
+        self.app.scene_renderer.destroy()
         pg.quit()
-        sys.exit()
-        
-    

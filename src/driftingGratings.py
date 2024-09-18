@@ -14,10 +14,10 @@ Drifting Gratings
 
 class driftingGratings:
     
-    def __init__(self):
+    def __init__(self, stimulusScreen):
     
         # Create a window
-        self.stimulusWindow = visual.Window(size=(1024, 600), monitor = "testMonitor", fullscr = True, screen = 1, units = "deg")
+        self.stimulusWindow = visual.Window(size = (1024, 600), monitor = "testMonitor", screen = stimulusScreen, fullscr = True, units = "deg")
         
         # Orientation
         self.leftTarget = 90
@@ -63,4 +63,3 @@ class driftingGratings:
     def closeWindow(self):
         
         self.stimulusWindow.close()
-

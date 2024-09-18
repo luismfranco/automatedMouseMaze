@@ -23,9 +23,8 @@
         }
      },
      
-     
      "teensyConfiguration": {
-         "port": "COM3",
+         "port": "COM4",
          "leftStartIRsensor": "22",
          "rightStartIRsensor": "20",
          "leftDecisionIRsensor": "18",
@@ -36,9 +35,10 @@
          "rightDecisionDoor": "11",
          "leftWaterPort": "1",
          "rightWaterPort": "3"
+     },
+     
+     "stimulusScreen": {
+         "screen": "2"
      }
      
-     
 }
- 
- 

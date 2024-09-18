@@ -162,6 +162,7 @@ class mazeGUI:
         self.taskName = " "
         self.taskBox = ttk.Combobox(frame22, width = 12, font = 8, state = 'readonly', values = self.taskList)
         self.taskBox.grid(row = 3, column = 1, sticky ='w')
+        self.stimulusMonitor = int(configurationData["stimulusScreen"]["screen"])
         
         # Animal start list
         self.startList = ["left","right"]   # 0 = left, 1 = right
@@ -647,9 +648,9 @@ class mazeGUI:
             
         # Initialize visual stimulus
         if self.taskName == "driftingGratings":
-            self.visualStimulus = driftingGratings.driftingGratings()
+            self.visualStimulus = driftingGratings.driftingGratings(self.stimulusMonitor)
         elif self.taskName == "objectDiscrimination":
-            self.visualStimulus = objectDiscrimination.objectDiscrimination()
+            self.visualStimulus = objectDiscrimination.objectDiscrimination(self.stimulusMonitor)
             
     def cancelTask(self):
         
@@ -682,12 +683,12 @@ class mazeGUI:
             self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Black', bg ='SystemButtonFace'))
             self.readyButton.update_idletasks()
         
-        # Close visual stimulus window
-        self.visualStimulus.closeWindow()
-        
         # Save experiment data
         if self.autoSave is True:
             self.saveData()
+            
+        # Close visual stimulus window
+        self.visualStimulus.closeWindow()
             
     def startTrial(self):
         
