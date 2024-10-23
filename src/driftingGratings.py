@@ -7,6 +7,7 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 from psychopy import visual
 
+
 """
 Drifting Gratings
 
@@ -17,8 +18,8 @@ class driftingGratings:
     def __init__(self, stimulusScreen):
     
         # Create a window
-        self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen-2, units = "deg",
-                                            size = (1024, 600), color = (1.0, 1.0, 1.0)) # fullscr = True,
+        self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen, units = "deg",
+                                            size = (1024, 600), fullscr = True, color = (1.0, 1.0, 1.0))
         
         # Orientation
         self.leftTarget = 90

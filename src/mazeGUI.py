@@ -337,10 +337,12 @@ class mazeGUI:
         self.leftDecisionDoor = int(configurationData["teensyConfiguration"]["leftDecisionDoor"])
         self.rightDecisionDoor = int(configurationData["teensyConfiguration"]["rightDecisionDoor"])
         
-        # Water ports
+        # Water ports and LEDs
         self.leftWaterPort = int(configurationData["teensyConfiguration"]["leftWaterPort"])
         self.rightWaterPort = int(configurationData["teensyConfiguration"]["rightWaterPort"])
-    
+        self.leftLED = int(configurationData["teensyConfiguration"]["leftLED"])
+        self.rightLED = int(configurationData["teensyConfiguration"]["rightLED"])
+        
         # Check available serial ports
         availableSerialPorts = serial.tools.list_ports.comports()
         portIDs = []
@@ -400,6 +402,8 @@ class mazeGUI:
             self.board.get_pin('d:'+str(self.rightStartDoor)+':o')
             self.board.get_pin('d:'+str(self.leftWaterPort)+':o')
             self.board.get_pin('d:'+str(self.rightWaterPort)+':o')
+            self.board.get_pin('d:'+str(self.leftLED)+':o')
+            self.board.get_pin('d:'+str(self.rightLED)+':o')
             print(self.boardName,"is now connected.")
         elif boardAvailable is False:
             print(self.boardName," is not avaiable...")
@@ -546,8 +550,10 @@ class mazeGUI:
         if self.reward is False:
             if self.targetLocation == 0:
                 self.waterPort = self.leftWaterPort
+                self.LED = self.leftLED
             elif self.targetLocation == 1:
                 self.waterPort = self.rightWaterPort
+                self.LED = self.rightLED
             self.reward = True
             self.estimatedReward = self.estimatedReward + self.rewardSize
             self.board.digital[self.waterPort].write(1)
@@ -692,6 +698,8 @@ class mazeGUI:
             self.board.digital[self.rightDecisionDoor].write(0)
             self.board.digital[self.leftWaterPort].write(0)
             self.board.digital[self.rightWaterPort].write(0)
+            self.board.digital[self.leftLED].write(0)
+            self.board.digital[self.rightLED].write(0)
             # Disconnect Teensy board
             self.disconnectFromTeensy()
             # Reset GUI buttons
