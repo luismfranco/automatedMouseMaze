@@ -543,6 +543,7 @@ class mazeGUI:
             currentTime =  time.time()
             if currentTime > self.rewardStart + self.rewardTime:
                 self.board.digital[self.waterPort].write(0)
+                self.board.digital[self.LED].write(0)
                 self.reward = False
 
     def giveReward(self):
@@ -557,6 +558,7 @@ class mazeGUI:
             self.reward = True
             self.estimatedReward = self.estimatedReward + self.rewardSize
             self.board.digital[self.waterPort].write(1)
+            self.board.digital[self.LED].write(1)
             self.rewardStart = time.time()
 
 
