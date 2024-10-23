@@ -23,5 +23,5 @@ Run Application
 """
 
 mainWindow = tk.Tk()
-mazeGUI.mazeGUI(mainWindow,configurationData)
+mazeGUI.mazeGUI(mainWindow, configurationData)
 mainWindow.mainloop()

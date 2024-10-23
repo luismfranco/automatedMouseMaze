@@ -17,7 +17,8 @@ class driftingGratings:
     def __init__(self, stimulusScreen):
     
         # Create a window
-        self.stimulusWindow = visual.Window(size = (1024, 600), monitor = "testMonitor", screen = stimulusScreen, fullscr = True, units = "deg")
+        self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen-2, units = "deg",
+                                            size = (1024, 600), color = (1.0, 1.0, 1.0)) # fullscr = True,
         
         # Orientation
         self.leftTarget = 90
@@ -37,7 +38,7 @@ class driftingGratings:
             self.target = self.rightTarget
             
         # Stimulus
-        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "circle", size = 10, pos = [0,0], sf = 1, ori = self.target)
+        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "raisedCos", size = 15, pos = [0,0], sf = 0.5, ori = self.target)
         self.grating.setOpacity(1)
         self.stimulusWindow.update()
         

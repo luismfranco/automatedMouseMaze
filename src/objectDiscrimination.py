@@ -22,6 +22,11 @@ class GraphicsEngine:
     
     def __init__(self, stimulusScreen):
         
+        # Target objects
+        self.targets = []
+        self.targets.append("cheese")
+        self.targets.append("cheesecake")
+        
         # Initialize pygame modules
         pg.init()
         
@@ -34,7 +39,7 @@ class GraphicsEngine:
         pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
         
         # Create opengl context
-        pg.display.set_mode(self.WIN_SIZE, display = stimulusScreen-1, flags = pg.OPENGL | pg.DOUBLEBUF | pg.FULLSCREEN)
+        pg.display.set_mode(self.WIN_SIZE, display = stimulusScreen-1, flags = pg.OPENGL | pg.DOUBLEBUF) # | pg.FULLSCREEN
         
         # Detect and use existing opengl context
         self.ctx = mgl.create_context()
@@ -220,9 +225,9 @@ Mesh
 class Mesh:
     
     def __init__(self, app):
-        
+
         self.app = app
-        self.vao = VAO(app.ctx)
+        self.vao = VAO(app.ctx, app)
         self.texture = Texture(app)
 
     def destroy(self):
@@ -247,8 +252,15 @@ class Texture:
         
         # Load textures
         self.textures = {}
-        self.textures['banana'] = self.get_texture(path = 'assets/banana/banana.png')
-        self.textures['cheese'] = self.get_texture(path = 'assets/cheese/cheese.png')
+        
+        if app.targets[0] == "cheese":
+            self.textures['cheese'] = self.get_texture(path = 'assets/cheese/cheese.png')
+            
+        if app.targets[1] == "banana":
+            self.textures['banana'] = self.get_texture(path = 'assets/banana/banana.png')
+        elif app.targets[1] == "cheesecake":
+            self.textures['cheesecake'] = self.get_texture(path = 'assets/cheesecake/cheesecake.png')
+        
         self.textures['depth_texture'] = self.get_depth_texture()
         
         # self.textures['skybox'] = self.get_texture_cube(dir_path='assets/skybox/', ext='png')
@@ -392,33 +404,42 @@ Vertex array objects
 
 class VAO:
     
-    def __init__(self, ctx):
+    def __init__(self, ctx, app):
         
         self.ctx = ctx
-        self.vbo = VBO(ctx)
+        self.vbo = VBO(ctx, app)
         self.program = ShaderProgram(ctx)
         self.vaos = {}
 
-        # Cheese VAO
-        self.vaos['cheese'] = self.get_vao(
-            program = self.program.programs['default'],
-            vbo = self.vbo.vbos['cheese'])
-
-        # Shadow Cheese VAO
-        self.vaos['shadow_cheese'] = self.get_vao(
-            program = self.program.programs['shadow_map'],
-            vbo = self.vbo.vbos['cheese'])
-        
-        # Banana VAO
-        self.vaos['banana'] = self.get_vao(
-            program = self.program.programs['default'],
-            vbo = self.vbo.vbos['banana'])
-
-        # Shadow Banana VAO
-        self.vaos['shadow_banana'] = self.get_vao(
-            program = self.program.programs['shadow_map'],
-            vbo = self.vbo.vbos['banana'])
-        
+        if app.targets[0] == "cheese":
+            # Cheese VAO
+            self.vaos['cheese'] = self.get_vao(
+                program = self.program.programs['default'],
+                vbo = self.vbo.vbos['cheese'])
+            # Shadow Cheese VAO
+            self.vaos['shadow_cheese'] = self.get_vao(
+                program = self.program.programs['shadow_map'],
+                vbo = self.vbo.vbos['cheese'])
+            
+        if app.targets[1] == "banana":
+            # Banana VAO
+            self.vaos['banana'] = self.get_vao(
+                program = self.program.programs['default'],
+                vbo = self.vbo.vbos['banana'])
+            # Shadow Banana VAO
+            self.vaos['shadow_banana'] = self.get_vao(
+                program = self.program.programs['shadow_map'],
+                vbo = self.vbo.vbos['banana'])
+        elif app.targets[1] == "cheesecake":
+            # Cheesecake VAO
+            self.vaos['cheesecake'] = self.get_vao(
+                program = self.program.programs['default'],
+                vbo = self.vbo.vbos['cheesecake'])
+            # Shadow Cheesecake VAO
+            self.vaos['shadow_cheesecake'] = self.get_vao(
+                program = self.program.programs['shadow_map'],
+                vbo = self.vbo.vbos['cheesecake'])
+            
         # # skybox vao
         # self.vaos['skybox'] = self.get_vao(
         #     program=self.program.programs['skybox'],
@@ -447,12 +468,18 @@ Vertex buffer objects
 
 class VBO:
     
-    def __init__(self, ctx):
+    def __init__(self, ctx, app):
         
         # Load objects
         self.vbos = {}
-        self.vbos['cheese'] = CheeseVBO(ctx)
-        self.vbos['banana'] = BananaVBO(ctx)
+        
+        if app.targets[0] == "cheese":
+            self.vbos['cheese'] = CheeseVBO(ctx)
+            
+        if app.targets[1] == "banana":
+            self.vbos['banana'] = BananaVBO(ctx)
+        elif app.targets[1] == "cheesecake":
+            self.vbos['cheesecake'] = CheesecakeVBO(ctx)
         
         # self.vbos['skybox'] = SkyBoxVBO(ctx)
         # self.vbos['advanced_skybox'] = AdvancedSkyBoxVBO(ctx)
@@ -501,6 +528,20 @@ class CheeseVBO(BaseVBO):
 
     def get_vertex_data(self):
         objs = pywavefront.Wavefront('assets/cheese/cheese.obj', cache = True, parse = True)
+        obj = objs.materials.popitem()[1]
+        vertex_data = obj.vertices
+        vertex_data = np.array(vertex_data, dtype='f4')
+        return vertex_data
+    
+class CheesecakeVBO(BaseVBO):
+    
+    def __init__(self, app):
+        super().__init__(app)
+        self.format = '2f 3f 3f'
+        self.attribs = ['in_texcoord_0', 'in_normal', 'in_position']
+
+    def get_vertex_data(self):
+        objs = pywavefront.Wavefront('assets/cheesecake/cheesecake.obj', cache = True, parse = True)
         obj = objs.materials.popitem()[1]
         vertex_data = obj.vertices
         vertex_data = np.array(vertex_data, dtype='f4')
@@ -650,6 +691,18 @@ class ExtendedBaseModel(BaseModel):
         self.program['m_view_light'].write(self.app.light.m_view_light)
 
 
+class Banana(ExtendedBaseModel):
+    
+    def __init__(self, app, vao_name = 'banana', tex_id = 'banana', pos = (0, 0, 0), rot = (0, 0, 0), scale = (1, 1, 1)):
+        
+        super().__init__(app, vao_name, tex_id, pos, rot, scale)
+        
+    def update(self):
+        
+        self.m_model = self.get_model_matrix()
+        super().update()
+        
+        
 class Cheese(ExtendedBaseModel):
     
     def __init__(self, app, vao_name = 'cheese', tex_id ='cheese', pos = (0, 0, 0), rot = (0, 0, 0), scale = (1, 1, 1)):
@@ -661,9 +714,10 @@ class Cheese(ExtendedBaseModel):
         self.m_model = self.get_model_matrix()
         super().update()
         
-class Banana(ExtendedBaseModel):
+        
+class Cheesecake(ExtendedBaseModel):
     
-    def __init__(self, app, vao_name = 'banana', tex_id = 'banana', pos = (0, 0, 0), rot = (0, 0, 0), scale = (1, 1, 1)):
+    def __init__(self, app, vao_name = 'cheesecake', tex_id = 'cheesecake', pos = (0, 0, 0), rot = (0, 0, 0), scale = (1, 1, 1)):
         
         super().__init__(app, vao_name, tex_id, pos, rot, scale)
         
@@ -742,8 +796,14 @@ class objectDiscrimination:
         
         # Loads the game and all its perks
         self.app = GraphicsEngine(stimulusScreen)
-        self.app.leftTarget = Cheese(self.app, pos = (0, 0, 0), scale = (4, 4, 4)) # Left target object
-        self.app.rightTarget = Banana(self.app, pos = (0, 0, 0), scale = (5, 5, 5)) # Right target object
+
+        if self.app.targets[0] == "cheese":
+            self.app.leftTarget = Cheese(self.app, pos = (0, 0, 0), scale = (4, 4, 4)) # Left target object
+        if self.app.targets[1] == "banana":
+            self.app.rightTarget = Banana(self.app, pos = (0, 0, 0), scale = (5, 5, 5)) # Right target object
+        elif self.app.targets[1] == "cheesecake":
+            self.app.rightTarget = Cheesecake(self.app, pos = (0, 0, 0), scale = (45, 45, 45)) # Right target object
+        
         self.app.showVisualStimulus = False
         self.app.targetLocation = 2 # blank
         self.app.render()
@@ -764,9 +824,7 @@ class objectDiscrimination:
         
         if self.app.showVisualStimulus is True:
             self.app.get_time()
-            
-            # self.app.camera.update()
-            
+            # self.app.camera.update()     # for future tasks (with camera position according to mouse position in the maze)
             self.app.render()
             self.app.delta_time = self.app.clock.tick(60) # frame rate
             
@@ -787,3 +845,5 @@ class objectDiscrimination:
         self.app.mesh.destroy()
         self.app.scene_renderer.destroy()
         pg.quit()
+        
+        

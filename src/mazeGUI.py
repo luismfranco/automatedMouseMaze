@@ -21,7 +21,11 @@ import simpleaudio as sa
 
 # Visual stimulus module
 import driftingGratings
+import motionSelectivity
 import objectDiscrimination
+
+# Valve calibration
+import valveCalibration
 
 # Data modules
 import time
@@ -42,7 +46,7 @@ class mazeGUI:
 
     """
     
-    def __init__(self,mainWindow,configurationData):
+    def __init__(self, mainWindow, configurationData):
         
         
         """
@@ -158,7 +162,7 @@ class mazeGUI:
         self.timeEntry.grid(row = 2, column = 1, sticky ='w')
         
         # Task type list
-        self.taskList = ["driftingGratings","objectDiscrimination"]
+        self.taskList = ["driftingGratings","motionSelectivity","objectDiscrimination","valveCalibration"]
         self.taskName = " "
         self.taskBox = ttk.Combobox(frame22, width = 12, font = 8, state = 'readonly', values = self.taskList)
         self.taskBox.grid(row = 3, column = 1, sticky ='w')
@@ -617,27 +621,35 @@ class mazeGUI:
         
         # Display task parameters when initializing task
         print(" ")
-        print("     Task Parameters:")
-        print("          Task name:",self.taskName)
-        print("          Maximum number of trials:",self.maximumTrialNumber)
-        print("          Maximum session time (s):",self.timeout)
-        print("          Start door:",self.startDoor)
-        print("          Use sound cues:",str(self.trialCues).lower())
-        print("          Animal ID:",self.animalID)
-        print("          Rig ID:",self.rigID)
-        print("          AutoSave:",self.autoSave)
+        if not self.taskName == "valveCalibration":
+            print("     Task Parameters:")
+            print("          Task name:",self.taskName)
+            print("          Maximum number of trials:",self.maximumTrialNumber)
+            print("          Maximum session time (s):",self.timeout)
+            print("          Start door:",self.startDoor)
+            print("          Use sound cues:",str(self.trialCues).lower())
+            print("          Animal ID:",self.animalID)
+            print("          Rig ID:",self.rigID)
+            print("          AutoSave:",self.autoSave)
+        else:
+            print("     Valve Calibration:")
+            print("          Try different opening time windows to build your calibration curve.")
+            print("          Example:")
+            print("               Time:           5,  10,  15,  20,  25,  30,  40,  50,  60,  80, 100")
+            print("               Frequency:     50,  50,  30,  25,  20,  15,  10,  10,   5,   5,   5")
+            print("               Repetitions: 1500, 750, 500, 400, 300, 250, 200, 150, 125, 100,  50")
         print(" ")
         
         # Initialize connection with Teensy 4.0
         if not self.taskName in self.taskList:
             messagebox.showinfo("Error", "Please select a task before initializing maze.")
         else:
-            # Update startButton: connecting to board...
+            # Update readyButton: connecting to board...
             self.readyButton.config(fg = 'Black', bg = '#A9C6E3', text = 'Connecting...', relief = 'sunken')
             self.readyButton.update_idletasks()
             # Connect to board
             self.connectToTeensy()
-            # Update startButton: task is running...
+            # Update readyButton: task is ready...
             self.readyButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Ready')
             self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Blue', bg ='#99D492'))
             self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Blue', bg = '#99D492'))
@@ -649,8 +661,16 @@ class mazeGUI:
         # Initialize visual stimulus
         if self.taskName == "driftingGratings":
             self.visualStimulus = driftingGratings.driftingGratings(self.stimulusMonitor)
+        elif self.taskName == "motionSelectivity":
+            self.visualStimulus = motionSelectivity.motionSelectivity(self.stimulusMonitor)
         elif self.taskName == "objectDiscrimination":
             self.visualStimulus = objectDiscrimination.objectDiscrimination(self.stimulusMonitor)
+        elif self.taskName == "valveCalibration":
+            self.calibrationWindow = tk.Tk()
+            waterPorts = [self.leftWaterPort, self.rightWaterPort]
+            valveCalibration.valveCalibration(self.calibrationWindow,self.board,waterPorts)
+            self.calibrationWindow.protocol('WM_DELETE_WINDOW', self.resetTask)
+            self.calibrationWindow.mainloop()
             
     def cancelTask(self):
         
@@ -678,17 +698,21 @@ class mazeGUI:
             self.startButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start')
             self.startButton.bind('<Enter>', lambda e: self.startButton.config(fg = 'Black', bg ='#99D492'))
             self.startButton.bind('<Leave>', lambda e: self.startButton.config(fg = 'Black', bg ='SystemButtonFace'))
+            self.startButton.update_idletasks()
             self.readyButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Initialize')
             self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Black', bg ='#A9C6E3'))
             self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Black', bg ='SystemButtonFace'))
             self.readyButton.update_idletasks()
         
-        # Save experiment data
-        if self.autoSave is True:
-            self.saveData()
-            
-        # Close visual stimulus window
-        self.visualStimulus.closeWindow()
+        if not self.taskName == "valveCalibration":
+            # Save experiment data
+            if self.autoSave is True:
+                self.saveData()
+            # Close visual stimulus window
+            self.visualStimulus.closeWindow()
+        else:
+            self.calibrationWindow.destroy()
+            self.calibrationWindow.quit()
             
     def startTrial(self):
         
