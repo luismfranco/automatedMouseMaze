@@ -1,18 +1,18 @@
 # automatedMouseMaze (under development)
 
-GUI for behavioral and neurophysiological experiments in an automated maze for in mice  
-Currently under development in the Niell Lab (https://nielllab.uoregon.edu/)
+GUI for behavioral and neurophysiological experiments in an automated maze for in mice.
+Currently under development in the Niell Lab (https://nielllab.uoregon.edu/).
 
 ***Important: this app is currently under development***
 
-***Disclamimer: the initial designs for this automated maze were based on experiments currently done in the Sylwestrak Lab*** (https://www.sylwestraklab.com/)
+***Disclamimer: the initial designs for this automated maze are based on previous work done at the Sylwestrak Lab*** (https://www.sylwestraklab.com/)
 
 # Installation
 
 ### Requirements:
-1. Operating System: Windows
-2. Anaconda (https://www.anaconda.com/)
-3. Microsoft Visual C++ 14.0 or greater (https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+1. Operating System: Windows.
+2. Anaconda (https://www.anaconda.com/).
+3. Microsoft Visual C++ 14.0 or greater (https://visualstudio.microsoft.com/visual-cpp-build-tools/).
 
 ### Step by step:
 In the Command Prompt:
@@ -50,18 +50,45 @@ You could also create a batch file. Example:
 ``cd C:\Users\Niell Lab\Documents\automatedMouseMaze\Application\``  
 ``python automatedMouseMaze.py``  
 
-# Prepare your experiment
+# Configuration settings
 Make sure your Teensy board is properly [configured](config/package.json).
 
-Describe entry fields...
+Under ``teensyConfiguration``, select the correct serial port for communication between the computer and Teensy (e.g. ***COM3***).
 
+There are a number of input and output digintal pins. Make sure there are properly assigned according to your electronic circuit:
+<p align="center">
+<img width="800" height="250" src="assets/circuit [top].png">
+</p>
 
+Under ``stimulusScreen``, select the correct screen number. In Windows, you can verify the screen number in:
+``Display settings > Display > Identify``.
 
-# Run an experiment
-Initialize connection...
-Start experiment...
-Save data...
+# How to run an experiment
 
+There are a few options you can select before running an experiment, such as:
+
+1. Maximum number of ``trials``.
+2. Maximum ``duration`` of the experiment (in seconds).
+3. The particular visual stimulus, under ``task`` (more details below).
+4. The location of the animal at the start of the session, under ``startDoor``. This is the door that will open for the first trial.
+5. Sounds and light ``cues`` for helping during learning of the task.
+6. Name of your ``rig``.
+7. Name of your ``animal``.
+8. ``path`` for saving the experiment data.
+9. ``autoSave`` option.
+
+Once your have selected your desired options, you can click on ``Initialize``. This is establish a connection between the computer and Teensy. 
+In addition, this will prepare the visual stimulus, and have it ready for display after clicking on ``Start Task``.
+
+# Task
+
+As mentioned above, the option ``task`` allows you to select between 3 different built-in tasks:
+
+1. Drifting gratings (based on Psychopy, https://github.com/psychopy/psychopy)
+2. Motion selectivity (based on Psychopy, https://github.com/psychopy/psychopy)
+3. Object discrimination (based on Pygame, https://github.com/pygame/pygame, and on ModernGL, https://github.com/moderngl/moderngl)
+
+There is also another option for calibrating your solenoid valves (use for reward delivery).
 
 # What's in the data pickle file?
 Describe data fields...
