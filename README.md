@@ -55,12 +55,12 @@ Make sure your Teensy board is properly [configured](config/package.json).
 
 Under ``teensyConfiguration``, select the correct serial port for communication between the computer and Teensy (e.g. ***COM3***).
 
-There are a number of input and output digintal pins. Make sure there are properly assigned according to your electronic circuit:
+There are a number of input and output digintal pins. Make sure they are properly assigned according to your electronic circuit:
 <p align="center">
-<img width="800" height="450" src="assets/circuitTopView.png">
+<img width="800" height="275" src="assets/circuitTopView.png">
 </p>
 
-Under ``stimulusScreen``, select the correct screen number. In Windows, you can verify the screen number in:
+Under ``stimulusScreen``, select the correct screen number. In Windows, you can verify the screen number in:  
 ``Display settings > Display > Identify``.
 
 # How to run an experiment
@@ -77,21 +77,35 @@ There are a few options you can select before running an experiment, such as:
 8. ``path`` for saving the experiment data.
 9. ``autoSave`` option.
 
-Once your have selected your desired options, you can click on ``Initialize``. This is establish a connection between the computer and Teensy. 
+Once your have selected your desired options, you can click on ``Initialize``. This will establish a connection between the computer and Teensy. 
 In addition, this will prepare the visual stimulus, and have it ready for display after clicking on ``Start Task``.
 
 # Task
 
 As mentioned above, the option ``task`` allows you to select between 3 different built-in tasks:
 
-1. Drifting gratings (based on Psychopy, https://github.com/psychopy/psychopy)
-2. Motion selectivity (based on Psychopy, https://github.com/psychopy/psychopy)
-3. Object discrimination (based on Pygame, https://github.com/pygame/pygame, and on ModernGL, https://github.com/moderngl/moderngl)
+1. Drifting gratings (based on Psychopy [https://github.com/psychopy/psychopy]).
+2. Motion selectivity (based on Psychopy [https://github.com/psychopy/psychopy]).
+3. Object discrimination (based on Pygame [https://github.com/pygame/pygame], and on ModernGL [https://github.com/moderngl/moderngl]).
+4. There is also another option for calibrating your solenoid valves (used for reward delivery).
+<p align="center">
+<img width="300" height="230" src="assets/valveCalibrationGUI.png">
+</p>
 
-There is also another option for calibrating your solenoid valves (use for reward delivery).
+It is easy to change the settings for the [drifting gratings](src/driftingGratings.py) and [motion selectivity](src/motionSelectivity.py) tasks under their respective ``startStimulus`` definitions. Please refer to Psychopy documentation to learn more about the available options for [GratingStim](https://www.psychopy.org/api/visual/gratingstim.html) and [DotStim](https://www.psychopy.org/api/visual/dotstim.html).
 
-# What's in the data pickle file?
-Describe data fields...
+# Experiment data file
+
+Data are automatically saved at the end of a session in the desired path as a pickle file. This file containa a Pandas DataFrame with the following fields:
+
+1. ``trial`` number.
+2. ``startDoor`` for each trial.
+3. ``target`` object for each trial.
+4. animal's ``decision`` for each trial.
+5. ``correct`` trial identifier.
+6. ``trial type``: identifier for correct left, incorrect right, incorrect left, or correct right trials.
+7. ``startTime``. Time stamp for the start of each trial.
+8. ``endTime``. Time stamp for the end of each trial.
 
 
 
