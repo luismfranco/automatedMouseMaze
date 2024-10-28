@@ -39,7 +39,7 @@ class GraphicsEngine:
         pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
         
         # Create opengl context
-        pg.display.set_mode(self.WIN_SIZE, display = stimulusScreen-1, flags = pg.OPENGL | pg.DOUBLEBUF) # | pg.FULLSCREEN
+        pg.display.set_mode(self.WIN_SIZE, display = stimulusScreen, flags = pg.OPENGL | pg.DOUBLEBUF) # | pg.FULLSCREEN
         
         # Detect and use existing opengl context
         self.ctx = mgl.create_context()
