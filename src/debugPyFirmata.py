@@ -9,7 +9,8 @@ with fileinput.input(environmentDir + pyFirmataDir + "pyfirmata.py", inplace = T
     for line in f:
         n += 1
         if n > 148 and n < 152:
-            line = "#" + line
+            if not line[0] == "#":
+                line = "#" + line
         print(line, end='')
         
 print("pyFirmata successfully debugged.")
