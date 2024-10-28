@@ -57,7 +57,7 @@ Under ``teensyConfiguration``, select the correct serial port for communication 
 
 There are a number of input and output digintal pins. Make sure there are properly assigned according to your electronic circuit:
 <p align="center">
-<img width="800" height="250" src="assets/circuit [top].png">
+<img width="800" height="450" src="assets/circuitTopView.png">
 </p>
 
 Under ``stimulusScreen``, select the correct screen number. In Windows, you can verify the screen number in:
