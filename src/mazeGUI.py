@@ -253,7 +253,7 @@ class mazeGUI:
         
         # Reward
         self.estimatedReward = 0
-        self.rewardStreak = [22, 24, 26, 29, 31, 34] # in ms
+        self.rewardStreak = [32, 36, 41, 45, 50, 54] # in ms
         self.rewardAmounts = [ 5,  6,  7,  8,  9, 10] # in μL
         
         # Behavior values in GUI
@@ -644,7 +644,7 @@ class mazeGUI:
             print("          Try different opening time windows to build your calibration curve.")
             print("          Example:")
             print("               Time:           5,  10,  15,  20,  25,  30,  40,  50,  60,  80, 100")
-            print("               Frequency:     50,  50,  30,  25,  20,  15,  10,  10,   5,   5,   5")
+            print("               Frequency:     25,  25,  20,  15,  15,  15,  10,  10,   5,   5,   5")
             print("               Repetitions: 1500, 750, 500, 400, 300, 250, 200, 150, 125, 100,  50")
         print(" ")
         
@@ -662,9 +662,10 @@ class mazeGUI:
             self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Blue', bg ='#99D492'))
             self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Blue', bg = '#99D492'))
             self.readyButton.update_idletasks()
-            # Update maze
-            self. mazeState = 0
-            self.updateDoors()
+            if not self.taskName == "valveCalibration":
+                # Update maze
+                self. mazeState = 0
+                self.updateDoors()
             
         # Initialize visual stimulus
         if self.taskName == "driftingGratings":
