@@ -59,6 +59,9 @@ There are a number of input and output digintal pins. Make sure they are properl
 <p align="center">
 <img width="800" height="275" src="assets/circuitTopView.png">
 </p>
+<p align="center">
+<img width="800" height="275" src="assets/circuitBottomView.png">
+</p>
 
 Under ``stimulusScreen``, select the correct screen number. In Windows, you can verify the screen number in:  
 ``Display settings > Display > Identify``.
