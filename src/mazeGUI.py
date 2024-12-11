@@ -22,6 +22,7 @@ import simpleaudio as sa
 # Visual stimulus module
 import driftingGratings
 import motionSelectivity
+import whiteNoise
 import objectDiscrimination
 
 # Valve calibration
@@ -104,7 +105,7 @@ class mazeGUI:
         
         # Door labels
         tk.Label(frame11, font = buttonFont, text = "Doors", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
-        labelList = ["start left","start right","decision left","decision right"]
+        labelList = ["start left", "start right", "decision left", "decision right"]
         nrow = 1
         for i in range(len(labelList)):
             tk.Label(frame11, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
@@ -141,8 +142,8 @@ class mazeGUI:
         
         # Parameters labels
         tk.Label(frame22, font = buttonFont, text = "Task Parameters", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 4 , padx = 10, pady = 10, sticky = 'we')
-        entryLabels0 = ["trials","duration","task","startDoor","cues"]
-        entryLabels2 = ["rig","animal","path","autoSave"," "]
+        entryLabels0 = ["trials", "duration", "task", "startDoor", "cues"]
+        entryLabels2 = ["rig", "animal", "path", "autoSave", " "]
         nrow = 1
         for i in range(len(entryLabels0)):
             tk.Label(frame22, font = buttonFont, text = entryLabels0[i], width = 8, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
@@ -162,14 +163,15 @@ class mazeGUI:
         self.timeEntry.grid(row = 2, column = 1, sticky ='w')
         
         # Task type list
-        self.taskList = ["driftingGratings","motionSelectivity","objectDiscrimination","valveCalibration"]
+        self.taskList = ["driftingGratings", "motionSelectivity", "whiteNoise", "objectDiscrimination", "valveCalibration"]
         self.taskName = " "
         self.taskBox = ttk.Combobox(frame22, width = 12, font = 8, state = 'readonly', values = self.taskList)
         self.taskBox.grid(row = 3, column = 1, sticky ='w')
-        self.stimulusMonitor = int(configurationData["stimulusScreen"]["screen"])
+        self.stimulusScreen = int(configurationData["stimulusScreen"]["screenNumber"])
+        self.screenSize = (int(configurationData["stimulusScreen"]["screenWidth"]), int(configurationData["stimulusScreen"]["screenHeight"]))
         
         # Animal start list
-        self.startList = ["left","right"]   # 0 = left, 1 = right
+        self.startList = ["left", "right"]   # 0 = left, 1 = right
         self.startBox = ttk.Combobox(frame22, width = 12, font = 8, state = 'readonly', values = self.startList)
         self.startBox.current(0)
         self.startBox.grid(row = 4, column = 1, sticky ='w')
@@ -237,7 +239,7 @@ class mazeGUI:
         
         # Stats labels
         tk.Label(frame12, font = buttonFont, text = "Behavior", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
-        labelList = ["performance","bias index","correct","incorrect","left decisions","right decisions", "reward (μL)"]
+        labelList = ["performance", "bias index", "correct", "incorrect", "left decisions", "right decisions", "reward (μL)"]
         nrow = 1
         for i in range(len(labelList)):
             tk.Label(frame12, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
@@ -418,7 +420,7 @@ class mazeGUI:
         if boardAvailable is False:
             try:
                 # Reset maze GUI and Doors
-                doorNames = [self.leftStartDoor,self.rightStartDoor,self.leftDecisionDoor,self.rightDecisionDoor]
+                doorNames = [self.leftStartDoor, self.rightStartDoor, self.leftDecisionDoor, self.rightDecisionDoor]
                 for i in range(len(doorNames)):
                     self.board.digital[doorNames[i]].write(0)
                 self.leftStartLabel.config(bg = '#99D492', text = "open")
@@ -496,7 +498,7 @@ class mazeGUI:
         self.RS = self.board.digital[self.rightStartIRsensor].read()
         
         # Update door values in GUI
-        doorLabelValues = [self.leftStartValue,self.rightStartValue,self.leftDecisionValue,self.rightDecisionValue]
+        doorLabelValues = [self.leftStartValue, self.rightStartValue, self.leftDecisionValue, self.rightDecisionValue]
         pinStates = [self.LS,self.RS,self.LD,self.RD]
         for i in range(len(doorLabelValues)):
             if pinStates[i] is False:
@@ -669,15 +671,17 @@ class mazeGUI:
             
         # Initialize visual stimulus
         if self.taskName == "driftingGratings":
-            self.visualStimulus = driftingGratings.driftingGratings(self.stimulusMonitor)
+            self.visualStimulus = driftingGratings.driftingGratings(self.stimulusScreen, self.screenSize)
         elif self.taskName == "motionSelectivity":
-            self.visualStimulus = motionSelectivity.motionSelectivity(self.stimulusMonitor)
+            self.visualStimulus = motionSelectivity.motionSelectivity(self.stimulusScreen, self.screenSize)
+        elif self.taskName == "whiteNoise":
+            self.visualStimulus = whiteNoise.whiteNoise(self.stimulusScreen, self.screenSize)
         elif self.taskName == "objectDiscrimination":
-            self.visualStimulus = objectDiscrimination.objectDiscrimination(self.stimulusMonitor)
+            self.visualStimulus = objectDiscrimination.objectDiscrimination(self.stimulusScreen, self.screenSize)
         elif self.taskName == "valveCalibration":
             self.calibrationWindow = tk.Tk()
             waterPorts = [self.leftWaterPort, self.rightWaterPort]
-            valveCalibration.valveCalibration(self.calibrationWindow,self.board,waterPorts)
+            valveCalibration.valveCalibration(self.calibrationWindow, self.board,waterPorts)
             self.calibrationWindow.protocol('WM_DELETE_WINDOW', self.resetTask)
             self.calibrationWindow.mainloop()
             
@@ -780,8 +784,8 @@ class mazeGUI:
             self.recentPerformance = recentCorrect.count(1) / len(recentCorrect)
         
         # Update behavior stats
-        behaviorStats = [self.performance,self.biasIndex,self.correct,self.incorrect,self.left,self.right,self.estimatedReward]
-        behaviorValues = [self.performanceValue,self.biasIndexValue,self.correctValue,self.incorrectValue,self.leftValue,self.rightValue,self.rewardValue]
+        behaviorStats = [self.performance, self.biasIndex, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
+        behaviorValues = [self.performanceValue, self.biasIndexValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
         for i in range(len(behaviorValues)):
             behaviorValues[i].config(text = behaviorStats[i])
             behaviorValues[i].update_idletasks()

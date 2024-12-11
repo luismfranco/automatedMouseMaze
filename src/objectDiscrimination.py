@@ -20,7 +20,7 @@ Graphics Engine
 # Updating the game is handled by the master object, which is in turn controlled by the maze GUI
 class GraphicsEngine:
     
-    def __init__(self, stimulusScreen):
+    def __init__(self, stimulusScreen, screenSize):
         
         # Target objects
         self.targets = []
@@ -31,7 +31,7 @@ class GraphicsEngine:
         pg.init()
         
         # Window size
-        self.WIN_SIZE = (1024, 600)
+        self.WIN_SIZE = screenSize
         
         # Set opengl attributes
         pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)

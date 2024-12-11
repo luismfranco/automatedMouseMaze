@@ -16,11 +16,11 @@ Drifting Gratings
 
 class motionSelectivity:
     
-    def __init__(self, stimulusScreen):
+    def __init__(self, stimulusScreen, screenSize):
     
-        # Create a window
+        # Create stimulus window
         self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen, units = "deg",
-                                            size = (1024, 600), fullscr = True, color = (1.0, 1.0, 1.0))
+                                            size = screenSize, fullscr = True, color = (1.0, 1.0, 1.0))
         
         # Orientation
         self.leftTarget = 90

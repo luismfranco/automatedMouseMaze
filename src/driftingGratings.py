@@ -15,11 +15,11 @@ Drifting Gratings
 
 class driftingGratings:
     
-    def __init__(self, stimulusScreen):
+    def __init__(self, stimulusScreen, screenSize):
     
-        # Create a window
-        self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen, units = "deg",
-                                            size = (1024, 600), fullscr = True, color = (1.0, 1.0, 1.0))
+        # Create stimulus window
+        self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen + 1, units = "deg",
+                                            size = screenSize, fullscr = True, color = (1.0, 1.0, 1.0))
         
         # Orientation
         self.leftTarget = 90
@@ -47,7 +47,6 @@ class driftingGratings:
     def updateStimulus(self):
             
         if self.showVisualStimulus is True:
-            
             if self.target == self.rightTarget:
                 self.grating.setPhase(0.05, '+')  # move phase by 0.05 of a cycle
             elif self.target == self.leftTarget:
