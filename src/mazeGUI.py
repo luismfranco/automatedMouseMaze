@@ -108,36 +108,41 @@ class mazeGUI:
         
         """
         
+        # Maze state
+        self.mazeState = 0
+        tk.Label(frame11, font = buttonFont, text = "maze state", width = 12, anchor  = 'e').grid(row = 1, column = 0, padx = 10)
+        self.mazeStateLabel = tk.Label(frame11, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
+        self.mazeStateLabel.grid(row = 1, column = 1)
+        self.mazeStateValue = tk.Label(frame11, font = buttonFont, text = self.mazeState)
+        self.mazeStateValue.grid(row = 1, column = 2)
+        
         # Door labels
         tk.Label(frame11, font = buttonFont, text = "Doors", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
         labelList = ["start left", "start right", "decision left", "decision right"]
-        nrow = 1
+        nrow = 2
         for i in range(len(labelList)):
             tk.Label(frame11, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
             nrow += 1
             
-        # Maze state
-        self.mazeState = 0
-            
         # Door states
         self.leftStartLabel = tk.Label(frame11, bg = '#99D492', font = buttonFont, text = "open", width = 8)
-        self.leftStartLabel.grid(row = 1, column = 1)
+        self.leftStartLabel.grid(row = 2, column = 1)
         self.rightStartLabel = tk.Label(frame11, bg = '#99D492', font = buttonFont, text = "open", width = 8)
-        self.rightStartLabel.grid(row = 2, column = 1)
+        self.rightStartLabel.grid(row = 3, column = 1)
         self.leftDecisionLabel = tk.Label(frame11, bg = '#99D492', font = buttonFont, text = "open", width = 8)
-        self.leftDecisionLabel.grid(row = 3, column = 1)
+        self.leftDecisionLabel.grid(row = 4, column = 1)
         self.rightDecisionLabel = tk.Label(frame11, bg = '#99D492', font = buttonFont, text = "open", width = 8)
-        self.rightDecisionLabel.grid(row = 4, column = 1)
+        self.rightDecisionLabel.grid(row = 5, column = 1)
         
         # IR sensor values
         self.leftStartValue = tk.Label(frame11, font = buttonFont, text = 0)
-        self.leftStartValue.grid(row = 1, column = 2)
+        self.leftStartValue.grid(row = 2, column = 2)
         self.rightStartValue = tk.Label(frame11, font = buttonFont, text = 0)
-        self.rightStartValue.grid(row = 2, column = 2)
+        self.rightStartValue.grid(row = 3, column = 2)
         self.leftDecisionValue = tk.Label(frame11, font = buttonFont, text = 0)
-        self.leftDecisionValue.grid(row = 3, column = 2)
+        self.leftDecisionValue.grid(row = 4, column = 2)
         self.rightDecisionValue = tk.Label(frame11, font = buttonFont, text = 0)
-        self.rightDecisionValue.grid(row = 4, column = 2)
+        self.rightDecisionValue.grid(row = 5, column = 2)
         
         
         """
@@ -482,6 +487,8 @@ class mazeGUI:
                 self.rightDecisionValue.config(text = 0)
                 self.leftStartValue.config(text = 0)
                 self.rightStartValue.config(text = 0)
+                self.mazeStateLabel.config(bg = self.backGroundColor, text = "idle")
+                self.mazeStateValue.config(text = 0)
                 # Disconnect Teensy 4.0
                 self.board.exit()
                 print("Connection with",self.boardName,"is now closed...")
@@ -503,6 +510,8 @@ class mazeGUI:
         
         # Before trial start
         if self.mazeState == 0:
+            self.mazeStateLabel.config(bg = '#A9C6E3', text = "ready")
+            self.mazeStateValue.config(text = 0)
             self.board.digital[self.leftStartDoor].write(1)
             self.board.digital[self.rightStartDoor].write(1)
             self.board.digital[self.leftDecisionDoor].write(1)
@@ -514,6 +523,8 @@ class mazeGUI:
             
         # Trial start
         if self.mazeState == 1:
+            self.mazeStateLabel.config(bg = '#99D492', text = "start")
+            self.mazeStateValue.config(text = 1)
             self.board.digital[self.leftStartDoor].write(1)
             self.board.digital[self.rightStartDoor].write(1)
             self.board.digital[self.leftDecisionDoor].write(0)
@@ -525,6 +536,8 @@ class mazeGUI:
             
         # After a decision has been recorded
         elif self.mazeState == 2:
+            self.mazeStateLabel.config(bg = 'pink', text = "end")
+            self.mazeStateValue.config(text = 2)
             self.board.digital[self.leftDecisionDoor].write(1)
             self.board.digital[self.rightDecisionDoor].write(1)
             self.leftDecisionLabel.config(bg = 'pink', text = "closed")
@@ -532,11 +545,15 @@ class mazeGUI:
             
         # Mouse coming from the left
         elif self.mazeState == 3:
+            self.mazeStateLabel.config(bg = '#A9C6E3', text = "ITI-left")
+            self.mazeStateValue.config(text = 3)
             self.board.digital[self.leftStartDoor].write(0)
             self.leftStartLabel.config(bg = '#99D492', text = "open")
             
         # Mouse coming from the right
         elif self.mazeState == 4:
+            self.mazeStateLabel.config(bg = '#A9C6E3', text = "ITI-right")
+            self.mazeStateValue.config(text = 4)
             self.board.digital[self.rightStartDoor].write(0)
             self.rightStartLabel.config(bg = '#99D492', text = "open")
     
