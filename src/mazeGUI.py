@@ -73,9 +73,9 @@ class mazeGUI:
         frame1 = tk.Frame(self.mainWindow, width = 225, height = 500) #, bg = 'green')
         frame1.grid(row = 0, rowspan = 3, column = 0, sticky = 'news')
         frame11 = tk.Frame(frame1, width = 225, height = 175)
-        frame11.place(anchor = "c", relx = 0.5, rely = 0.175)
+        frame11.place(anchor = "c", relx = 0.5, rely = 0.2)
         frame12 = tk.Frame(frame1, width = 225, height = 325)
-        frame12.place(anchor = "c", relx = 0.5, rely = 0.6)
+        frame12.place(anchor = "c", relx = 0.5, rely = 0.65)
         frame2 = tk.Frame(self.mainWindow, width = 500, height = 350) #, bg = 'red')
         frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
         frame21 = tk.Frame(frame2, width = 500, height = 150)
@@ -255,10 +255,10 @@ class mazeGUI:
         
         # Stats labels
         tk.Label(frame12, font = buttonFont, text = "Behavior", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
-        labelList = ["performance", "bias index", "trials", "correct", "incorrect", "left decisions", "right decisions", "reward (μL)"]
+        labelList = ["performance", "bias index", "trials", "correct", "incorrect", "left decisions", "right decisions", "correct streak", "~total reward (μL)"]
         nrow = 1
         for i in range(len(labelList)):
-            tk.Label(frame12, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
+            tk.Label(frame12, font = buttonFont, text = labelList[i], width = 15, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
             nrow += 1
             
         # Behavior parameters
@@ -272,6 +272,7 @@ class mazeGUI:
         
         # Reward
         self.estimatedReward = 0
+        self.correctStreak = 0
         self.rewardStreak = [32, 36, 41, 45, 50, 54] # in ms
         self.rewardAmounts = [ 5,  6,  7,  8,  9, 10] # in μL
         
@@ -290,8 +291,10 @@ class mazeGUI:
         self.leftValue.grid(row = 6, column = 1)
         self.rightValue = tk.Label(frame12, font = buttonFont, text = self.right)
         self.rightValue.grid(row = 7, column = 1)
+        self.correctStreakValue = tk.Label(frame12, font = buttonFont, text = self.correctStreak)
+        self.correctStreakValue.grid(row = 8, column = 1)
         self.rewardValue = tk.Label(frame12, font = buttonFont, text = self.estimatedReward)
-        self.rewardValue.grid(row = 8, column = 1)
+        self.rewardValue.grid(row = 9, column = 1)
         
         
         """
