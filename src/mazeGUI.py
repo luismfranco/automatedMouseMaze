@@ -12,6 +12,7 @@ from PIL import ImageTk, Image
 import os
 from datetime import datetime
 from pathlib import Path
+import cv2
 
 # Teensy modules
 import pyfirmata
@@ -58,33 +59,37 @@ class mazeGUI:
         # Geometry
         self.mainWindow = mainWindow
         self.mainWindow.title('Automated Mouse Maze')
-        windowWidth = 800
-        windowHeight = 450
+        windowWidth = 925
+        windowHeight = 500
         screenWidth = self.mainWindow.winfo_screenwidth()
         screenHeight = self.mainWindow.winfo_screenheight()
-        x = (screenWidth/2) - (windowWidth/2)
+        x = (screenWidth/1.5) - (windowWidth/2)
         y = (screenHeight/2) - (windowHeight/2)
         self.mainWindow.geometry('%dx%d+%d+%d' % (windowWidth, windowHeight, x, y))
         self.backGroundColor = self.mainWindow.cget('bg')
         buttonFont = tkFont.Font(family = 'helvetica', size = 12)
         
         # Frames
-        frame1 = tk.Frame(self.mainWindow, width = 250, height = 500)
+        frame1 = tk.Frame(self.mainWindow, width = 225, height = 500) #, bg = 'green')
         frame1.grid(row = 0, rowspan = 3, column = 0, sticky = 'news')
-        frame11 = tk.Frame(frame1, width = 250, height = 200)
-        frame11.place(anchor = "c", relx = 0.5, rely = 0.2)
-        frame12 = tk.Frame(frame1, width = 250, height = 250)
+        frame11 = tk.Frame(frame1, width = 225, height = 175)
+        frame11.place(anchor = "c", relx = 0.5, rely = 0.175)
+        frame12 = tk.Frame(frame1, width = 225, height = 325)
         frame12.place(anchor = "c", relx = 0.5, rely = 0.6)
-        frame2 = tk.Frame(self.mainWindow, width = 550, height = 350)
+        frame2 = tk.Frame(self.mainWindow, width = 500, height = 350) #, bg = 'red')
         frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
-        frame21 = tk.Frame(frame2, width = 550, height = 150)
-        frame21.grid(row = 0, column = 0)
-        frame22 = tk.Frame(frame2, width = 550, height = 150)
-        frame22.grid(row = 1, column = 0)
-        frame3 = tk.Frame(self.mainWindow, width = 550, height = 150)
+        frame21 = tk.Frame(frame2, width = 500, height = 150)
+        frame21.place(anchor = "c", relx = 0.5, rely = 0.3)
+        frame22 = tk.Frame(frame2, width = 500, height = 200)
+        frame22.place(anchor = "c", relx = 0.5, rely = 0.75)
+        frame3 = tk.Frame(self.mainWindow, width = 500, height = 150) #, bg = 'blue')
         frame3.grid(row = 2, column = 1, sticky = 'news')
-        frame31 = tk.Frame(frame3, width = 550, height = 150)
-        frame31.place(anchor = "c", relx = 0.5, rely = 0.35)
+        frame31 = tk.Frame(frame3, width = 500, height = 150)
+        frame31.place(anchor = "c", relx = 0.5, rely = 0.5)
+        frame4 = tk.Frame(self.mainWindow, width = 200, height = 500) #, bg = 'green')
+        frame4.grid(row = 0, rowspan = 3, column = 2, sticky = 'news')
+        frame41 = tk.Frame(frame4, width = 200, height = 500)
+        frame41.place(anchor = "c", relx = 0.5, rely = 0.5)
         
         # Logo
         imagePath = "assets/mazeGUIlogo.png"
@@ -103,36 +108,41 @@ class mazeGUI:
         
         """
         
+        # Maze state
+        self.mazeState = 0
+        tk.Label(frame11, font = buttonFont, text = "maze state", width = 12, anchor  = 'e').grid(row = 1, column = 0, padx = 10)
+        self.mazeStateLabel = tk.Label(frame11, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
+        self.mazeStateLabel.grid(row = 1, column = 1)
+        self.mazeStateValue = tk.Label(frame11, font = buttonFont, text = self.mazeState)
+        self.mazeStateValue.grid(row = 1, column = 2)
+        
         # Door labels
         tk.Label(frame11, font = buttonFont, text = "Doors", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
         labelList = ["start left", "start right", "decision left", "decision right"]
-        nrow = 1
+        nrow = 2
         for i in range(len(labelList)):
             tk.Label(frame11, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
             nrow += 1
             
-        # Maze state
-        self.mazeState = 0
-            
         # Door states
         self.leftStartLabel = tk.Label(frame11, bg = '#99D492', font = buttonFont, text = "open", width = 8)
-        self.leftStartLabel.grid(row = 1, column = 1)
+        self.leftStartLabel.grid(row = 2, column = 1)
         self.rightStartLabel = tk.Label(frame11, bg = '#99D492', font = buttonFont, text = "open", width = 8)
-        self.rightStartLabel.grid(row = 2, column = 1)
+        self.rightStartLabel.grid(row = 3, column = 1)
         self.leftDecisionLabel = tk.Label(frame11, bg = '#99D492', font = buttonFont, text = "open", width = 8)
-        self.leftDecisionLabel.grid(row = 3, column = 1)
+        self.leftDecisionLabel.grid(row = 4, column = 1)
         self.rightDecisionLabel = tk.Label(frame11, bg = '#99D492', font = buttonFont, text = "open", width = 8)
-        self.rightDecisionLabel.grid(row = 4, column = 1)
+        self.rightDecisionLabel.grid(row = 5, column = 1)
         
         # IR sensor values
         self.leftStartValue = tk.Label(frame11, font = buttonFont, text = 0)
-        self.leftStartValue.grid(row = 1, column = 2)
+        self.leftStartValue.grid(row = 2, column = 2)
         self.rightStartValue = tk.Label(frame11, font = buttonFont, text = 0)
-        self.rightStartValue.grid(row = 2, column = 2)
+        self.rightStartValue.grid(row = 3, column = 2)
         self.leftDecisionValue = tk.Label(frame11, font = buttonFont, text = 0)
-        self.leftDecisionValue.grid(row = 3, column = 2)
+        self.leftDecisionValue.grid(row = 4, column = 2)
         self.rightDecisionValue = tk.Label(frame11, font = buttonFont, text = 0)
-        self.rightDecisionValue.grid(row = 4, column = 2)
+        self.rightDecisionValue.grid(row = 5, column = 2)
         
         
         """
@@ -143,7 +153,7 @@ class mazeGUI:
         # Parameters labels
         tk.Label(frame22, font = buttonFont, text = "Task Parameters", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 4 , padx = 10, pady = 10, sticky = 'we')
         entryLabels0 = ["trials", "duration", "task", "startDoor", "cues"]
-        entryLabels2 = ["rig", "animal", "path", "autoSave", " "]
+        entryLabels2 = ["rig", "animal", "block", "path", "autoSave", " "]
         nrow = 1
         for i in range(len(entryLabels0)):
             tk.Label(frame22, font = buttonFont, text = entryLabels0[i], width = 8, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
@@ -216,7 +226,13 @@ class mazeGUI:
         self.animalID = "J000_NC"
         self.animalEntry = tk.Entry(frame22, font = 8, width = 14)
         self.animalEntry.insert(0, self.animalID)
-        self.animalEntry.grid(row = 2, column = 3, sticky='w')
+        self.animalEntry.grid(row = 2, column = 3, sticky = 'w')
+        
+        # Block ID entry
+        self.blockID = "1"
+        self.blockEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.blockEntry.insert(0, self.blockID)
+        self.blockEntry.grid(row = 3, column = 3, sticky = 'w')
         
         # Path entry
         userName = os.getlogin()
@@ -224,12 +240,12 @@ class mazeGUI:
         self.pathForSavingData = "C:\\Users\\" + userName + "\\Documents\\automatedMouseMaze\\Data\\" + self.currentDate + "\\"
         self.pathEntry = tk.Entry(frame22, font = 8, width = 14)
         self.pathEntry.insert(0, self.pathForSavingData)
-        self.pathEntry.grid(row = 3, column = 3, sticky ='w')
+        self.pathEntry.grid(row = 4, column = 3, sticky ='w')
         
         # AutoSave checkBox
         self.autoSaveData = tk.BooleanVar(value = True)
         autoSaveBox = tk.Checkbutton(frame22, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
-        autoSaveBox.grid(row = 4, column = 3, sticky = 'w')
+        autoSaveBox.grid(row = 5, column = 3, sticky = 'w')
         
         
         """
@@ -239,7 +255,7 @@ class mazeGUI:
         
         # Stats labels
         tk.Label(frame12, font = buttonFont, text = "Behavior", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
-        labelList = ["performance", "bias index", "correct", "incorrect", "left decisions", "right decisions", "reward (μL)"]
+        labelList = ["performance", "bias index", "trials", "correct", "incorrect", "left decisions", "right decisions", "reward (μL)"]
         nrow = 1
         for i in range(len(labelList)):
             tk.Label(frame12, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
@@ -248,6 +264,7 @@ class mazeGUI:
         # Behavior parameters
         self.performance = 0
         self.biasIndex = 0
+        self.trialID = 0
         self.correct = 0
         self.incorrect = 0
         self.left = 0
@@ -263,16 +280,18 @@ class mazeGUI:
         self.performanceValue.grid(row = 1, column = 1)
         self.biasIndexValue = tk.Label(frame12, font = buttonFont, text = self.biasIndex)
         self.biasIndexValue.grid(row = 2, column = 1)
+        self.trialValue = tk.Label(frame12, font = buttonFont, text = self.trialID)
+        self.trialValue.grid(row = 3, column = 1)
         self.correctValue = tk.Label(frame12, font = buttonFont, text = self.correct)
-        self.correctValue.grid(row = 3, column = 1)
+        self.correctValue.grid(row = 4, column = 1)
         self.incorrectValue = tk.Label(frame12, font = buttonFont, text = self.incorrect)
-        self.incorrectValue.grid(row = 4, column = 1)
+        self.incorrectValue.grid(row = 5, column = 1)
         self.leftValue = tk.Label(frame12, font = buttonFont, text = self.left)
-        self.leftValue.grid(row = 5, column = 1)
+        self.leftValue.grid(row = 6, column = 1)
         self.rightValue = tk.Label(frame12, font = buttonFont, text = self.right)
-        self.rightValue.grid(row = 6, column = 1)
+        self.rightValue.grid(row = 7, column = 1)
         self.rewardValue = tk.Label(frame12, font = buttonFont, text = self.estimatedReward)
-        self.rewardValue.grid(row = 7, column = 1)
+        self.rewardValue.grid(row = 8, column = 1)
         
         
         """
@@ -281,13 +300,13 @@ class mazeGUI:
         """
         
         # Ready button
-        self.readyButton = tk.Button(frame31, text = 'Initialize', font = buttonFont, width = 12, command = self.readyTask)
+        self.readyButton = tk.Button(frame31, text = 'Initialize Task', font = buttonFont, width = 12, command = self.readyTask)
         self.readyButton.grid(row = 0, column = 0, padx = 10, pady = 10)
         self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Black', bg ='#A9C6E3'))
         self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Cancel button
-        self.cancelButton = tk.Button(frame31, text = 'Cancel', font = buttonFont, width = 12, command = self.cancelTask)
+        self.cancelButton = tk.Button(frame31, text = 'Cancel Task', font = buttonFont, width = 12, command = self.cancelTask)
         self.cancelButton.grid(row = 1, column = 0,padx = 0, pady = 10)
         self.cancelButton.bind('<Enter>', lambda e: self.cancelButton.config(fg='Black', bg='#FFB844'))
         self.cancelButton.bind('<Leave>', lambda e: self.cancelButton.config(fg='Black', bg='SystemButtonFace'))
@@ -316,6 +335,43 @@ class mazeGUI:
         self.closeButton.bind('<Enter>', lambda e: self.closeButton.config(fg='Black', bg='#AFAFAA'))
         self.closeButton.bind('<Leave>', lambda e: self.closeButton.config(fg='Black', bg='SystemButtonFace'))
         self.mainWindow.protocol('WM_DELETE_WINDOW', self.closeMainWindow)
+        
+        
+        """
+        Camera Controls
+        
+        """
+        
+        # Booleans for buttons
+        self.camerasAreOn = False
+        self.saveVideo = False
+        
+        # Camera labels
+        tk.Label(frame41, font = buttonFont, text = "Camera Controls", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 4 , padx = 10, pady = 10, sticky = 'we')
+        
+        # Initialize cameras
+        self.startCameraButton = tk.Button(frame41, text = 'Start Cameras', font = buttonFont, width = 17, command = self.startCameras)
+        self.startCameraButton.grid(row = 1, column = 0, padx = 10, pady = 10)
+        self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+        self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+
+        # Start recording
+        self.recordCameraButton = tk.Button(frame41, text = 'Record Video', font = buttonFont, width = 17, command = self.recordVideo)
+        self.recordCameraButton.grid(row = 2, column = 0, padx = 10, pady = 10)
+        self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#DC5B5B'))
+        self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+        
+        # Stop recording
+        self.stopRecordCameraButton = tk.Button(frame41, text = 'Stop Recording', font = buttonFont, width = 17, command = self.stopVideo)
+        self.stopRecordCameraButton.grid(row = 3, column = 0, padx = 10, pady = 10)
+        self.stopRecordCameraButton.bind('<Enter>', lambda e: self.stopRecordCameraButton.config(fg = 'Black', bg ='#FFB844'))
+        self.stopRecordCameraButton.bind('<Leave>', lambda e: self.stopRecordCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+
+        # Close cameras
+        self.closeCameraButton = tk.Button(frame41, text = 'Close Cameras', font = buttonFont, width = 17, command = self.closeCameras)
+        self.closeCameraButton.grid(row = 4, column = 0, padx = 10, pady = 10)
+        self.closeCameraButton.bind('<Enter>', lambda e: self.closeCameraButton.config(fg = 'Black', bg ='#AFAFAA'))
+        self.closeCameraButton.bind('<Leave>', lambda e: self.closeCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         
         """
@@ -353,7 +409,7 @@ class mazeGUI:
         
         if not self.port[3] in portIDs:
             self.closeGUIWithoutCheckouts = True
-            messagebox.showinfo("Error", "Make sure the serial port for Teensy 4.0 in 'config/package.json' is correct before initializing maze.")
+            messagebox.showerror("Error", "Make sure the serial port for Teensy 4.0 in 'config/package.json' is correct before initializing maze.")
         else:
             self.closeGUIWithoutCheckouts = False
     
@@ -431,6 +487,8 @@ class mazeGUI:
                 self.rightDecisionValue.config(text = 0)
                 self.leftStartValue.config(text = 0)
                 self.rightStartValue.config(text = 0)
+                self.mazeStateLabel.config(bg = self.backGroundColor, text = "idle")
+                self.mazeStateValue.config(text = 0)
                 # Disconnect Teensy 4.0
                 self.board.exit()
                 print("Connection with",self.boardName,"is now closed...")
@@ -452,6 +510,8 @@ class mazeGUI:
         
         # Before trial start
         if self.mazeState == 0:
+            self.mazeStateLabel.config(bg = '#A9C6E3', text = "ready")
+            self.mazeStateValue.config(text = 0)
             self.board.digital[self.leftStartDoor].write(1)
             self.board.digital[self.rightStartDoor].write(1)
             self.board.digital[self.leftDecisionDoor].write(1)
@@ -463,6 +523,8 @@ class mazeGUI:
             
         # Trial start
         if self.mazeState == 1:
+            self.mazeStateLabel.config(bg = '#99D492', text = "start")
+            self.mazeStateValue.config(text = 1)
             self.board.digital[self.leftStartDoor].write(1)
             self.board.digital[self.rightStartDoor].write(1)
             self.board.digital[self.leftDecisionDoor].write(0)
@@ -474,6 +536,8 @@ class mazeGUI:
             
         # After a decision has been recorded
         elif self.mazeState == 2:
+            self.mazeStateLabel.config(bg = 'pink', text = "end")
+            self.mazeStateValue.config(text = 2)
             self.board.digital[self.leftDecisionDoor].write(1)
             self.board.digital[self.rightDecisionDoor].write(1)
             self.leftDecisionLabel.config(bg = 'pink', text = "closed")
@@ -481,11 +545,15 @@ class mazeGUI:
             
         # Mouse coming from the left
         elif self.mazeState == 3:
+            self.mazeStateLabel.config(bg = '#A9C6E3', text = "ITI-left")
+            self.mazeStateValue.config(text = 3)
             self.board.digital[self.leftStartDoor].write(0)
             self.leftStartLabel.config(bg = '#99D492', text = "open")
             
         # Mouse coming from the right
         elif self.mazeState == 4:
+            self.mazeStateLabel.config(bg = '#A9C6E3', text = "ITI-right")
+            self.mazeStateValue.config(text = 4)
             self.board.digital[self.rightStartDoor].write(0)
             self.rightStartLabel.config(bg = '#99D492', text = "open")
     
@@ -530,8 +598,12 @@ class mazeGUI:
                     self.mazeState = 3
                 elif self.startDoor == "right":
                     self.mazeState = 4
-        elif self.mazeState == 3 or self.mazeState == 4:
-            if self.LS is False or self.RS is False:
+        elif self.mazeState == 3:
+            if self.LS is False:
+                self.mazeState = 1
+                self.startTrial()
+        elif self.mazeState == 4:
+            if self.RS is False:
                 self.mazeState = 1
                 self.startTrial()
                 
@@ -565,6 +637,226 @@ class mazeGUI:
 
 
     """ 
+    Camera Functions
+    
+    """
+
+    def startCameras(self):
+        
+        if self.camerasAreOn == False:
+        
+            # Check for task parameters
+            self.updateTrialParameters()
+        
+            # Update startCameraButton: starting cameras...
+            self.startCameraButton.config(fg = 'Black', bg = '#A9C6E3', text = 'Starting...', relief = 'sunken')
+            self.startCameraButton.update_idletasks()
+    
+            # Create window
+            self.cameraWindow = tk.Toplevel()
+            self.cameraWindow.title("Cameras")
+            
+            # Create camera objects
+            self.eyeCamera = cv2.VideoCapture(0) 
+            self.worldCamera = cv2.VideoCapture(1) 
+            self.camerasAreOn = True
+            self.okToSaveVideoFiles = False
+            self.saveVideo = False
+            self.noVideoRecorded = True
+       
+            # Check if cameras are already open
+            if (self.eyeCamera.isOpened() == False):  
+                print("Error reading eye camera") 
+            if (self.worldCamera.isOpened() == False):  
+                print("Error reading world camera") 
+              
+            # Camera resolution. Convert from float to integer
+            frameWidth = int(self.eyeCamera.get(3)) 
+            frameHeight = int(self.eyeCamera.get(4)) 
+            eyeCamSize = (frameWidth, frameHeight) 
+            frameWidth = int(self.worldCamera.get(3)) 
+            frameHeight = int(self.worldCamera.get(4)) 
+            worldCamSize = (frameWidth, frameHeight) 
+    
+            # Canvas
+            self.canvas = tk.Canvas(self.cameraWindow, width = eyeCamSize[0], height = eyeCamSize[1] + worldCamSize[1])
+            self.canvas.pack()
+    
+            # Window
+            windowWidth = eyeCamSize[0]
+            windowHeight = eyeCamSize[1] + worldCamSize[1]
+            screenWidth = self.cameraWindow.winfo_screenwidth()
+            screenHeight = self.cameraWindow.winfo_screenheight()
+            x = (screenWidth/5) - (windowWidth/2)
+            y = (screenHeight/2.15) - (windowHeight/2)
+            self.cameraWindow.geometry('%dx%d+%d+%d' % (windowWidth, windowHeight, x, y))
+    
+            # Check for existing video files
+            fileName1 = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "eyeCamera" + "_" + str(self.blockID) + ".avi"
+            fileName2 = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "worldCamera" + "_" + str(self.blockID) + ".avi"
+            if not os.path.isfile(fileName1) and not os.path.isfile(fileName2):
+                self.okToSaveVideoFiles = True
+            else:
+                self.okToSaveVideoFiles = messagebox.askyesno("Existing file", "Do you want to overwrite video files?")
+            
+            # Video files
+            if self.okToSaveVideoFiles == True:
+                self.eyeCameraVideo = cv2.VideoWriter(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "eyeCamera" + "_" + str(self.blockID) + ".avi",
+                                                      cv2.VideoWriter_fourcc(*'MJPG'), 10, eyeCamSize)
+                self.worldCameraVideo = cv2.VideoWriter(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "worldCamera" + "_" + str(self.blockID) + ".avi",
+                                                        cv2.VideoWriter_fourcc(*'MJPG'), 10, worldCamSize)
+                videoFilesReady = True
+            else:
+                videoFilesReady = False
+                self.camerasAreOn = False
+    
+            if videoFilesReady == True:
+                
+                # Update startCameraButton: cameras are open (preview mode)...
+                self.startCameraButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Preview')
+                self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Blue', bg ='#A9C6E3'))
+                self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Blue', bg = '#A9C6E3'))
+                self.startCameraButton.update_idletasks()
+                
+                # Start cameras
+                self.cameraThread = Thread(target = self.updateCameras)
+                self.cameraThread.start()
+                
+                # Camera window
+                self.cameraWindow.protocol('WM_DELETE_WINDOW', self.closeCameras)
+                self.cameraWindow.mainloop()
+                
+            elif videoFilesReady == False:
+                
+                # Reset startCameraButton
+                self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
+                self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+                self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+                self.startCameraButton.update_idletasks()
+                
+                # Destroy camera window
+                self.resetCameras()
+                
+                # Warning: change block number
+                messagebox.showwarning("Video recording", "Please choose a different block number for you experiment." +
+                                                          "\n" +
+                                                          "\nCurrent block number already exists.")
+            
+        else:
+            
+            print("Cameras are already on.")
+        
+    def recordVideo(self):
+        
+        if self.camerasAreOn == True:
+            
+            # Update camera buttons. Recording video...
+            self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
+            self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+            self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+            self.startCameraButton.update_idletasks()
+            self.recordCameraButton.config(fg = 'Black', bg = '#DC5B5B', relief = 'sunken', text = 'Recording')
+            self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#DC5B5B'))
+            self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg = '#DC5B5B'))
+            self.recordCameraButton.update_idletasks()
+            
+            # Turning saving frames on
+            self.saveVideo = True
+            self.noVideoRecorded = False
+            
+        else:
+            
+            messagebox.showinfo("Cameras", "Cameras have not been started yet.", parent = self.mainWindow)
+        
+    def stopVideo(self):
+        
+        if self.saveVideo == True:
+        
+            # Update recordCameraButton: stop video recording...
+            self.recordCameraButton.config(fg = 'Red', bg = '#DC5B5B', relief = 'raised', text = 'Record Video')
+            self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+            self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg = 'SystemButtonFace'))
+            self.recordCameraButton.update_idletasks()
+            
+            # Turning saving frames off
+            self.saveVideo = False
+            
+        else:
+            
+            print("There is no ongoing video recording...")
+        
+    def updateCameras(self):
+        
+        if self.camerasAreOn == True:
+        
+            # Grab frame
+            eyeCamRet, eyeCamFrame = self.eyeCamera.read() 
+            worldCamRet, worldCamFrame = self.worldCamera.read() 
+            
+            if eyeCamRet == True or worldCamRet == True:
+                
+                # Save frame to video file
+                if self.saveVideo == True:
+                    self.eyeCameraVideo.write(eyeCamFrame)
+                    self.worldCameraVideo.write(worldCamFrame)
+                
+                # Update frame to display
+                combinedFrame = cv2.vconcat([worldCamFrame, eyeCamFrame])
+                self.combinedFrame = ImageTk.PhotoImage(image = Image.fromarray(cv2.cvtColor(combinedFrame, cv2.COLOR_BGR2RGB)))
+                self.canvas.create_image(0, 0, image = self.combinedFrame, anchor = tk.NW)
+                
+            # Loop
+            self.cameraWindow.after(33, self.updateCameras) # 30 Hz (1 frame every 33 ms)
+        
+    def closeCameras(self):
+        
+        if self.camerasAreOn == True:
+            
+            # Reset camera buttons
+            self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
+            self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+            self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+            self.startCameraButton.update_idletasks()
+            self.recordCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Record Video')
+            self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#DC5B5B'))
+            self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+            self.recordCameraButton.update_idletasks()
+            
+            # Stop grabing frames and close window
+            self.camerasAreOn = False
+            self.saveVideo = False
+            self.cameraWindow.after(50, self.resetCameras)
+            
+        else:
+            
+            print("Cameras are currently closed.")
+        
+    def resetCameras(self):
+        
+        # Stop camera objects
+        self.eyeCamera.release() 
+        self.worldCamera.release()
+        
+        # Stop video files
+        if self.okToSaveVideoFiles == True:
+            
+            # Close video files
+            self.eyeCameraVideo.release() 
+            self.worldCameraVideo.release()
+            
+            # If frames were not recorded, destroy video files
+            if self.noVideoRecorded == True:
+                os.remove(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "eyeCamera" + "_" + str(self.blockID) + ".avi")
+                os.remove(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "worldCamera" + "_" + str(self.blockID) + ".avi")
+            
+        # Closes all the frames 
+        cv2.destroyAllWindows() 
+        
+        # Destroy camera window
+        self.cameraWindow.destroy()
+
+
+    """ 
     Task Functions
     
     """
@@ -572,9 +864,10 @@ class mazeGUI:
     def initializeTaskParameters(self):
         
         # Task
-        self.trialID = 0
         self.runningTask = False
-        self.interTrialTimeOut = 3          # possibly add more time out for incorrect trials
+        self.interTrialTimeOut = 0
+        self.correctInterTrialTimeOut = 3
+        self.incorrectInterTrialTimeOut = 6
         self.probabilityTargetLeft = 0.5
         
         # Behavior stats
@@ -616,74 +909,91 @@ class mazeGUI:
         self.trialCues = bool(self.useTrialCues.get())
         self.animalID = str(self.animalEntry.get())
         self.rigID = str(self.rigEntry.get())
+        self.blockID = str(self.blockEntry.get())
         self.autoSave = bool(self.autoSaveData.get())
         
     def readyTask(self):
         
-        # Prepare directory to save data
-        Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
+        # Check if Teensy 4.0 is available before attempting to initialize a task
+        boardAvailable = self.checkIfPortAvailable()
         
-        # Update task parameters
-        self.updateTrialParameters()
+        if boardAvailable is True:
         
-        # Flush all data from previous task
-        self.initializeTaskParameters()
-        
-        # Display task parameters when initializing task
-        print(" ")
-        if not self.taskName == "valveCalibration":
-            print("     Task Parameters:")
-            print("          Task name:",self.taskName)
-            print("          Maximum number of trials:",self.maximumTrialNumber)
-            print("          Maximum session time (s):",self.timeout)
-            print("          Start door:",self.startDoor)
-            print("          Use sound cues:",str(self.trialCues).lower())
-            print("          Animal ID:",self.animalID)
-            print("          Rig ID:",self.rigID)
-            print("          AutoSave:",self.autoSave)
-        else:
-            print("     Valve Calibration:")
-            print("          Try different opening time windows to build your calibration curve.")
-            print("          Example:")
-            print("               Time:           5,  10,  15,  20,  25,  30,  40,  50,  60,  80, 100")
-            print("               Frequency:     25,  25,  20,  15,  15,  15,  10,  10,   5,   5,   5")
-            print("               Repetitions: 1500, 750, 500, 400, 300, 250, 200, 150, 125, 100,  50")
-        print(" ")
-        
-        # Initialize connection with Teensy 4.0
-        if not self.taskName in self.taskList:
-            messagebox.showinfo("Error", "Please select a task before initializing maze.")
-        else:
-            # Update readyButton: connecting to board...
-            self.readyButton.config(fg = 'Black', bg = '#A9C6E3', text = 'Connecting...', relief = 'sunken')
-            self.readyButton.update_idletasks()
-            # Connect to board
-            self.connectToTeensy()
-            # Update readyButton: task is ready...
-            self.readyButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Ready')
-            self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Blue', bg ='#99D492'))
-            self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Blue', bg = '#99D492'))
-            self.readyButton.update_idletasks()
-            if not self.taskName == "valveCalibration":
-                # Update maze
-                self. mazeState = 0
-                self.updateDoors()
+            # Prepare directory to save data
+            Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
             
-        # Initialize visual stimulus
-        if self.taskName == "driftingGratings":
-            self.visualStimulus = driftingGratings.driftingGratings(self.stimulusScreen, self.screenSize)
-        elif self.taskName == "motionSelectivity":
-            self.visualStimulus = motionSelectivity.motionSelectivity(self.stimulusScreen, self.screenSize)
-        elif self.taskName == "whiteNoise":
-            self.visualStimulus = whiteNoise.whiteNoise(self.stimulusScreen, self.screenSize)
-        elif self.taskName == "objectDiscrimination":
-            self.visualStimulus = objectDiscrimination.objectDiscrimination(self.stimulusScreen, self.screenSize)
-        elif self.taskName == "valveCalibration":
-            self.calibrationWindow = tk.Tk()
-            waterPorts = [self.leftWaterPort, self.rightWaterPort]
-            valveCalibration.valveCalibration(self.calibrationWindow, self.board,waterPorts)
-            self.calibrationWindow.protocol('WM_DELETE_WINDOW', self.resetTask)
-            self.calibrationWindow.mainloop()
+            # Update task parameters
+            self.updateTrialParameters()
+            
+            # Flush all data from previous task
+            self.initializeTaskParameters()
+            
+            # Display task parameters when initializing task
+            print(" ")
+            if not self.taskName == "valveCalibration":
+                print("     Task Parameters:")
+                print("          Task name:",self.taskName)
+                print("          Maximum number of trials:",self.maximumTrialNumber)
+                print("          Maximum session time (s):",self.timeout)
+                print("          Start door:",self.startDoor)
+                print("          Use sound cues:",str(self.trialCues).lower())
+                print("          Animal ID:",self.animalID)
+                print("          Rig ID:",self.rigID)
+                print("          Block ID:",self.blockID)
+                print("          AutoSave:",self.autoSave)
+            else:
+                print("     Valve Calibration:")
+                print("          Try different opening time windows to build your calibration curve.")
+                print("          Example:")
+                print("               Time:           5,  10,  15,  20,  25,  30,  40,  50,  60,  80, 100")
+                print("               Frequency:     25,  25,  20,  15,  15,  15,  10,  10,   5,   5,   5")
+                print("               Repetitions: 1500, 750, 500, 400, 300, 250, 200, 150, 125, 100,  50")
+            print(" ")
+            
+            # Initialize connection with Teensy 4.0
+            if not self.taskName in self.taskList:
+                messagebox.showerror("Error", "Please select a task before initializing maze.")
+            else:
+                # Update readyButton: connecting to board...
+                self.readyButton.config(fg = 'Black', bg = '#A9C6E3', text = 'Connecting...', relief = 'sunken')
+                self.readyButton.update_idletasks()
+                # Connect to board
+                self.connectToTeensy()
+                # Update readyButton: task is ready...
+                self.readyButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Ready')
+                self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Blue', bg ='#A9C6E3'))
+                self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Blue', bg = '#A9C6E3'))
+                self.readyButton.update_idletasks()
+                if not self.taskName == "valveCalibration":
+                    # Update maze
+                    self. mazeState = 0
+                    self.updateDoors()
+                
+            # Initialize visual stimulus
+            if self.taskName == "driftingGratings":
+                self.visualStimulus = driftingGratings.driftingGratings(self.stimulusScreen, self.screenSize)
+            elif self.taskName == "motionSelectivity":
+                self.visualStimulus = motionSelectivity.motionSelectivity(self.stimulusScreen, self.screenSize)
+            elif self.taskName == "whiteNoise":
+                self.visualStimulus = whiteNoise.whiteNoise(self.stimulusScreen, self.screenSize)
+            elif self.taskName == "objectDiscrimination":
+                self.visualStimulus = objectDiscrimination.objectDiscrimination(self.stimulusScreen, self.screenSize)
+            elif self.taskName == "valveCalibration":
+                self.calibrationWindow = tk.Toplevel()
+                waterPorts = [self.leftWaterPort, self.rightWaterPort]
+                valveCalibration.valveCalibration(self.calibrationWindow, self.board, waterPorts)
+                self.calibrationWindow.protocol('WM_DELETE_WINDOW', self.resetTask)
+                self.calibrationWindow.mainloop()
+                
+        else:
+            
+            if self.runningTask == True:
+                
+                print("Failed to initialize a task. There might be an ongoing task currently running...")
+                
+            else:
+                
+                print("Task has been already initialized. Waiting to start...")
             
     def cancelTask(self):
         
@@ -727,7 +1037,6 @@ class mazeGUI:
             self.visualStimulus.closeWindow()
         else:
             self.calibrationWindow.destroy()
-            self.calibrationWindow.quit()
             
     def startTrial(self):
         
@@ -823,6 +1132,7 @@ class mazeGUI:
                 self.giveReward()
                 if self.trialCues is True:
                     sa.play_buffer(self.correctSound, 1, 2, self.Fs)
+                self.interTrialTimeOut = self.correctInterTrialTimeOut
                 self.trialType = 1
                 self.lastDecision = 0
                 self.correctStreak += 1
@@ -831,6 +1141,7 @@ class mazeGUI:
                 # Incorrect left
                 if self.trialCues is True:
                     sa.play_buffer(self.incorrectSound, 1, 2, self.Fs)
+                self.interTrialTimeOut = self.incorrectInterTrialTimeOut
                 self.trialType = 2
                 self.lastDecision = 0
                 self.correctStreak = 0
@@ -841,6 +1152,7 @@ class mazeGUI:
                 # Incorrect right
                 if self.trialCues is True:
                     sa.play_buffer(self.incorrectSound, 1, 2, self.Fs)
+                self.interTrialTimeOut = self.incorrectInterTrialTimeOut
                 self.trialType = 3
                 self.lastDecision = 1
                 self.correctStreak = 0
@@ -850,6 +1162,7 @@ class mazeGUI:
                 self.giveReward()
                 if self.trialCues is True:
                     sa.play_buffer(self.correctSound, 1, 2, self.Fs)
+                self.interTrialTimeOut = self.correctInterTrialTimeOut
                 self.trialType = 4
                 self.lastDecision = 1
                 self.correctStreak += 1
@@ -860,31 +1173,37 @@ class mazeGUI:
         
     def runTask(self):
         
-        # Update startButton: task is running...
-        self.startButton.config(fg = 'Blue', bg = '#99D492', relief = 'sunken', text = 'Running...')
-        self.startButton.bind('<Enter>', lambda e: self.startButton.config(fg = 'Blue', bg ='#99D492'))
-        self.startButton.bind('<Leave>', lambda e: self.startButton.config(fg = 'Blue', bg = '#99D492'))
-        self.startButton.update_idletasks()
-        self.readyButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Initialize')
-        self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Black', bg ='#A9C6E3'))
-        self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Black', bg ='SystemButtonFace'))
-        self.readyButton.update_idletasks()
+        if self.runningTask == False:
         
-        # Set up task
-        if self.startDoor == "left":
-            self.mazeState = 3
-        elif self.startDoor == "right":
-            self.mazeState = 4
-        self.updateDoors()
-        self.runningTask = True
-        self.taskTimeStart = time.time()
-        self.interTrialStart = time.time()
-        print(" ")
-        
-        # Start task
-        self.currentRunningTask = Thread(target = self.checkTask())
-        self.currentRunningTask.start()
-        self.resetTask()
+            # Update startButton: task is running...
+            self.startButton.config(fg = 'Blue', bg = '#99D492', relief = 'sunken', text = 'Running...')
+            self.startButton.bind('<Enter>', lambda e: self.startButton.config(fg = 'Blue', bg ='#99D492'))
+            self.startButton.bind('<Leave>', lambda e: self.startButton.config(fg = 'Blue', bg = '#99D492'))
+            self.startButton.update_idletasks()
+            self.readyButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Initialize')
+            self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Black', bg ='#A9C6E3'))
+            self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Black', bg ='SystemButtonFace'))
+            self.readyButton.update_idletasks()
+            
+            # Set up task
+            if self.startDoor == "left":
+                self.mazeState = 3
+            elif self.startDoor == "right":
+                self.mazeState = 4
+            self.updateDoors()
+            self.runningTask = True
+            self.taskTimeStart = time.time()
+            self.interTrialStart = time.time()
+            print(" ")
+            
+            # Start task
+            self.currentRunningTask = Thread(target = self.checkTask())
+            self.currentRunningTask.start()
+            self.resetTask()
+            
+        else:
+            
+            print("There is an ongoing task currently running...")
     
     def checkTask(self):
         
@@ -929,27 +1248,30 @@ class mazeGUI:
         df = df.transpose()
         
         # Save experiment data
-        blockID = 1
-        fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + str(blockID)
+        fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "behavior" + "_" + str(self.blockID)
         if df.empty:
             print("DataFrame is empty. Most likely an experiment has not been run yet.")
         else:
             if not os.path.isfile(fileName + self.fileExtension):
                 df.to_pickle(fileName + self.fileExtension)
+                messagebox.showinfo("Data Saved", "Experiment data have been saved at " + self.pathForSavingData)
             else:
                 isNotSaved = True
                 while isNotSaved is True:
                     blockID = fileName[-1]
                     blockID = int(blockID)
                     blockID += 1
-                    fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + str(blockID)
+                    fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "behavior" + "_" + str(blockID)
                     if not os.path.isfile(fileName + self.fileExtension):
                         df.to_pickle(fileName + self.fileExtension)
-                        
+                        messagebox.showwarning("Data Saved", "Experiment data have been saved at " + self.pathForSavingData +
+                                               "\n " +
+                                               "\nHowever, the block number was changed to " + str(blockID) + " to avoid overwriting existing file." +
+                                               "\n"
+                                               "\nIf video was recorded, make sure block numbers match.")
                         isNotSaved = False
             print("Experiment data have been saved successfully.")
             print(" ")
-            messagebox.showinfo("Data Saved", "Experiment data have been saved at " + self.pathForSavingData)
         
     def closeMainWindow(self):
         
