@@ -931,12 +931,6 @@ class mazeGUI:
             # Update task parameters
             self.updateTrialParameters()
             
-            # Disable task parameter boxes
-            entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
-            for i in range(len(entryBoxes)):
-                entryBoxes[i].config(state = 'disabled')
-                entryBoxes[i].update_idletasks()
-            
             # Flush all data from previous task
             self.initializeTaskParameters()
             
@@ -998,7 +992,15 @@ class mazeGUI:
                 self.calibrationWindow.mainloop()
                 
             # Prepare upcoming stimulus
-            if not  self.taskName == "valveCalibration":
+            if self.taskName in self.taskList and not self.taskName == "valveCalibration":
+                
+                # Disable task parameter boxes
+                entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+                for i in range(len(entryBoxes)):
+                    entryBoxes[i].config(state = 'disabled')
+                    entryBoxes[i].update_idletasks()
+                    
+                # Prepare first trial
                 self.initializeUpcomingTrial()
                 
         else:
