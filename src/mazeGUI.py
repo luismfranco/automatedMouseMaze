@@ -188,8 +188,8 @@ class mazeGUI:
         
         # Cues checkBox
         self.useTrialCues = tk.BooleanVar(value = True)
-        cuesBox = tk.Checkbutton(frame22, text = "sounds + LEDs", font = 8, variable = self.useTrialCues, onvalue = True, offvalue = False)
-        cuesBox.grid(row = 5, column = 1, sticky = 'w')
+        self.cuesBox = tk.Checkbutton(frame22, text = "sounds + LEDs", font = 8, variable = self.useTrialCues, onvalue = True, offvalue = False)
+        self.cuesBox.grid(row = 5, column = 1, sticky = 'w')
 
         # Sound for correct trials
         self.Fs = 44100
@@ -244,8 +244,8 @@ class mazeGUI:
         
         # AutoSave checkBox
         self.autoSaveData = tk.BooleanVar(value = True)
-        autoSaveBox = tk.Checkbutton(frame22, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
-        autoSaveBox.grid(row = 5, column = 3, sticky = 'w')
+        self.autoSaveBox = tk.Checkbutton(frame22, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
+        self.autoSaveBox.grid(row = 5, column = 3, sticky = 'w')
         
         
         """
@@ -931,6 +931,12 @@ class mazeGUI:
             # Update task parameters
             self.updateTrialParameters()
             
+            # Disable task parameter boxes
+            entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+            for i in range(len(entryBoxes)):
+                entryBoxes[i].config(state = 'disabled')
+                entryBoxes[i].update_idletasks()
+            
             # Flush all data from previous task
             self.initializeTaskParameters()
             
@@ -1039,6 +1045,13 @@ class mazeGUI:
             self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Black', bg ='SystemButtonFace'))
             self.readyButton.update_idletasks()
         
+        # Reactivate task parameter boxes
+        entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+        for i in range(len(entryBoxes)):
+            entryBoxes[i].config(state = 'normal')
+            entryBoxes[i].update_idletasks()
+        
+        # Save task data
         if not self.taskName == "valveCalibration":
             # Save experiment data
             if self.autoSave is True:
