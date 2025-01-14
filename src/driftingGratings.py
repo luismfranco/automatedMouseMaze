@@ -7,7 +7,7 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 from psychopy import visual
 
-
+# changes made by cf - 12/16/24: self.leftTarget = 180 instead of 90, added self.gratingsetPos (7,0), changed self.grating.setPhase(0.025, '-') to 0.025,+
 """
 Drifting Gratings
 
@@ -18,7 +18,7 @@ class driftingGratings:
     def __init__(self, stimulusScreen, screenSize):
     
         # Create stimulus window
-        self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen + 1, units = "deg",
+        self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen, units = "deg",
                                             size = screenSize, fullscr = True, color = (1.0, 1.0, 1.0))
         
         # Orientation
@@ -28,18 +28,20 @@ class driftingGratings:
         # Stimulus
         self.showVisualStimulus = False
         
-    def startStimulus(self, **kwargs):
+    def initializeStimulus(self, **kwargs):
         
-        # Start stimulus
-        self.showVisualStimulus = kwargs['display']
+        # Initialize stimulus
         self.targetLocation = kwargs['target']
         if self.targetLocation == 0:
             self.target = self.leftTarget
         elif self.targetLocation == 1:
             self.target = self.rightTarget
-            
-        # Stimulus
-        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "raisedCos", size = 15, pos = [0,0], sf = 0.5, ori = self.target)
+        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "raisedCos", size = 15, pos = [0,0], sf = 0.25, ori = self.target)
+        
+    def startStimulus(self, **kwargs):
+        
+        # Start stimulus
+        self.showVisualStimulus = kwargs['display']
         self.grating.setOpacity(1)
         self.stimulusWindow.update()
         
@@ -48,9 +50,11 @@ class driftingGratings:
             
         if self.showVisualStimulus is True:
             if self.target == self.rightTarget:
-                self.grating.setPhase(0.05, '+')  # move phase by 0.05 of a cycle
+                self.grating.setPhase(0.025, '+')  # move phase by 0.05 of a cycle
+                self.grating.setPos([7,0])
             elif self.target == self.leftTarget:
-                self.grating.setPhase(0.05, '-')  # move phase by 0.05 of a cycle
+                self.grating.setPhase(0.025, '-')  # move phase by 0.05 of a cycle
+                self.grating.setPos([-7,0])
             self.grating.draw()
             self.stimulusWindow.update()
             

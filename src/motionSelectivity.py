@@ -29,20 +29,22 @@ class motionSelectivity:
         # Stimulus
         self.showVisualStimulus = False
         
-    def startStimulus(self, **kwargs):
+    def initializeStimulus(self, **kwargs):
         
-        # Start stimulus
-        self.showVisualStimulus = kwargs['display']
+        # Initialize stimulus
         self.targetLocation = kwargs['target']
         if self.targetLocation == 0:
             self.target = self.leftTarget
         elif self.targetLocation == 1:
             self.target = self.rightTarget
-            
-        # Stimulus
-        self.movingDots = DotStim(win = self.stimulusWindow, nDots = 100, coherence = 0.65, dotSize = 12.5,
+        self.movingDots = DotStim(win = self.stimulusWindow, nDots = 75, coherence = 0.75, dotSize = 25,
                                   dotLife = 60*5, speed = 0.05, color = 'black', contrast = 1.0, 
                                   dir = self.target, fieldSize = (15, 15), fieldShape = 'circle', noiseDots = 'direction')
+        
+    def startStimulus(self, **kwargs):
+        
+        # Start stimulus
+        self.showVisualStimulus = kwargs['display']
         self.movingDots.setOpacity(1)
         self.stimulusWindow.update()
         

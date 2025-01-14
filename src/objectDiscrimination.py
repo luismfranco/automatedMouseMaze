@@ -792,10 +792,10 @@ Object Discrimination
 
 class objectDiscrimination:
     
-    def __init__(self, stimulusScreen):
+    def __init__(self, stimulusScreen, screenSize):
         
         # Loads the game and all its perks
-        self.app = GraphicsEngine(stimulusScreen)
+        self.app = GraphicsEngine(stimulusScreen, screenSize)
 
         if self.app.targets[0] == "cheese":
             self.app.leftTarget = Cheese(self.app, pos = (0, 0, 0), scale = (4, 4, 4)) # Left target object
@@ -808,11 +808,15 @@ class objectDiscrimination:
         self.app.targetLocation = 2 # blank
         self.app.render()
         
+    def initializeStimulus(self, **kwargs):
+        
+        # Initialize stimulus
+        self.app.targetLocation = kwargs['target']
+        
     def startStimulus(self, **kwargs):
         
         # Start stimulus
         self.app.showVisualStimulus = kwargs['display']
-        self.app.targetLocation = kwargs['target']
         if self.app.showVisualStimulus is True:
             if self.app.targetLocation == 0:
                 self.app.scene.objects.append(self.app.leftTarget)

@@ -592,6 +592,8 @@ class mazeGUI:
                     self.startDoor = "right"
         elif self.mazeState == 2:
             self.closeValve()
+            if self.reward == False:
+                self.initializeUpcomingTrial()
             currentTime = time.time()
             if currentTime > self.interTrialStart + self.interTrialTimeOut:
                 if self.startDoor == "left":
@@ -873,6 +875,7 @@ class mazeGUI:
         # Behavior stats
         self.performance = 0
         self.biasIndex = 0
+        self.trialID = 0
         self.correct = 0
         self.incorrect = 0
         self.left = 0
@@ -898,6 +901,9 @@ class mazeGUI:
         self.dataFrameStartDoor = []
         self.dataFrameStartTime = []
         self.dataFrameEndTime = []
+    
+        # Update behavior stats in GUI
+        self.updateBehaviorStats()
     
     def updateTrialParameters(self):
         
@@ -985,6 +991,10 @@ class mazeGUI:
                 self.calibrationWindow.protocol('WM_DELETE_WINDOW', self.resetTask)
                 self.calibrationWindow.mainloop()
                 
+            # Prepare upcoming stimulus
+            if not  self.taskName == "valveCalibration":
+                self.initializeUpcomingTrial()
+                
         else:
             
             if self.runningTask == True:
@@ -1038,26 +1048,31 @@ class mazeGUI:
         else:
             self.calibrationWindow.destroy()
             
-    def startTrial(self):
+    def initializeUpcomingTrial(self):
         
-        # Set up current trial
+        # Target for upcoming trial
         self.targetLocation = np.random.choice([0,1], p = [1-self.probabilityTargetLeft, self.probabilityTargetLeft])
         
-        # Reward streak
+        # Upcoming viual stimulus
+        self.visualStimulus.initializeStimulus(target = self.targetLocation)
+        
+        # Reward for upcoming trial
         if self.correctStreak < len(self.rewardStreak):
             self.rewardTime = self.rewardStreak[self.correctStreak] / 1000 # in ms
             self.rewardSize = self.rewardAmounts[self.correctStreak] # in μL
         else:
             self.rewardTime = self.rewardStreak[-1] / 1000 # in ms
             self.rewardSize = self.rewardAmounts[-1] # in μL
+            
+    def startTrial(self):
+        
+        # Display visual stimulus
+        self.visualStimulus.startStimulus(display = True)
         
         # Display trial info in terminal
         self.trialID += 1
         print("     Trial ", self.trialID," started...", " Target -> ", self.targetLocation)
         
-        # Display visual stimulus
-        self.visualStimulus.startStimulus(display = True, target = self.targetLocation)
-            
         # Append experiment data to data frame
         self.dataFrameTrial.append(self.trialID)
         self.dataFrameTarget.append(self.targetLocation)
@@ -1092,13 +1107,6 @@ class mazeGUI:
             recentCorrect = self.dataFrameCorrect[-10:]
             self.recentPerformance = recentCorrect.count(1) / len(recentCorrect)
         
-        # Update behavior stats
-        behaviorStats = [self.performance, self.biasIndex, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
-        behaviorValues = [self.performanceValue, self.biasIndexValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
-        for i in range(len(behaviorValues)):
-            behaviorValues[i].config(text = behaviorStats[i])
-            behaviorValues[i].update_idletasks()
-        
         # Display stats on terminal
         if self.trialType == 1:
             print("          >>> Correct Left <<<")
@@ -1115,11 +1123,24 @@ class mazeGUI:
             print("              Performance (recent)", self.recentPerformance, "     Performance (overall) = ", self.performance)
             print("              Bias index (recent) = ", self.recentBiasIndex,"     Bias index (overall) = ", self.biasIndex)
         
+        # Update behavior stats in GUI
+        self.updateBehaviorStats()
+        
         # End task after last trial
         if self.trialID == self.maximumTrialNumber:
             self.runningTask = False
             print(" ")
             print("The task has reached the maximum number of trials!")
+        
+    def updateBehaviorStats(self):
+        
+        # Update behavior stats in GUI
+        behaviorStats = [self.performance, self.biasIndex, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
+        behaviorValues = [self.performanceValue, self.biasIndexValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
+        for i in range(len(behaviorValues)):
+            behaviorValues[i].config(text = behaviorStats[i])
+            behaviorValues[i].update_idletasks()
+        
         
     def triggerTrialOutcome(self):
         

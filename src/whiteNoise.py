@@ -24,7 +24,7 @@ class whiteNoise:
         screenWidth = screenSize[0]
         
         # Calculate window position
-        x_pos = screenWidth * stimulusScreen
+        x_pos = screenWidth * (stimulusScreen + 1)
         y_pos = 0
         
         # Create stimulus window
@@ -43,22 +43,24 @@ class whiteNoise:
         self.showVisualStimulus = False
         self.stimulusFrameRate = 30     # Hz
         
+    def initializeStimulus(self, **kwargs):
+        
+        # Initialize stimulus
+        self.targetLocation = kwargs['target']
+        if self.targetLocation == 0:
+            self.target = self.leftTarget
+            duration = 10
+            whiteNoise = createWhiteNoise(duration, self.screenSize, self.stimulusFrameRate)
+        elif self.targetLocation == 1:
+            self.target = self.rightTarget
+            duration = 25
+            whiteNoise = createWhiteNoise(duration, self.screenSize, self.stimulusFrameRate)
+        self.whiteNoiseStimulus = whiteNoise.whiteNoise()
+        
     def startStimulus(self, **kwargs):
         
         # Start stimulus
         self.showVisualStimulus = kwargs['display']
-        self.targetLocation = kwargs['target']
-        if self.targetLocation == 0:
-            self.target = self.leftTarget
-            duration = 2
-            whiteNoise = createWhiteNoise(duration, self.screenSize, self.stimulusFrameRate)
-        elif self.targetLocation == 1:
-            self.target = self.rightTarget
-            duration = 15
-            whiteNoise = createWhiteNoise(duration, self.screenSize, self.stimulusFrameRate)
-            
-        # Stimulus
-        self.whiteNoiseStimulus = whiteNoise.whiteNoise()
         self.frameNumber = 0
         self.lastFrame = self.whiteNoiseStimulus.shape[2] - 1
         noiseFrame = self.whiteNoiseStimulus[:, :, self.frameNumber]
@@ -112,9 +114,9 @@ class createWhiteNoise:
         self.binarize = 0                       # Default value for binarize
         # movtype = 0                           # Default value for movtype
         self.imageSize = 256                    # Size in pixels
-        imageMagnification = 9.0                # Magnification
-        maximumSpatialFrequency = 0.07          # Spatial frequency cutoff (cpd)
-        maximumTemporalFrequency = 0.5          # Temporal frequency cutoff
+        imageMagnification = 4                  # Magnification
+        maximumSpatialFrequency = 0.12          # Spatial frequency cutoff (cpd)
+        maximumTemporalFrequency = 5.0            # Temporal frequency cutoff
         self.contrastSigma = 0.5                # One-sigma value for contrast
 
         # Derived parameters
