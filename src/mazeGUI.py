@@ -242,6 +242,9 @@ class mazeGUI:
         self.pathEntry.insert(0, self.pathForSavingData)
         self.pathEntry.grid(row = 4, column = 3, sticky ='w')
         
+        # Prepare directory to save data
+        Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
+        
         # AutoSave checkBox
         self.autoSaveData = tk.BooleanVar(value = True)
         self.autoSaveBox = tk.Checkbutton(frame22, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
@@ -341,6 +344,10 @@ class mazeGUI:
         Camera Controls
         
         """
+        
+        # Frame rate
+        frameRate = 60                                       # True frame rate must estimated. Delay caused by other computations in the code
+        self.cameraTimeBetweenFrames = int(1000/frameRate)   # miliseconds betweem frames
         
         # Booleans for buttons
         self.camerasAreOn = False
@@ -659,6 +666,7 @@ class mazeGUI:
             self.cameraWindow.title("Cameras")
             
             # Create camera objects
+            self.cameraTimeStamps = []
             self.eyeCamera = cv2.VideoCapture(0) 
             self.worldCamera = cv2.VideoCapture(1) 
             self.camerasAreOn = True
@@ -775,7 +783,7 @@ class mazeGUI:
         if self.saveVideo == True:
         
             # Update recordCameraButton: stop video recording...
-            self.recordCameraButton.config(fg = 'Red', bg = '#DC5B5B', relief = 'raised', text = 'Record Video')
+            self.recordCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Record Video')
             self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
             self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg = 'SystemButtonFace'))
             self.recordCameraButton.update_idletasks()
@@ -792,8 +800,9 @@ class mazeGUI:
         if self.camerasAreOn == True:
         
             # Grab frame
-            eyeCamRet, eyeCamFrame = self.eyeCamera.read() 
-            worldCamRet, worldCamFrame = self.worldCamera.read() 
+            eyeCamRet, eyeCamFrame = self.eyeCamera.read()
+            worldCamRet, worldCamFrame = self.worldCamera.read()
+            self.cameraTimeStamps.append(time.time())
             
             if eyeCamRet == True or worldCamRet == True:
                 
@@ -808,7 +817,7 @@ class mazeGUI:
                 self.canvas.create_image(0, 0, image = self.combinedFrame, anchor = tk.NW)
                 
             # Loop
-            self.cameraWindow.after(33, self.updateCameras) # 30 Hz (1 frame every 33 ms)
+            self.cameraWindow.after(self.cameraTimeBetweenFrames, self.updateCameras)
         
     def closeCameras(self):
         
@@ -850,6 +859,16 @@ class mazeGUI:
             if self.noVideoRecorded == True:
                 os.remove(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "eyeCamera" + "_" + str(self.blockID) + ".avi")
                 os.remove(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "worldCamera" + "_" + str(self.blockID) + ".avi")
+                
+            # If frames were recorded, save time stamps
+            if self.noVideoRecorded == False:
+                data = {
+                        "rawCameraTimeStamps": self.cameraTimeStamps,
+                                                                     }
+                df = pd.DataFrame.from_dict(data, orient = 'index')
+                df = df.transpose()    
+                fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "cameraTimeStamps" + "_" + str(self.blockID)
+                df.to_pickle(fileName + self.fileExtension)
             
         # Closes all the frames 
         cv2.destroyAllWindows() 
@@ -867,6 +886,7 @@ class mazeGUI:
         
         # Task
         self.runningTask = False
+        self.interTrialStart = 0
         self.interTrialTimeOut = 0
         self.correctInterTrialTimeOut = 3
         self.incorrectInterTrialTimeOut = 6
@@ -901,6 +921,7 @@ class mazeGUI:
         self.dataFrameStartDoor = []
         self.dataFrameStartTime = []
         self.dataFrameEndTime = []
+        self.dataFrameRawTaskStartTime = []
     
         # Update behavior stats in GUI
         self.updateBehaviorStats()
@@ -925,9 +946,6 @@ class mazeGUI:
         
         if boardAvailable is True:
         
-            # Prepare directory to save data
-            Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
-            
             # Update task parameters
             self.updateTrialParameters()
             
@@ -1150,8 +1168,8 @@ class mazeGUI:
     def updateBehaviorStats(self):
         
         # Update behavior stats in GUI
-        behaviorStats = [self.performance, self.biasIndex, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
-        behaviorValues = [self.performanceValue, self.biasIndexValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
+        behaviorStats = [self.performance, self.biasIndex, self.trialID, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
+        behaviorValues = [self.performanceValue, self.biasIndexValue, self.trialValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
         for i in range(len(behaviorValues)):
             behaviorValues[i].config(text = behaviorStats[i])
             behaviorValues[i].update_idletasks()
@@ -1229,7 +1247,7 @@ class mazeGUI:
             self.updateDoors()
             self.runningTask = True
             self.taskTimeStart = time.time()
-            self.interTrialStart = time.time()
+            self.dataFrameRawTaskStartTime.append(self.taskTimeStart)
             print(" ")
             
             # Start task
@@ -1279,7 +1297,8 @@ class mazeGUI:
                 "trial type": self.dataFrameTrialType,
                 "startTime": self.dataFrameStartTime,
                 "endTime": self.dataFrameEndTime,
-                                                      }
+                "rawTaskStartTime": self.dataFrameRawTaskStartTime,
+                                                                   }
         df = pd.DataFrame.from_dict(data, orient = 'index')
         df = df.transpose()
         
@@ -1308,7 +1327,7 @@ class mazeGUI:
                         isNotSaved = False
             print("Experiment data have been saved successfully.")
             print(" ")
-        
+       
     def closeMainWindow(self):
         
         # Kill GUI
