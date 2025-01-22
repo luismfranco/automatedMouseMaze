@@ -1135,7 +1135,7 @@ class mazeGUI:
         # Bias correction and recent quick stats
         if self.trialID >= 10:
             recentDecisions = self.dataFrameDecision[-10:]
-            self.recentBiasIndex = (recentDecisions.count(0) - recentDecisions.count(1)) / len(recentDecisions)
+            self.recentBiasIndex = (recentDecisions.count(1) - recentDecisions.count(0)) / len(recentDecisions)
             self.probabilityTargetLeft = 0.5 + (self.recentBiasIndex/2)
             recentCorrect = self.dataFrameCorrect[-10:]
             self.recentPerformance = recentCorrect.count(1) / len(recentCorrect)
