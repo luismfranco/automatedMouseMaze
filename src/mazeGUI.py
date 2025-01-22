@@ -1294,7 +1294,7 @@ class mazeGUI:
                 "target": self.dataFrameTarget,
                 "decision": self.dataFrameDecision,
                 "correct": self.dataFrameCorrect,
-                "trial type": self.dataFrameTrialType,
+                "trialType": self.dataFrameTrialType,
                 "startTime": self.dataFrameStartTime,
                 "endTime": self.dataFrameEndTime,
                 "rawTaskStartTime": self.dataFrameRawTaskStartTime,
