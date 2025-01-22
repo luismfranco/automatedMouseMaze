@@ -1084,7 +1084,7 @@ class mazeGUI:
     def initializeUpcomingTrial(self):
         
         # Target for upcoming trial
-        self.targetLocation = np.random.choice([0,1], p = [1-self.probabilityTargetLeft, self.probabilityTargetLeft])
+        self.targetLocation = np.random.choice([0,1], p = [self.probabilityTargetLeft, 1-self.probabilityTargetLeft])
         
         # Upcoming viual stimulus
         self.visualStimulus.initializeStimulus(target = self.targetLocation)
