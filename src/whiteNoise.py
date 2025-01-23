@@ -103,7 +103,8 @@ class createWhiteNoise:
         # Random seed based on the current clock
         currentTime = datetime.now()
         seed = int(sum(100 * np.array([currentTime.hour, currentTime.minute, currentTime.second])))
-        np.random.seed(seed)
+        # np.random.seed(seed)
+        self.whiteNoiseRNG = np.random.default_rng(seed) 
         
         # Screen properties
         screenWidthPixels = screenSize[0]       # Screen width in pixels
@@ -161,10 +162,11 @@ class createWhiteNoise:
         sig = np.ones_like(mu)
         
         # Assign values to inverseFFT within the defined ranges
-        inverseFFT[spaceRange, spaceRange, temporalRange] = (frequencySpectrum * np.random.normal(mu, sig) *
-                                                             np.exp(2j * np.pi * np.random.rand(spaceRange.stop - spaceRange.start,
-                                                                                                spaceRange.stop - spaceRange.start,
-                                                                                                temporalRange.stop - temporalRange.start)))
+        inverseFFT[spaceRange, spaceRange, temporalRange] = (frequencySpectrum * self.whiteNoiseRNG.normal(mu, sig) *
+                                                             np.exp(2j * np.pi * self.whiteNoiseRNG.random(size=(spaceRange.stop - spaceRange.start,
+                                                                                                                 spaceRange.stop - spaceRange.start,
+                                                                                                                 temporalRange.stop - temporalRange.start))))
+
         del frequencySpectrum, mu, sig, 
         
         # Shift and invert FFT to get real image values

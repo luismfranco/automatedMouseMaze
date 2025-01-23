@@ -919,6 +919,7 @@ class mazeGUI:
         self.dataFrameCorrect = []
         self.dataFrameTrialType = []
         self.dataFrameStartDoor = []
+        self.dataFrameLeftProbability = []
         self.dataFrameStartTime = []
         self.dataFrameEndTime = []
         self.dataFrameRawTaskStartTime = []
@@ -1131,6 +1132,7 @@ class mazeGUI:
             self.dataFrameCorrect.append(1)
         elif self.trialType == 2 or self.trialType == 3:
             self.dataFrameCorrect.append(0)
+        self.dataFrameLeftProbability.append(self.probabilityTargetLeft)
         
         # Bias correction and recent quick stats
         if self.trialID >= 10:
@@ -1291,6 +1293,7 @@ class mazeGUI:
         data = {
                 "trial": self.dataFrameTrial,
                 "startDoor": self.dataFrameStartDoor,
+                "targetLeftProbability": self.dataFrameLeftProbability,
                 "target": self.dataFrameTarget,
                 "decision": self.dataFrameDecision,
                 "correct": self.dataFrameCorrect,
