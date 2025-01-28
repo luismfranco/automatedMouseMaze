@@ -346,8 +346,8 @@ class mazeGUI:
         """
         
         # Frame rate
-        frameRate = 60                                       # True frame rate must estimated. Delay caused by other computations in the code
-        self.cameraTimeBetweenFrames = int(1000/frameRate)   # miliseconds betweem frames
+        frameRate = 100                                  # (Hz). True frame rate must estimated. Delays caused by other computations in the code, and camera limitations
+        self.cameraTimeBetweenFrames = 1000/frameRate    # miliseconds betweem frames
         
         # Booleans for buttons
         self.camerasAreOn = False
@@ -665,10 +665,14 @@ class mazeGUI:
             self.cameraWindow = tk.Toplevel()
             self.cameraWindow.title("Cameras")
             
-            # Create camera objects
-            self.cameraTimeStamps = []
+            # Initialize camera objects
             self.eyeCamera = cv2.VideoCapture(0) 
             self.worldCamera = cv2.VideoCapture(1) 
+            self.cameraTimeStamps = []
+            self.eyeCamRet = None
+            self.worldCamRet = None
+            self.eyeCamFrame = None
+            self.worldCamFrame = None
             self.camerasAreOn = True
             self.okToSaveVideoFiles = False
             self.saveVideo = False
@@ -691,6 +695,8 @@ class mazeGUI:
             # Canvas
             self.canvas = tk.Canvas(self.cameraWindow, width = eyeCamSize[0], height = eyeCamSize[1] + worldCamSize[1])
             self.canvas.pack()
+            self.combinedFrame = None
+            self.canvasImage = self.canvas.create_image(0, 0, image = self.combinedFrame, anchor = tk.NW)
     
             # Window
             windowWidth = eyeCamSize[0]
@@ -799,25 +805,26 @@ class mazeGUI:
         
         if self.camerasAreOn == True:
         
-            # Grab frame
-            eyeCamRet, eyeCamFrame = self.eyeCamera.read()
-            worldCamRet, worldCamFrame = self.worldCamera.read()
-            self.cameraTimeStamps.append(time.time())
-            
-            if eyeCamRet == True or worldCamRet == True:
+                # Grab frame
+                self.eyeCamRet, self.eyeCamFrame = self.eyeCamera.read()
+                self.worldCamRet, self.worldCamFrame = self.worldCamera.read()
+                self.cameraTimeStamps.append(time.time())
+                self.worldCamFrame = cv2.rotate(self.worldCamFrame, cv2.ROTATE_180)
                 
-                # Save frame to video file
-                if self.saveVideo == True:
-                    self.eyeCameraVideo.write(eyeCamFrame)
-                    self.worldCameraVideo.write(worldCamFrame)
-                
-                # Update frame to display
-                combinedFrame = cv2.vconcat([worldCamFrame, eyeCamFrame])
-                self.combinedFrame = ImageTk.PhotoImage(image = Image.fromarray(cv2.cvtColor(combinedFrame, cv2.COLOR_BGR2RGB)))
-                self.canvas.create_image(0, 0, image = self.combinedFrame, anchor = tk.NW)
-                
-            # Loop
-            self.cameraWindow.after(self.cameraTimeBetweenFrames, self.updateCameras)
+                if self.eyeCamRet == True or self.worldCamRet == True:
+                    
+                    # Save frame to video file
+                    if self.saveVideo == True:
+                        self.eyeCameraVideo.write(self.eyeCamFrame)
+                        self.worldCameraVideo.write(self.worldCamFrame)
+                    
+                    # Update frame to display
+                    self.combinedFrame = cv2.vconcat([self.worldCamFrame, self.eyeCamFrame])
+                    self.combinedFrame = ImageTk.PhotoImage(image = Image.fromarray(cv2.cvtColor(self.combinedFrame, cv2.COLOR_BGR2RGB)))
+                    self.canvas.itemconfig(self.canvasImage, image = self.combinedFrame)
+                    
+                # Loop
+                self.cameraWindow.after(int(self.cameraTimeBetweenFrames), self.updateCameras)
         
     def closeCameras(self):
         
@@ -889,7 +896,7 @@ class mazeGUI:
         self.interTrialStart = 0
         self.interTrialTimeOut = 0
         self.correctInterTrialTimeOut = 3
-        self.incorrectInterTrialTimeOut = 6
+        self.incorrectInterTrialTimeOut = 10
         self.probabilityTargetLeft = 0.5
         
         # Behavior stats
@@ -1092,10 +1099,10 @@ class mazeGUI:
         
         # Reward for upcoming trial
         if self.correctStreak < len(self.rewardStreak):
-            self.rewardTime = self.rewardStreak[self.correctStreak] / 1000 # in ms
+            self.rewardTime = self.rewardStreak[self.correctStreak] / 1000 # in s
             self.rewardSize = self.rewardAmounts[self.correctStreak] # in μL
         else:
-            self.rewardTime = self.rewardStreak[-1] / 1000 # in ms
+            self.rewardTime = self.rewardStreak[-1] / 1000 # in s
             self.rewardSize = self.rewardAmounts[-1] # in μL
             
     def startTrial(self):
@@ -1137,8 +1144,8 @@ class mazeGUI:
         # Bias correction and recent quick stats
         if self.trialID >= 10:
             recentDecisions = self.dataFrameDecision[-10:]
-            self.recentBiasIndex = (recentDecisions.count(1) - recentDecisions.count(0)) / len(recentDecisions)
-            self.probabilityTargetLeft = 0.5 + (self.recentBiasIndex/2)
+            self.recentBiasIndex = (recentDecisions.count(0) - recentDecisions.count(1)) / len(recentDecisions)
+            self.probabilityTargetLeft = 0.5 - (self.recentBiasIndex/2)
             recentCorrect = self.dataFrameCorrect[-10:]
             self.recentPerformance = recentCorrect.count(1) / len(recentCorrect)
         
