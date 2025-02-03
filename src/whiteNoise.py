@@ -6,7 +6,6 @@ Modules
 import cv2
 import numpy as np
 import time
-from datetime import datetime
 from scipy.fftpack import ifftn, ifftshift
 
 
@@ -38,24 +37,33 @@ class whiteNoise:
         # Type of stimulus
         self.leftTarget = 'static'
         self.rightTarget = 'dynamic'
+        self.staticNoise = False
         
         # Stimulus
         self.showVisualStimulus = False
+        self.maskedStimulus = False
         self.stimulusFrameRate = 30     # Hz
+        self.whiteNoiseRNG = np.random.default_rng(seed = None) 
         
     def initializeStimulus(self, **kwargs):
         
-        # Initialize stimulus
+        # Initialize white noise object
         self.targetLocation = kwargs['target']
         if self.targetLocation == 0:
             self.target = self.leftTarget
             duration = 10
-            whiteNoise = createWhiteNoise(duration, self.screenSize, self.stimulusFrameRate)
+            whiteNoise = createWhiteNoise(duration, self.targetLocation, self.screenSize, self.stimulusFrameRate, self.maskedStimulus, self.whiteNoiseRNG)
         elif self.targetLocation == 1:
             self.target = self.rightTarget
-            duration = 25
-            whiteNoise = createWhiteNoise(duration, self.screenSize, self.stimulusFrameRate)
+            duration = 10
+            whiteNoise = createWhiteNoise(duration, self.targetLocation, self.screenSize, self.stimulusFrameRate, self.maskedStimulus, self.whiteNoiseRNG)
+        
+        # Calculate white noise stimulus
         self.whiteNoiseStimulus = whiteNoise.whiteNoise()
+        
+        # Replace static noise for solid color
+        if self.staticNoise == False and self.targetLocation == 0:
+            self.whiteNoiseStimulus = whiteNoise.solidColorImage()
         
     def startStimulus(self, **kwargs):
         
@@ -98,13 +106,10 @@ Create White Noise
 
 class createWhiteNoise:
     
-    def __init__(self, duration, screenSize, frameRate):
+    def __init__(self, duration, targetLocation, screenSize, frameRate, maskedStimulus, whiteNoiseRNG):
 
-        # Random seed based on the current clock
-        currentTime = datetime.now()
-        seed = int(sum(100 * np.array([currentTime.hour, currentTime.minute, currentTime.second])))
-        # np.random.seed(seed)
-        self.whiteNoiseRNG = np.random.default_rng(seed) 
+        # RGN for white noise
+        self.whiteNoiseRNG = whiteNoiseRNG
         
         # Screen properties
         screenWidthPixels = screenSize[0]       # Screen width in pixels
@@ -112,12 +117,13 @@ class createWhiteNoise:
         screenDistance = 10                     # Distance in cm
         
         # Stimulus parameters
+        self.targetLocation = targetLocation    # Static or Dynamic
+        self.maskedStimulus = maskedStimulus    # Masked stimulus
         self.binarize = 0                       # Default value for binarize
-        # movtype = 0                           # Default value for movtype
         self.imageSize = 256                    # Size in pixels
         imageMagnification = 4                  # Magnification
         maximumSpatialFrequency = 0.12          # Spatial frequency cutoff (cpd)
-        maximumTemporalFrequency = 5.0            # Temporal frequency cutoff
+        maximumTemporalFrequency = 5.0          # Temporal frequency cutoff
         self.contrastSigma = 0.5                # One-sigma value for contrast
 
         # Derived parameters
@@ -162,10 +168,16 @@ class createWhiteNoise:
         sig = np.ones_like(mu)
         
         # Assign values to inverseFFT within the defined ranges
-        inverseFFT[spaceRange, spaceRange, temporalRange] = (frequencySpectrum * self.whiteNoiseRNG.normal(mu, sig) *
-                                                             np.exp(2j * np.pi * self.whiteNoiseRNG.random(size=(spaceRange.stop - spaceRange.start,
-                                                                                                                 spaceRange.stop - spaceRange.start,
-                                                                                                                 temporalRange.stop - temporalRange.start))))
+        inverseFFT[spaceRange, spaceRange, temporalRange] = (frequencySpectrum * 
+                                                             self.whiteNoiseRNG.normal(mu, sig) * 
+                                                             np.exp(2j * np.pi * self.whiteNoiseRNG.random(size = (spaceRange.stop - spaceRange.start,
+                                                                                                                   spaceRange.stop - spaceRange.start,
+                                                                                                                   temporalRange.stop - temporalRange.start
+                                                                                                                   )
+                                                                                                           )
+                                                                    )
+                                                             )
+                                                             
 
         del frequencySpectrum, mu, sig, 
         
@@ -189,10 +201,39 @@ class createWhiteNoise:
             
         return whiteNoiseMovie
             
+    def circularMask(self, whiteNoiseMovie):
+        
+        mask = np.zeros((self.imageSize, self.imageSize), dtype = np.uint8)
+        radius = int(self.imageSize / 5)
+        y = int(self.imageSize / 2)
+        if self.targetLocation == 0:
+            x = int(self.imageSize * (1/3))
+        elif self.targetLocation == 1:
+            x = int(self.imageSize * (2/3))
+        mask = cv2.circle(mask, (x, y), radius, 255, -1)
+        background = np.full((self.imageSize, self.imageSize), 255, dtype = np.uint8)
+        background = cv2.bitwise_and(background, cv2.bitwise_not(mask))
+        
+        for i in range(whiteNoiseMovie.shape[2]):
+            whiteNoiseMovie[:, :, i] = cv2.bitwise_and(whiteNoiseMovie[:, :, i], mask)
+            whiteNoiseMovie[:, :, i] = cv2.bitwise_or(whiteNoiseMovie[:, :, i], background)
+        
+        return whiteNoiseMovie
+    
+    def solidColorImage(self):
+        
+        image = np.full((self.imageSize, self.imageSize, 1), 128, dtype = np.uint8)
+        if self.maskedStimulus == True:
+            image = createWhiteNoise.circularMask(self, image)
+            
+        return image
+    
     def whiteNoise(self):
         
         spaceRange, temporalRange, frequencySpectrum = createWhiteNoise.frequencySpectrum(self)
         whiteNoiseMovie = createWhiteNoise.reconstructImage(self, spaceRange, temporalRange, frequencySpectrum)
+        if self.maskedStimulus == True:
+            whiteNoiseMovie = createWhiteNoise.circularMask(self, whiteNoiseMovie)
         
         return whiteNoiseMovie
         

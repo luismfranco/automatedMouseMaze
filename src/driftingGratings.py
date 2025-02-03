@@ -36,10 +36,16 @@ class driftingGratings:
             self.target = self.leftTarget
         elif self.targetLocation == 1:
             self.target = self.rightTarget
-        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "raisedCos", size = 15, pos = [0,0], sf = 0.25, ori = self.target)
+        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "raisedCos", size = 15, pos = [0, 0], sf = 0.25, ori = self.target)
         
     def startStimulus(self, **kwargs):
         
+        # Stimulus offset
+        if self.target == self.rightTarget:
+            self.grating.setPos([2.5,0])
+        elif self.target == self.leftTarget:
+            self.grating.setPos([-2.5,0])
+            
         # Start stimulus
         self.showVisualStimulus = kwargs['display']
         self.grating.setOpacity(1)
@@ -51,10 +57,8 @@ class driftingGratings:
         if self.showVisualStimulus is True:
             if self.target == self.rightTarget:
                 self.grating.setPhase(0.025, '+')  # move phase by 0.05 of a cycle
-                self.grating.setPos([7,0])
             elif self.target == self.leftTarget:
                 self.grating.setPhase(0.025, '-')  # move phase by 0.05 of a cycle
-                self.grating.setPos([-7,0])
             self.grating.draw()
             self.stimulusWindow.update()
             

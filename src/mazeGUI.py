@@ -273,6 +273,9 @@ class mazeGUI:
         self.left = 0
         self.right = 0
         
+        # RNG for randomizing trials
+        self.mazeRNG = np.random.default_rng(seed = None)
+        
         # Reward
         self.estimatedReward = 0
         self.rewardStreak = [32, 36, 41, 45, 50, 54] # in ms
@@ -1043,7 +1046,11 @@ class mazeGUI:
         
         boardAvailable = self.checkIfPortAvailable()
         if boardAvailable is False:
-            self.resetTask()
+            if self.runningTask is True:
+                print("Task is currently running. Cancelling task initialization is no longer available.")
+            elif self.runningTask is False:
+                self.resetTask()
+                print("Task initialization has been cancelled.")
         elif boardAvailable is True:
             print("No task has been initialized yet.")
             
@@ -1092,7 +1099,7 @@ class mazeGUI:
     def initializeUpcomingTrial(self):
         
         # Target for upcoming trial
-        self.targetLocation = np.random.choice([0,1], p = [self.probabilityTargetLeft, 1-self.probabilityTargetLeft])
+        self.targetLocation = self.mazeRNG.choice([0,1], p = [self.probabilityTargetLeft, 1-self.probabilityTargetLeft])
         
         # Upcoming viual stimulus
         self.visualStimulus.initializeStimulus(target = self.targetLocation)
