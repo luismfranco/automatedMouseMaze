@@ -37,7 +37,7 @@ class whiteNoise:
         # Type of stimulus
         self.leftTarget = 'static'
         self.rightTarget = 'dynamic'
-        self.staticNoise = False
+        self.staticNoise = True
         
         # Stimulus
         self.showVisualStimulus = False
@@ -55,13 +55,14 @@ class whiteNoise:
             whiteNoise = createWhiteNoise(duration, self.targetLocation, self.screenSize, self.stimulusFrameRate, self.maskedStimulus, self.whiteNoiseRNG)
         elif self.targetLocation == 1:
             self.target = self.rightTarget
-            duration = 10
+            duration = 25
             whiteNoise = createWhiteNoise(duration, self.targetLocation, self.screenSize, self.stimulusFrameRate, self.maskedStimulus, self.whiteNoiseRNG)
         
         # Calculate white noise stimulus
-        self.whiteNoiseStimulus = whiteNoise.whiteNoise()
+        if self.staticNoise == True:
+            self.whiteNoiseStimulus = whiteNoise.whiteNoise()
         
-        # Replace static noise for solid color
+        # Solid color screen
         if self.staticNoise == False and self.targetLocation == 0:
             self.whiteNoiseStimulus = whiteNoise.solidColorImage()
         
@@ -205,11 +206,11 @@ class createWhiteNoise:
         
         mask = np.zeros((self.imageSize, self.imageSize), dtype = np.uint8)
         radius = int(self.imageSize / 5)
-        y = int(self.imageSize / 2)
+        y = int(self.imageSize * (2/3))
         if self.targetLocation == 0:
-            x = int(self.imageSize * (1/3))
+            x = int(self.imageSize * (1/4))
         elif self.targetLocation == 1:
-            x = int(self.imageSize * (2/3))
+            x = int(self.imageSize * (3/4))
         mask = cv2.circle(mask, (x, y), radius, 255, -1)
         background = np.full((self.imageSize, self.imageSize), 255, dtype = np.uint8)
         background = cv2.bitwise_and(background, cv2.bitwise_not(mask))

@@ -602,14 +602,16 @@ class mazeGUI:
                     self.startDoor = "right"
         elif self.mazeState == 2:
             self.closeValve()
-            if self.reward == False:
+            if self.reward == False and self.initializeTrial == True:
                 self.initializeUpcomingTrial()
+                self.initializeTrial = False
             currentTime = time.time()
             if currentTime > self.interTrialStart + self.interTrialTimeOut:
                 if self.startDoor == "left":
                     self.mazeState = 3
                 elif self.startDoor == "right":
                     self.mazeState = 4
+                self.initializeTrial = True
         elif self.mazeState == 3:
             if self.LS is False:
                 self.mazeState = 1
@@ -896,6 +898,7 @@ class mazeGUI:
         
         # Task
         self.runningTask = False
+        self.initializeTrial = True
         self.interTrialStart = 0
         self.interTrialTimeOut = 0
         self.correctInterTrialTimeOut = 3
