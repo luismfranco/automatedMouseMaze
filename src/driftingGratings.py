@@ -42,9 +42,9 @@ class driftingGratings:
         
         # Stimulus offset
         if self.target == self.rightTarget:
-            self.grating.setPos([2.5,0])
+            self.grating.setPos([5,0])
         elif self.target == self.leftTarget:
-            self.grating.setPos([-2.5,0])
+            self.grating.setPos([-5,0])
             
         # Start stimulus
         self.showVisualStimulus = kwargs['display']

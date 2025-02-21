@@ -549,10 +549,10 @@ class mazeGUI:
             self.board.digital[self.rightStartDoor].write(1)
             self.leftStartLabel.config(bg = 'pink', text = "closed")
             self.rightStartLabel.config(bg = 'pink', text = "closed")
-            if not self.blockIncorrectDoor == 1 and self.targetLocation == 0:
+            if self.blockIncorrectDoor == 1 and self.targetLocation == 0:
                 self.board.digital[self.leftDecisionDoor].write(0)
                 self.leftDecisionLabel.config(bg = '#99D492', text = "open")
-            elif not self.blockIncorrectDoor == 1 and self.targetLocation == 1:
+            elif self.blockIncorrectDoor == 1 and self.targetLocation == 1:
                 self.board.digital[self.rightDecisionDoor].write(0)
                 self.rightDecisionLabel.config(bg = '#99D492', text = "open")
             else:
@@ -1047,7 +1047,8 @@ class mazeGUI:
             if self.taskName in self.taskList and not self.taskName == "valveCalibration":
                 
                 # Disable task parameter boxes
-                entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+                entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.forcedDecisionEntry,
+                              self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
                 for i in range(len(entryBoxes)):
                     entryBoxes[i].config(state = 'disabled')
                     entryBoxes[i].update_idletasks()
@@ -1104,7 +1105,8 @@ class mazeGUI:
             self.readyButton.update_idletasks()
         
         # Reactivate task parameter boxes
-        entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+        entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.forcedDecisionEntry,
+                      self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
         for i in range(len(entryBoxes)):
             entryBoxes[i].config(state = 'normal')
             entryBoxes[i].update_idletasks()
@@ -1123,11 +1125,17 @@ class mazeGUI:
         
         # Target for upcoming trial
         self.targetLocation = self.mazeRNG.choice([0,1], p = [self.probabilityTargetLeft, 1-self.probabilityTargetLeft])
+        
         # Forced decision for upcoming trial
         if self.forcedDecisions > 0 and self.forcedDecisions <= 1:
             self.blockIncorrectDoor = self.forcedDecisionRNG.choice([0,1], p = [1-self.forcedDecisions, self.forcedDecisions])
+            if self.blockIncorrectDoor == 1:
+                self.forcedDecisionLabel = "[forced decision]"
+            else:
+                self.forcedDecisionLabel = " "
         else:
             self.blockIncorrectDoor = 0
+            self.forcedDecisionLabel = " "
         
         # Upcoming viual stimulus
         self.visualStimulus.initializeStimulus(target = self.targetLocation)
@@ -1187,13 +1195,13 @@ class mazeGUI:
         
         # Display stats on terminal
         if self.trialType == 1:
-            print("          >>> Correct Left <<<")
+            print("          >>> Correct Left <<<   " + self.forcedDecisionLabel)
         elif self.trialType == 2:
-            print("          --- Incorrect Left ---")
+            print("          --- Incorrect Left ---   " + self.forcedDecisionLabel)
         elif self.trialType == 3:
-            print("          --- Incorrect Right ---")
+            print("          --- Incorrect Right ---   " + self.forcedDecisionLabel)
         elif self.trialType == 4:
-            print("          >>> Correct Right <<<")
+            print("          >>> Correct Right <<<   " + self.forcedDecisionLabel)
         if self.trialID <= 10:
             print("              Performance = ", self.performance)
             print("              Bias index = ", self.biasIndex)
