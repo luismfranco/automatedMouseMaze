@@ -193,13 +193,10 @@ class mazeGUI:
 
         # Forced decisions checkBox
         self.forcedDecisionRNG = np.random.default_rng(seed = None)
-        self.forcedDecisions = 0
-        self.forcedDecisionEntry = tk.Entry(frame22, font = 8, width = 14) #, fg = 'grey')
+        self.forcedDecisions = 0   # probability; float between 0 and 1
+        self.forcedDecisionEntry = tk.Entry(frame22, font = 8, width = 14)
         self.forcedDecisionEntry.insert(0, self.forcedDecisions)
         self.forcedDecisionEntry.grid(row = 6, column = 1, sticky = 'w')
-        # self.forcedDecisionEntry.bind('<Enter>', lambda e: self.forcedDecisionEntry.delete(0, tk.END))
-        # self.forcedDecisionEntry.bind('<Enter>', lambda e: self.forcedDecisionEntry.config(fg = 'Black'))
-        # self.forcedDecisionEntry.bind('<Leave>', lambda e: self.forcedDecisionEntry.config(fg = 'grey'))
 
         # Sound for correct trials
         self.Fs = 44100
@@ -549,15 +546,10 @@ class mazeGUI:
             self.board.digital[self.rightStartDoor].write(1)
             self.leftStartLabel.config(bg = 'pink', text = "closed")
             self.rightStartLabel.config(bg = 'pink', text = "closed")
-            if self.blockIncorrectDoor == 1 and self.targetLocation == 0:
+            if (self.blockIncorrectDoor == 1 and self.targetLocation == 0) or self.blockIncorrectDoor == 0:
                 self.board.digital[self.leftDecisionDoor].write(0)
                 self.leftDecisionLabel.config(bg = '#99D492', text = "open")
-            elif self.blockIncorrectDoor == 1 and self.targetLocation == 1:
-                self.board.digital[self.rightDecisionDoor].write(0)
-                self.rightDecisionLabel.config(bg = '#99D492', text = "open")
-            else:
-                self.board.digital[self.leftDecisionDoor].write(0)
-                self.leftDecisionLabel.config(bg = '#99D492', text = "open")
+            if (self.blockIncorrectDoor == 1 and self.targetLocation == 1) or self.blockIncorrectDoor == 0:
                 self.board.digital[self.rightDecisionDoor].write(0)
                 self.rightDecisionLabel.config(bg = '#99D492', text = "open")
                 
