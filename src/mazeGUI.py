@@ -59,8 +59,8 @@ class mazeGUI:
         # Geometry
         self.mainWindow = mainWindow
         self.mainWindow.title('Automated Mouse Maze')
-        windowWidth = 925
-        windowHeight = 500
+        windowWidth = 1025
+        windowHeight = 550
         screenWidth = self.mainWindow.winfo_screenwidth()
         screenHeight = self.mainWindow.winfo_screenheight()
         x = (screenWidth/1.5) - (windowWidth/2)
@@ -70,25 +70,25 @@ class mazeGUI:
         buttonFont = tkFont.Font(family = 'helvetica', size = 12)
         
         # Frames
-        frame1 = tk.Frame(self.mainWindow, width = 225, height = 500) #, bg = 'green')
+        frame1 = tk.Frame(self.mainWindow, width = 225, height = 550) #, bg = 'green')
         frame1.grid(row = 0, rowspan = 3, column = 0, sticky = 'news')
-        frame11 = tk.Frame(frame1, width = 225, height = 175)
-        frame11.place(anchor = "c", relx = 0.5, rely = 0.175)
-        frame12 = tk.Frame(frame1, width = 225, height = 325)
-        frame12.place(anchor = "c", relx = 0.5, rely = 0.6)
-        frame2 = tk.Frame(self.mainWindow, width = 500, height = 350) #, bg = 'red')
+        frame11 = tk.Frame(frame1, width = 225, height = 200)
+        frame11.place(anchor = "c", relx = 0.5, rely = 0.2)
+        frame12 = tk.Frame(frame1, width = 225, height = 350)
+        frame12.place(anchor = "c", relx = 0.5, rely = 0.65)
+        frame2 = tk.Frame(self.mainWindow, width = 600, height = 400) #, bg = 'red')
         frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
-        frame21 = tk.Frame(frame2, width = 500, height = 150)
-        frame21.place(anchor = "c", relx = 0.5, rely = 0.3)
-        frame22 = tk.Frame(frame2, width = 500, height = 200)
+        frame21 = tk.Frame(frame2, width = 600, height = 150)
+        frame21.place(anchor = "c", relx = 0.5, rely = 0.275)
+        frame22 = tk.Frame(frame2, width = 600, height = 250)
         frame22.place(anchor = "c", relx = 0.5, rely = 0.75)
         frame3 = tk.Frame(self.mainWindow, width = 500, height = 150) #, bg = 'blue')
         frame3.grid(row = 2, column = 1, sticky = 'news')
-        frame31 = tk.Frame(frame3, width = 500, height = 150)
+        frame31 = tk.Frame(frame3, width = 600, height = 150)
         frame31.place(anchor = "c", relx = 0.5, rely = 0.5)
-        frame4 = tk.Frame(self.mainWindow, width = 200, height = 500) #, bg = 'green')
+        frame4 = tk.Frame(self.mainWindow, width = 200, height = 550) #, bg = 'green')
         frame4.grid(row = 0, rowspan = 3, column = 2, sticky = 'news')
-        frame41 = tk.Frame(frame4, width = 200, height = 500)
+        frame41 = tk.Frame(frame4, width = 200, height = 550)
         frame41.place(anchor = "c", relx = 0.5, rely = 0.5)
         
         # Logo
@@ -152,25 +152,25 @@ class mazeGUI:
         
         # Parameters labels
         tk.Label(frame22, font = buttonFont, text = "Task Parameters", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 4 , padx = 10, pady = 10, sticky = 'we')
-        entryLabels0 = ["trials", "duration", "task", "startDoor", "cues"]
-        entryLabels2 = ["rig", "animal", "block", "path", "autoSave", " "]
+        entryLabels0 = ["trials", "duration", "task", "startDoor", "cues", "forcedChoice"]
+        entryLabels2 = ["rig", "animal", "block", " ", "path", "autoSave"]
         nrow = 1
         for i in range(len(entryLabels0)):
-            tk.Label(frame22, font = buttonFont, text = entryLabels0[i], width = 8, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
-            tk.Label(frame22, font = buttonFont, text = entryLabels2[i], width = 8, anchor  = 'e').grid(row = nrow, column = 2, padx = 10)
+            tk.Label(frame22, font = buttonFont, text = entryLabels0[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
+            tk.Label(frame22, font = buttonFont, text = entryLabels2[i], width = 10, anchor  = 'e').grid(row = nrow, column = 2, padx = 10)
             nrow += 1
         
         # Maximum number of trials entry
         self.maximumTrialNumber = 200
         self.trialsEntry = tk.Entry(frame22, font = 8, width = 14)
         self.trialsEntry.insert(0, self.maximumTrialNumber)
-        self.trialsEntry.grid(row = 1, column = 1, sticky ='w')
+        self.trialsEntry.grid(row = 1, column = 1, sticky = 'w')
         
         # Time limit entry
         self.timeout = 60 * 60 # in seconds
         self.timeEntry = tk.Entry(frame22, font = 8, width = 14)
         self.timeEntry.insert(0, self.timeout)
-        self.timeEntry.grid(row = 2, column = 1, sticky ='w')
+        self.timeEntry.grid(row = 2, column = 1, sticky = 'w')
         
         # Task type list
         self.taskList = ["driftingGratings", "motionSelectivity", "whiteNoise", "objectDiscrimination", "valveCalibration"]
@@ -184,12 +184,22 @@ class mazeGUI:
         self.startList = ["left", "right"]   # 0 = left, 1 = right
         self.startBox = ttk.Combobox(frame22, width = 12, font = 8, state = 'readonly', values = self.startList)
         self.startBox.current(0)
-        self.startBox.grid(row = 4, column = 1, sticky ='w')
+        self.startBox.grid(row = 4, column = 1, sticky = 'w')
         
         # Cues checkBox
         self.useTrialCues = tk.BooleanVar(value = True)
         self.cuesBox = tk.Checkbutton(frame22, text = "sounds + LEDs", font = 8, variable = self.useTrialCues, onvalue = True, offvalue = False)
         self.cuesBox.grid(row = 5, column = 1, sticky = 'w')
+
+        # Forced decisions checkBox
+        self.forcedDecisionRNG = np.random.default_rng(seed = None)
+        self.forcedDecisions = 0
+        self.forcedDecisionEntry = tk.Entry(frame22, font = 8, width = 14) #, fg = 'grey')
+        self.forcedDecisionEntry.insert(0, self.forcedDecisions)
+        self.forcedDecisionEntry.grid(row = 6, column = 1, sticky = 'w')
+        # self.forcedDecisionEntry.bind('<Enter>', lambda e: self.forcedDecisionEntry.delete(0, tk.END))
+        # self.forcedDecisionEntry.bind('<Enter>', lambda e: self.forcedDecisionEntry.config(fg = 'Black'))
+        # self.forcedDecisionEntry.bind('<Leave>', lambda e: self.forcedDecisionEntry.config(fg = 'grey'))
 
         # Sound for correct trials
         self.Fs = 44100
@@ -223,7 +233,7 @@ class mazeGUI:
         self.rigEntry.grid(row = 1, column = 3, sticky ='w')
         
         # Animal ID entry
-        self.animalID = "J000_NC"
+        self.animalID = "J000NC"
         self.animalEntry = tk.Entry(frame22, font = 8, width = 14)
         self.animalEntry.insert(0, self.animalID)
         self.animalEntry.grid(row = 2, column = 3, sticky = 'w')
@@ -240,7 +250,7 @@ class mazeGUI:
         self.pathForSavingData = "C:\\Users\\" + userName + "\\Documents\\automatedMouseMaze\\Data\\" + self.currentDate + "\\"
         self.pathEntry = tk.Entry(frame22, font = 8, width = 14)
         self.pathEntry.insert(0, self.pathForSavingData)
-        self.pathEntry.grid(row = 4, column = 3, sticky ='w')
+        self.pathEntry.grid(row = 5, column = 3, sticky ='w')
         
         # Prepare directory to save data
         Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
@@ -248,7 +258,7 @@ class mazeGUI:
         # AutoSave checkBox
         self.autoSaveData = tk.BooleanVar(value = True)
         self.autoSaveBox = tk.Checkbutton(frame22, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
-        self.autoSaveBox.grid(row = 5, column = 3, sticky = 'w')
+        self.autoSaveBox.grid(row = 6, column = 3, sticky = 'w')
         
         
         """
@@ -537,13 +547,20 @@ class mazeGUI:
             self.mazeStateValue.config(text = 1)
             self.board.digital[self.leftStartDoor].write(1)
             self.board.digital[self.rightStartDoor].write(1)
-            self.board.digital[self.leftDecisionDoor].write(0)
-            self.board.digital[self.rightDecisionDoor].write(0)
             self.leftStartLabel.config(bg = 'pink', text = "closed")
             self.rightStartLabel.config(bg = 'pink', text = "closed")
-            self.leftDecisionLabel.config(bg = '#99D492', text = "open")
-            self.rightDecisionLabel.config(bg = '#99D492', text = "open")
-            
+            if self.blockIncorrectDoor == 1 and self.targetLocation == 0:
+                self.board.digital[self.leftDecisionDoor].write(0)
+                self.leftDecisionLabel.config(bg = '#99D492', text = "open")
+            elif self.blockIncorrectDoor == 1 and self.targetLocation == 1:
+                self.board.digital[self.rightDecisionDoor].write(0)
+                self.rightDecisionLabel.config(bg = '#99D492', text = "open")
+            else:
+                self.board.digital[self.leftDecisionDoor].write(0)
+                self.leftDecisionLabel.config(bg = '#99D492', text = "open")
+                self.board.digital[self.rightDecisionDoor].write(0)
+                self.rightDecisionLabel.config(bg = '#99D492', text = "open")
+                
         # After a decision has been recorded
         elif self.mazeState == 2:
             self.mazeStateLabel.config(bg = 'pink', text = "end")
@@ -929,6 +946,7 @@ class mazeGUI:
         self.dataFrameTrial = []
         self.dataFrameTarget = []
         self.dataFrameDecision = []
+        self.datFrameForcedDecision = []
         self.dataFrameCorrect = []
         self.dataFrameTrialType = []
         self.dataFrameStartDoor = []
@@ -948,6 +966,7 @@ class mazeGUI:
         self.taskName = str(self.taskBox.get())
         self.startDoor = str(self.startBox.get())
         self.trialCues = bool(self.useTrialCues.get())
+        self.forcedDecisions = float(self.forcedDecisionEntry.get())
         self.animalID = str(self.animalEntry.get())
         self.rigID = str(self.rigEntry.get())
         self.blockID = str(self.blockEntry.get())
@@ -975,6 +994,7 @@ class mazeGUI:
                 print("          Maximum session time (s):",self.timeout)
                 print("          Start door:",self.startDoor)
                 print("          Use sound cues:",str(self.trialCues).lower())
+                print("          Forced decision probability = ", str(self.forcedDecisions))
                 print("          Animal ID:",self.animalID)
                 print("          Rig ID:",self.rigID)
                 print("          Block ID:",self.blockID)
@@ -1027,7 +1047,8 @@ class mazeGUI:
             if self.taskName in self.taskList and not self.taskName == "valveCalibration":
                 
                 # Disable task parameter boxes
-                entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+                entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.forcedDecisionEntry,
+                              self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
                 for i in range(len(entryBoxes)):
                     entryBoxes[i].config(state = 'disabled')
                     entryBoxes[i].update_idletasks()
@@ -1084,7 +1105,8 @@ class mazeGUI:
             self.readyButton.update_idletasks()
         
         # Reactivate task parameter boxes
-        entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+        entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.forcedDecisionEntry,
+                      self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
         for i in range(len(entryBoxes)):
             entryBoxes[i].config(state = 'normal')
             entryBoxes[i].update_idletasks()
@@ -1103,6 +1125,17 @@ class mazeGUI:
         
         # Target for upcoming trial
         self.targetLocation = self.mazeRNG.choice([0,1], p = [self.probabilityTargetLeft, 1-self.probabilityTargetLeft])
+        
+        # Forced decision for upcoming trial
+        if self.forcedDecisions > 0 and self.forcedDecisions <= 1:
+            self.blockIncorrectDoor = self.forcedDecisionRNG.choice([0,1], p = [1-self.forcedDecisions, self.forcedDecisions])
+            if self.blockIncorrectDoor == 1:
+                self.forcedDecisionLabel = "[forced decision]"
+            else:
+                self.forcedDecisionLabel = " "
+        else:
+            self.blockIncorrectDoor = 0
+            self.forcedDecisionLabel = " "
         
         # Upcoming viual stimulus
         self.visualStimulus.initializeStimulus(target = self.targetLocation)
@@ -1143,6 +1176,7 @@ class mazeGUI:
         
         # Append experiment data to data frame
         self.dataFrameDecision.append(self.lastDecision)
+        self.datFrameForcedDecision.append(self.blockIncorrectDoor)
         self.dataFrameTrialType.append(self.trialType)
         self.dataFrameEndTime.append(time.time() - self.taskTimeStart)
         if self.trialType == 1 or self.trialType == 4:
@@ -1161,13 +1195,13 @@ class mazeGUI:
         
         # Display stats on terminal
         if self.trialType == 1:
-            print("          >>> Correct Left <<<")
+            print("          >>> Correct Left <<<   " + self.forcedDecisionLabel)
         elif self.trialType == 2:
-            print("          --- Incorrect Left ---")
+            print("          --- Incorrect Left ---   " + self.forcedDecisionLabel)
         elif self.trialType == 3:
-            print("          --- Incorrect Right ---")
+            print("          --- Incorrect Right ---   " + self.forcedDecisionLabel)
         elif self.trialType == 4:
-            print("          >>> Correct Right <<<")
+            print("          >>> Correct Right <<<   " + self.forcedDecisionLabel)
         if self.trialID <= 10:
             print("              Performance = ", self.performance)
             print("              Bias index = ", self.biasIndex)
@@ -1313,6 +1347,7 @@ class mazeGUI:
                 "targetLeftProbability": self.dataFrameLeftProbability,
                 "target": self.dataFrameTarget,
                 "decision": self.dataFrameDecision,
+                "forcedChoice": self.datFrameForcedDecision,
                 "correct": self.dataFrameCorrect,
                 "trialType": self.dataFrameTrialType,
                 "startTime": self.dataFrameStartTime,
