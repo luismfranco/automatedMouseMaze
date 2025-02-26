@@ -265,7 +265,7 @@ class mazeGUI:
         
         # Stats labels
         tk.Label(frame12, font = buttonFont, text = "Behavior", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
-        labelList = ["performance", "bias index", "trials", "correct", "incorrect", "left decisions", "right decisions", "reward (μL)"]
+        labelList = ["performance", "bias index", "alternation index", "trials", "correct", "incorrect", "left decisions", "right decisions", "reward (μL)"]
         nrow = 1
         for i in range(len(labelList)):
             tk.Label(frame12, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
@@ -274,6 +274,7 @@ class mazeGUI:
         # Behavior parameters
         self.performance = 0
         self.biasIndex = 0
+        self.alternationIndex = 0
         self.trialID = 0
         self.correct = 0
         self.incorrect = 0
@@ -293,18 +294,20 @@ class mazeGUI:
         self.performanceValue.grid(row = 1, column = 1)
         self.biasIndexValue = tk.Label(frame12, font = buttonFont, text = self.biasIndex)
         self.biasIndexValue.grid(row = 2, column = 1)
+        self.alternationIndexValue = tk.Label(frame12, font = buttonFont, text = self.alternationIndex)
+        self.alternationIndexValue.grid(row = 3, column = 1)
         self.trialValue = tk.Label(frame12, font = buttonFont, text = self.trialID)
-        self.trialValue.grid(row = 3, column = 1)
+        self.trialValue.grid(row = 4, column = 1)
         self.correctValue = tk.Label(frame12, font = buttonFont, text = self.correct)
-        self.correctValue.grid(row = 4, column = 1)
+        self.correctValue.grid(row = 5, column = 1)
         self.incorrectValue = tk.Label(frame12, font = buttonFont, text = self.incorrect)
-        self.incorrectValue.grid(row = 5, column = 1)
+        self.incorrectValue.grid(row = 6, column = 1)
         self.leftValue = tk.Label(frame12, font = buttonFont, text = self.left)
-        self.leftValue.grid(row = 6, column = 1)
+        self.leftValue.grid(row = 7, column = 1)
         self.rightValue = tk.Label(frame12, font = buttonFont, text = self.right)
-        self.rightValue.grid(row = 7, column = 1)
+        self.rightValue.grid(row = 8, column = 1)
         self.rewardValue = tk.Label(frame12, font = buttonFont, text = self.estimatedReward)
-        self.rewardValue.grid(row = 8, column = 1)
+        self.rewardValue.grid(row = 9, column = 1)
         
         
         """
@@ -917,6 +920,7 @@ class mazeGUI:
         # Behavior stats
         self.performance = 0
         self.biasIndex = 0
+        self.alternationIndex = 0
         self.trialID = 0
         self.correct = 0
         self.incorrect = 0
@@ -924,10 +928,12 @@ class mazeGUI:
         self.right = 0
         self.trialType = 0
         self.lastDecision = []
+        self.decisionAlternations = 0
         
         # Recent behavior
-        self.recentBiasIndex = 0
         self.recentPerformance = 0
+        self.recentBiasIndex = 0
+        self.recentAlternationIndex = 0
         
         # Reward
         self.reward = False
@@ -1177,13 +1183,29 @@ class mazeGUI:
             self.dataFrameCorrect.append(0)
         self.dataFrameLeftProbability.append(self.probabilityTargetLeft)
         
-        # Bias correction and recent quick stats
+        # Recent quick stats
+        if self.trialID >= 10:
+            recentCorrect = self.dataFrameCorrect[-10:]
+            self.recentPerformance = recentCorrect.count(1) / len(recentCorrect)
+            
+        # Bias correction
         if self.trialID >= 10:
             recentDecisions = self.dataFrameDecision[-10:]
             self.recentBiasIndex = (recentDecisions.count(0) - recentDecisions.count(1)) / len(recentDecisions)
+            
+        # Alternation correction
+        if self.trialID >= 11:
+            recentDecisions = self.dataFrameDecision[-11:]
+            self.recentAlternationIndex = round(sum(abs(np.diff(recentDecisions))) / len(recentDecisions), 2)
+            
+        # Updated target probability
+        if (abs(self.recentBiasIndex) > self.recentAlternationIndex) and self.trialID >= 10:
             self.probabilityTargetLeft = 0.5 - (self.recentBiasIndex/2)
-            recentCorrect = self.dataFrameCorrect[-10:]
-            self.recentPerformance = recentCorrect.count(1) / len(recentCorrect)
+        elif (self.recentAlternationIndex >= abs(self.recentBiasIndex)) and self.trialID >= 11:
+            if self.lastDecision == 0:
+                self.probabilityTargetLeft = 0.5 + (self.recentAlternationIndex/2)
+            elif self.lastDecision == 1:
+                self.probabilityTargetLeft = 0.5 - (self.recentAlternationIndex/2)
         
         # Display stats on terminal
         if self.trialType == 1:
@@ -1197,9 +1219,12 @@ class mazeGUI:
         if self.trialID <= 10:
             print("              Performance = ", self.performance)
             print("              Bias index = ", self.biasIndex)
+            if self.trialID > 1:
+                print("              Alternation index = ", self.alternationIndex)
         else:
             print("              Performance (recent)", self.recentPerformance, "     Performance (overall) = ", self.performance)
             print("              Bias index (recent) = ", self.recentBiasIndex,"     Bias index (overall) = ", self.biasIndex)
+            print("              Alternation index (recent) = ", self.recentAlternationIndex,"     Alternation index (overall) = ", self.alternationIndex)
         
         # Update behavior stats in GUI
         self.updateBehaviorStats()
@@ -1213,8 +1238,8 @@ class mazeGUI:
     def updateBehaviorStats(self):
         
         # Update behavior stats in GUI
-        behaviorStats = [self.performance, self.biasIndex, self.trialID, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
-        behaviorValues = [self.performanceValue, self.biasIndexValue, self.trialValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
+        behaviorStats = [self.performance, self.biasIndex, self.alternationIndex, self.trialID, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
+        behaviorValues = [self.performanceValue, self.biasIndexValue, self.alternationIndexValue, self.trialValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
         for i in range(len(behaviorValues)):
             behaviorValues[i].config(text = behaviorStats[i])
             behaviorValues[i].update_idletasks()
@@ -1225,6 +1250,11 @@ class mazeGUI:
         # Trial type and outcome
         if self.LD is False:
             self.left += 1
+            if self.trialID > 1:
+                if self.lastDecision == 0:
+                    ...
+                elif self.lastDecision == 1:
+                    self.decisionAlternations += 1
             if self.targetLocation == 0:
                 self.correct += 1
                 # Correct left
@@ -1246,6 +1276,11 @@ class mazeGUI:
                 self.correctStreak = 0
         elif self.RD is False:
             self.right += 1
+            if self.trialID > 1:
+                if self.lastDecision == 0:
+                    self.decisionAlternations += 1
+                elif self.lastDecision == 1:
+                    ...
             if self.targetLocation == 0:
                 self.incorrect += 1
                 # Incorrect right
@@ -1267,8 +1302,10 @@ class mazeGUI:
                 self.correctStreak += 1
                     
         # Quick stats
-        self.performance = round(self.correct / (self.correct + self.incorrect),2)
-        self.biasIndex = round((self.left-self.right) / (self.left+self.right),2)
+        self.performance = round(self.correct / (self.correct + self.incorrect), 2)
+        self.biasIndex = round((self.left-self.right) / (self.left+self.right), 2)
+        if self.trialID > 1:
+            self.alternationIndex = round(self.decisionAlternations / (self.trialID-1), 2)
         
     def runTask(self):
         
