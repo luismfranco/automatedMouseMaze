@@ -60,7 +60,7 @@ class mazeGUI:
         self.mainWindow = mainWindow
         self.mainWindow.title('Automated Mouse Maze')
         windowWidth = 1025
-        windowHeight = 550
+        windowHeight = 600
         screenWidth = self.mainWindow.winfo_screenwidth()
         screenHeight = self.mainWindow.winfo_screenheight()
         x = (screenWidth/1.5) - (windowWidth/2)
@@ -70,25 +70,27 @@ class mazeGUI:
         buttonFont = tkFont.Font(family = 'helvetica', size = 12)
         
         # Frames
-        frame1 = tk.Frame(self.mainWindow, width = 225, height = 550) #, bg = 'green')
+        frame1 = tk.Frame(self.mainWindow, width = 225, height = 600) #, bg = 'green')
         frame1.grid(row = 0, rowspan = 3, column = 0, sticky = 'news')
         frame11 = tk.Frame(frame1, width = 225, height = 200)
-        frame11.place(anchor = "c", relx = 0.5, rely = 0.2)
-        frame12 = tk.Frame(frame1, width = 225, height = 350)
-        frame12.place(anchor = "c", relx = 0.5, rely = 0.65)
-        frame2 = tk.Frame(self.mainWindow, width = 600, height = 400) #, bg = 'red')
+        frame11.place(anchor = "c", relx = 0.5, rely = 0.15)
+        frame12 = tk.Frame(frame1, width = 225, height = 100)
+        frame12.place(anchor = "c", relx = 0.5, rely = 0.415)
+        frame13 = tk.Frame(frame1, width = 225, height = 300)
+        frame13.place(anchor = "c", relx = 0.5, rely = 0.75)
+        frame2 = tk.Frame(self.mainWindow, width = 600, height = 450) #, bg = 'red')
         frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
         frame21 = tk.Frame(frame2, width = 600, height = 150)
-        frame21.place(anchor = "c", relx = 0.5, rely = 0.275)
-        frame22 = tk.Frame(frame2, width = 600, height = 250)
-        frame22.place(anchor = "c", relx = 0.5, rely = 0.75)
+        frame21.place(anchor = "c", relx = 0.5, rely = 0.215)
+        frame22 = tk.Frame(frame2, width = 600, height = 300)
+        frame22.place(anchor = "c", relx = 0.5, rely = 0.71)
         frame3 = tk.Frame(self.mainWindow, width = 500, height = 150) #, bg = 'blue')
         frame3.grid(row = 2, column = 1, sticky = 'news')
         frame31 = tk.Frame(frame3, width = 600, height = 150)
         frame31.place(anchor = "c", relx = 0.5, rely = 0.5)
-        frame4 = tk.Frame(self.mainWindow, width = 200, height = 550) #, bg = 'green')
+        frame4 = tk.Frame(self.mainWindow, width = 200, height = 600) #, bg = 'green')
         frame4.grid(row = 0, rowspan = 3, column = 2, sticky = 'news')
-        frame41 = tk.Frame(frame4, width = 200, height = 550)
+        frame41 = tk.Frame(frame4, width = 200, height = 600)
         frame41.place(anchor = "c", relx = 0.5, rely = 0.5)
         
         # Logo
@@ -146,14 +148,49 @@ class mazeGUI:
         
         
         """
+        Visual Stimulus
+        
+        """
+        
+        # Stimulus state
+        self.stimulusState = 0
+        tk.Label(frame12, font = buttonFont, text = "stimulus state", width = 12, anchor  = 'e').grid(row = 1, column = 0, padx = 10)
+        self.stimulusStateLabel = tk.Label(frame12, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
+        self.stimulusStateLabel.grid(row = 1, column = 1)
+        self.stimulusStateValue = tk.Label(frame12, font = buttonFont, text = self.stimulusState)
+        self.stimulusStateValue.grid(row = 1, column = 2)
+        
+        # Stimulus labels
+        tk.Label(frame12, font = buttonFont, text = "Stimulus", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
+        labelList = ["on switch", "off switch"]
+        nrow = 2
+        for i in range(len(labelList)):
+            tk.Label(frame12, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
+            nrow += 1
+        
+        # Stimulus states
+        self.startStimulusLabel = tk.Label(frame12, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
+        self.startStimulusLabel.grid(row = 2, column = 1)
+        self.stopStimulusLabel = tk.Label(frame12, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
+        self.stopStimulusLabel.grid(row = 3, column = 1)
+        
+        # IR sensor values
+        self.startStimulusValue = tk.Label(frame12, font = buttonFont, text = 0)
+        self.startStimulusValue.grid(row = 2, column = 2)
+        self.stopStimulusValue = tk.Label(frame12, font = buttonFont, text = 0)
+        self.stopStimulusValue.grid(row = 3, column = 2)
+        
+        
+        """
         Task Parameters
         
         """
         
         # Parameters labels
-        tk.Label(frame22, font = buttonFont, text = "Task Parameters", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 4 , padx = 10, pady = 10, sticky = 'we')
-        entryLabels0 = ["trials", "duration", "task", "startDoor", "cues", "forcedChoice"]
-        entryLabels2 = ["rig", "animal", "block", " ", "path", "autoSave"]
+        tk.Label(frame22, font = buttonFont, text = "Task Parameters", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 2 , padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame22, font = buttonFont, text = "Experiment Data", width = 12, anchor  = 'c').grid(row = 0, column = 2, columnspan = 2 , padx = 10, pady = 10, sticky = 'we')
+        entryLabels0 = ["trials", "duration", "task", "start door", "cues", "stimulus", "stimulus", "forced choice"]
+        entryLabels2 = ["rig", "animal", "block", " ", "path", "auto save", " ", " "]
         nrow = 1
         for i in range(len(entryLabels0)):
             tk.Label(frame22, font = buttonFont, text = entryLabels0[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
@@ -191,13 +228,6 @@ class mazeGUI:
         self.cuesBox = tk.Checkbutton(frame22, text = "sounds + LEDs", font = 8, variable = self.useTrialCues, onvalue = True, offvalue = False)
         self.cuesBox.grid(row = 5, column = 1, sticky = 'w')
 
-        # Forced decisions checkBox
-        self.forcedDecisionRNG = np.random.default_rng(seed = None)
-        self.forcedDecisions = 0   # probability; float between 0 and 1
-        self.forcedDecisionEntry = tk.Entry(frame22, font = 8, width = 14)
-        self.forcedDecisionEntry.insert(0, self.forcedDecisions)
-        self.forcedDecisionEntry.grid(row = 6, column = 1, sticky = 'w')
-
         # Sound for correct trials
         self.Fs = 44100
         correctFrequency = 5000
@@ -222,6 +252,28 @@ class mazeGUI:
         incorrectSound = np.interp(newT,t,incorrectSound)
         incorrectSound = incorrectSound * (2**15 - 1) / np.max(np.abs(incorrectSound))
         self.incorrectSound = incorrectSound.astype(np.int16)
+        
+        # Start stimulus checkBox
+        self.startStimulusTrigger = tk.BooleanVar(value = True)
+        self.startStimulusBox = tk.Checkbutton(frame22, text = "on switch", font = 8, variable = self.startStimulusTrigger, onvalue = True, offvalue = False)
+        self.startStimulusBox.grid(row = 6, column = 1, sticky = 'w')
+        
+        # Stop stimulus checkBox
+        self.stopStimulusTrigger = tk.BooleanVar(value = True)
+        self.stopStimulusBox = tk.Checkbutton(frame22, text = "off switch", font = 8, variable = self.stopStimulusTrigger, onvalue = True, offvalue = False)
+        self.stopStimulusBox.grid(row = 7, column = 1, sticky = 'w')
+
+        # Forced decisions checkBox
+        self.forcedDecisionRNG = np.random.default_rng(seed = None)
+        self.forcedDecisions = 0   # probability; float between 0 and 1
+        self.forcedDecisionEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.forcedDecisionEntry.insert(0, self.forcedDecisions)
+        self.forcedDecisionEntry.grid(row = 8, column = 1, sticky = 'w')
+        
+        """
+        Experiment Data
+        
+        """
         
         # Rig ID entry
         self.rigID = "mazeRig"
@@ -264,11 +316,11 @@ class mazeGUI:
         """
         
         # Stats labels
-        tk.Label(frame12, font = buttonFont, text = "Behavior", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame13, font = buttonFont, text = "Behavior", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
         labelList = ["performance", "bias index", "alternation index", "trials", "correct", "incorrect", "left decisions", "right decisions", "reward (μL)"]
         nrow = 1
         for i in range(len(labelList)):
-            tk.Label(frame12, font = buttonFont, text = labelList[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
+            tk.Label(frame13, font = buttonFont, text = labelList[i], width = 14, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
             nrow += 1
             
         # Behavior parameters
@@ -290,23 +342,23 @@ class mazeGUI:
         self.rewardAmounts = [ 5,  6,  7,  8,  9, 10] # in μL
         
         # Behavior values in GUI
-        self.performanceValue = tk.Label(frame12, font = buttonFont, text = self.performance)
+        self.performanceValue = tk.Label(frame13, font = buttonFont, text = self.performance)
         self.performanceValue.grid(row = 1, column = 1)
-        self.biasIndexValue = tk.Label(frame12, font = buttonFont, text = self.biasIndex)
+        self.biasIndexValue = tk.Label(frame13, font = buttonFont, text = self.biasIndex)
         self.biasIndexValue.grid(row = 2, column = 1)
-        self.alternationIndexValue = tk.Label(frame12, font = buttonFont, text = self.alternationIndex)
+        self.alternationIndexValue = tk.Label(frame13, font = buttonFont, text = self.alternationIndex)
         self.alternationIndexValue.grid(row = 3, column = 1)
-        self.trialValue = tk.Label(frame12, font = buttonFont, text = self.trialID)
+        self.trialValue = tk.Label(frame13, font = buttonFont, text = self.trialID)
         self.trialValue.grid(row = 4, column = 1)
-        self.correctValue = tk.Label(frame12, font = buttonFont, text = self.correct)
+        self.correctValue = tk.Label(frame13, font = buttonFont, text = self.correct)
         self.correctValue.grid(row = 5, column = 1)
-        self.incorrectValue = tk.Label(frame12, font = buttonFont, text = self.incorrect)
+        self.incorrectValue = tk.Label(frame13, font = buttonFont, text = self.incorrect)
         self.incorrectValue.grid(row = 6, column = 1)
-        self.leftValue = tk.Label(frame12, font = buttonFont, text = self.left)
+        self.leftValue = tk.Label(frame13, font = buttonFont, text = self.left)
         self.leftValue.grid(row = 7, column = 1)
-        self.rightValue = tk.Label(frame12, font = buttonFont, text = self.right)
+        self.rightValue = tk.Label(frame13, font = buttonFont, text = self.right)
         self.rightValue.grid(row = 8, column = 1)
-        self.rewardValue = tk.Label(frame12, font = buttonFont, text = self.estimatedReward)
+        self.rewardValue = tk.Label(frame13, font = buttonFont, text = self.estimatedReward)
         self.rewardValue.grid(row = 9, column = 1)
         
         
@@ -415,6 +467,10 @@ class mazeGUI:
         self.leftDecisionDoor = int(configurationData["teensyConfiguration"]["leftDecisionDoor"])
         self.rightDecisionDoor = int(configurationData["teensyConfiguration"]["rightDecisionDoor"])
         
+        # Stimulus trigger sensors
+        self.startStimulusIRsensor = int(configurationData["teensyConfiguration"]["startStimulusIRsensor"])
+        self.stopStimulusIRsensor = int(configurationData["teensyConfiguration"]["stopStimulusIRsensor"])
+        
         # Water ports and LEDs
         self.leftWaterPort = int(configurationData["teensyConfiguration"]["leftWaterPort"])
         self.rightWaterPort = int(configurationData["teensyConfiguration"]["rightWaterPort"])
@@ -474,6 +530,8 @@ class mazeGUI:
             self.board.get_pin('d:'+str(self.rightDecisionIRsensor)+':i')
             self.board.get_pin('d:'+str(self.leftStartIRsensor)+':i')
             self.board.get_pin('d:'+str(self.rightStartIRsensor)+':i')
+            self.board.get_pin('d:'+str(self.startStimulusIRsensor)+':i')
+            self.board.get_pin('d:'+str(self.stopStimulusIRsensor)+':i')
             self.board.get_pin('d:'+str(self.leftDecisionDoor)+':o')
             self.board.get_pin('d:'+str(self.rightDecisionDoor)+':o')
             self.board.get_pin('d:'+str(self.leftStartDoor)+':o')
@@ -499,6 +557,8 @@ class mazeGUI:
                 doorNames = [self.leftStartDoor, self.rightStartDoor, self.leftDecisionDoor, self.rightDecisionDoor]
                 for i in range(len(doorNames)):
                     self.board.digital[doorNames[i]].write(0)
+                self.mazeStateLabel.config(bg = self.backGroundColor, text = "idle")
+                self.mazeStateValue.config(text = 0)
                 self.leftStartLabel.config(bg = '#99D492', text = "open")
                 self.rightStartLabel.config(bg = '#99D492', text = "open")
                 self.leftDecisionLabel.config(bg = '#99D492', text = "open")
@@ -507,8 +567,12 @@ class mazeGUI:
                 self.rightDecisionValue.config(text = 0)
                 self.leftStartValue.config(text = 0)
                 self.rightStartValue.config(text = 0)
-                self.mazeStateLabel.config(bg = self.backGroundColor, text = "idle")
-                self.mazeStateValue.config(text = 0)
+                self.stimulusStateLabel.config(bg = self.backGroundColor, text = "idle")
+                self.stimulusStateValue.config(text = 0)
+                self.startStimulusLabel.config(bg = self.backGroundColor, text = "idle")
+                self.stopStimulusLabel.config(bg = self.backGroundColor, text = "idle")
+                self.startStimulusValue.config(text = 0)
+                self.stopStimulusValue.config(text = 0)
                 # Disconnect Teensy 4.0
                 self.board.exit()
                 print("Connection with",self.boardName,"is now closed...")
@@ -579,6 +643,64 @@ class mazeGUI:
             self.board.digital[self.rightStartDoor].write(0)
             self.rightStartLabel.config(bg = '#99D492', text = "open")
     
+    def updateStimulusDisplay(self):
+        
+        # Before trial start
+        if self.stimulusState == 0:
+            self.stimulusStateLabel.config(bg = '#A9C6E3', text = "ready")
+            self.stimulusStateValue.config(text = 0)
+            if self.stimulusOnSwitch == True:
+                self.startStimulusLabel.config(bg = '#A9C6E3', text = "ready")
+            if self.stimulusOffSwitch == True:
+                self.stopStimulusLabel.config(bg = '#A9C6E3', text = "ready")
+            
+        # After trial start, waiting to trigger stimulus
+        elif self.stimulusState == 1:
+            self.stimulusStateValue.config(text = 1)
+            if self.stimulusOnSwitch == True:
+                self.stimulusStateLabel.config(bg = 'pink', text = "off")
+                self.startStimulusLabel.config(bg = 'pink', text = "off")
+            elif self.stimulusOnSwitch == False:
+                self.stimulusStateLabel.config(bg = '#99D492', text = "on")
+            if self.stimulusOffSwitch == True:
+                self.stopStimulusLabel.config(bg = 'pink', text = "off")
+            
+        # Stimulus is on
+        elif self.stimulusState == 2:
+            self.stimulusStateValue.config(text = 2)
+            if self.stimulusOnSwitch == True:
+                self.visualStimulus.startStimulus(display = True)
+                self.stimulusStateLabel.config(bg = '#99D492', text = "on")
+                self.startStimulusLabel.config(bg = '#99D492', text = "on")
+        
+        # Stimulus is off
+        elif self.stimulusState == 3:
+            self.stimulusStateValue.config(text = 3)
+            if self.stimulusOnSwitch == True and self.stimulusOffSwitch == True:
+                self.startStimulusLabel.config(bg = 'pink', text = "off")
+            if self.stimulusOffSwitch == True:
+                self.visualStimulus.stopStimulus(display = False)
+                self.stimulusStateLabel.config(bg = 'pink', text = "off")
+                self.stopStimulusLabel.config(bg = '#99D492', text = "on")
+            
+        # Waiting for decision after stimulus is off
+        elif self.stimulusState == 4:
+            self.stimulusStateValue.config(text = 4)
+            if self.stimulusOffSwitch == True:
+                self.stopStimulusLabel.config(bg = 'pink', text = "off")
+            elif self.stimulusOffSwitch == False:
+                self.stimulusStateLabel.config(bg = 'pink', text = "off")
+                self.startStimulusLabel.config(bg = 'pink', text = "off")
+            
+        # Waiting for new trial to begin
+        elif self.stimulusState == 5:
+            self.stimulusStateLabel.config(bg = '#A9C6E3', text = "ready")
+            self.stimulusStateValue.config(text = 5)
+            if self.stimulusOnSwitch == True:
+                self.startStimulusLabel.config(bg = '#A9C6E3', text = "ready")
+            if self.stimulusOffSwitch == True:
+                self.stopStimulusLabel.config(bg = '#A9C6E3', text = "ready")
+                
     def readPinStates(self):
         
         # Read pins
@@ -586,16 +708,18 @@ class mazeGUI:
         self.RD = self.board.digital[self.rightDecisionIRsensor].read()
         self.LS = self.board.digital[self.leftStartIRsensor].read()
         self.RS = self.board.digital[self.rightStartIRsensor].read()
+        self.stimulusOn = self.board.digital[self.startStimulusIRsensor].read()
+        self.stimulusOff = self.board.digital[self.stopStimulusIRsensor].read()
         
-        # Update door values in GUI
-        doorLabelValues = [self.leftStartValue, self.rightStartValue, self.leftDecisionValue, self.rightDecisionValue]
-        pinStates = [self.LS,self.RS,self.LD,self.RD]
-        for i in range(len(doorLabelValues)):
+        # Update IR sensor values in GUI
+        sensorLabelValues = [self.leftStartValue, self.rightStartValue, self.leftDecisionValue, self.rightDecisionValue, self.startStimulusValue, self.stopStimulusValue]
+        pinStates = [self.LS,self.RS,self.LD,self.RD, self.stimulusOn, self.stimulusOff]
+        for i in range(len(sensorLabelValues)):
             if pinStates[i] is False:
-                doorLabelValues[i].config(text = 0)
+                sensorLabelValues[i].config(text = 0)
             elif self.LD is True or self.RD is True:
-                doorLabelValues[i].config(text = 1)
-            doorLabelValues[i].update_idletasks()
+                sensorLabelValues[i].config(text = 1)
+            sensorLabelValues[i].update_idletasks()
             
     def updateMazeState(self):
         
@@ -636,6 +760,32 @@ class mazeGUI:
         # Update doors
         if currentMazeState != self.mazeState:
             self.updateDoors()
+
+    def updateStimulusState(self):
+        
+        # Stimulus state
+        currentStimulusState = self.stimulusState
+        
+        # Update stimulus states
+        if self.stimulusState == 1:
+            if self.stimulusOn == False:
+                self.stimulusState = 2
+        elif self.stimulusState == 2:
+            if self.stimulusOff == False:
+                self.stimulusState = 3
+        elif self.stimulusState == 3:
+            if self.mazeState == 2:
+                self.stimulusState = 4
+        elif self.stimulusState == 4:
+            if self.mazeState == 3 or self.mazeState == 4:
+                self.stimulusState = 5
+        elif self.stimulusState == 5:
+            if self.mazeState == 1:
+                self.stimulusState = 1
+        
+        # Update stimulus
+        if currentStimulusState != self.stimulusState:
+            self.updateStimulusDisplay()
 
     def closeValve(self):
         
@@ -906,6 +1056,8 @@ class mazeGUI:
     
     """
     
+    
+    
     def initializeTaskParameters(self):
         
         # Task
@@ -914,7 +1066,7 @@ class mazeGUI:
         self.interTrialStart = 0
         self.interTrialTimeOut = 0
         self.correctInterTrialTimeOut = 3
-        self.incorrectInterTrialTimeOut = 10
+        self.incorrectInterTrialTimeOut = 3 # 15
         self.probabilityTargetLeft = 0.5
         
         # Behavior stats
@@ -964,6 +1116,8 @@ class mazeGUI:
         self.taskName = str(self.taskBox.get())
         self.startDoor = str(self.startBox.get())
         self.trialCues = bool(self.useTrialCues.get())
+        self.stimulusOnSwitch = bool(self.startStimulusTrigger.get())
+        self.stimulusOffSwitch = bool(self.stopStimulusTrigger.get())
         self.forcedDecisions = float(self.forcedDecisionEntry.get())
         self.animalID = str(self.animalEntry.get())
         self.rigID = str(self.rigEntry.get())
@@ -992,6 +1146,8 @@ class mazeGUI:
                 print("          Maximum session time (s):",self.timeout)
                 print("          Start door:",self.startDoor)
                 print("          Use sound cues:",str(self.trialCues).lower())
+                print("          Start stimulus trigger:",str(self.stimulusOnSwitch).lower())
+                print("          Stop stimulus trigger:",str(self.stimulusOffSwitch).lower())
                 print("          Forced decision probability = ", str(self.forcedDecisions))
                 print("          Animal ID:",self.animalID)
                 print("          Rig ID:",self.rigID)
@@ -1022,8 +1178,11 @@ class mazeGUI:
                 self.readyButton.update_idletasks()
                 if not self.taskName == "valveCalibration":
                     # Update maze
-                    self. mazeState = 0
+                    self.mazeState = 0
                     self.updateDoors()
+                    if self.stimulusOnSwitch == True or self.stimulusOffSwitch == True:
+                        self.stimulusState = 0
+                        self.updateStimulusDisplay()
                 
             # Initialize visual stimulus
             if self.taskName == "driftingGratings":
@@ -1045,7 +1204,7 @@ class mazeGUI:
             if self.taskName in self.taskList and not self.taskName == "valveCalibration":
                 
                 # Disable task parameter boxes
-                entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.forcedDecisionEntry,
+                entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
                               self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
                 for i in range(len(entryBoxes)):
                     entryBoxes[i].config(state = 'disabled')
@@ -1103,7 +1262,7 @@ class mazeGUI:
             self.readyButton.update_idletasks()
         
         # Reactivate task parameter boxes
-        entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.forcedDecisionEntry,
+        entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
                       self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
         for i in range(len(entryBoxes)):
             entryBoxes[i].config(state = 'normal')
@@ -1149,11 +1308,16 @@ class mazeGUI:
     def startTrial(self):
         
         # Display visual stimulus
-        self.visualStimulus.startStimulus(display = True)
+        if self.stimulusOnSwitch == False:
+            self.visualStimulus.startStimulus(display = True)
         
         # Display trial info in terminal
+        if self.targetLocation == 0:
+            targetLabel = "Left"
+        elif self.targetLocation == 1:
+            targetLabel = "Right"
         self.trialID += 1
-        print("     Trial ", self.trialID," started...", " Target -> ", self.targetLocation)
+        print("     Trial", self.trialID, "started...", " Target ->", targetLabel, "@ p =", self.probabilityTargetLeft, "(Left)")
         
         # Append experiment data to data frame
         self.dataFrameTrial.append(self.trialID)
@@ -1170,7 +1334,8 @@ class mazeGUI:
         self.triggerTrialOutcome()
         
         # End visual stimulus
-        self.visualStimulus.stopStimulus(display = False)
+        if self.stimulusOffSwitch == False:
+            self.visualStimulus.stopStimulus(display = False)
         
         # Append experiment data to data frame
         self.dataFrameDecision.append(self.lastDecision)
@@ -1186,12 +1351,12 @@ class mazeGUI:
         # Recent quick stats
         if self.trialID >= 10:
             recentCorrect = self.dataFrameCorrect[-10:]
-            self.recentPerformance = recentCorrect.count(1) / len(recentCorrect)
+            self.recentPerformance = round(recentCorrect.count(1) / len(recentCorrect), 2)
             
         # Bias correction
         if self.trialID >= 10:
             recentDecisions = self.dataFrameDecision[-10:]
-            self.recentBiasIndex = (recentDecisions.count(0) - recentDecisions.count(1)) / len(recentDecisions)
+            self.recentBiasIndex = round((recentDecisions.count(0) - recentDecisions.count(1)) / len(recentDecisions), 2)
             
         # Alternation correction
         if self.trialID >= 11:
@@ -1206,25 +1371,26 @@ class mazeGUI:
                 self.probabilityTargetLeft = 0.5 + (self.recentAlternationIndex/2)
             elif self.lastDecision == 1:
                 self.probabilityTargetLeft = 0.5 - (self.recentAlternationIndex/2)
+        self.probabilityTargetLeft = round(self.probabilityTargetLeft, 2)
         
         # Display stats on terminal
         if self.trialType == 1:
-            print("          >>> Correct Left <<<   " + self.forcedDecisionLabel)
+            print("          >>> Correct Left <<<   ", self.forcedDecisionLabel)
         elif self.trialType == 2:
-            print("          --- Incorrect Left ---   " + self.forcedDecisionLabel)
+            print("          --- Incorrect Left ---   ", self.forcedDecisionLabel)
         elif self.trialType == 3:
-            print("          --- Incorrect Right ---   " + self.forcedDecisionLabel)
+            print("          --- Incorrect Right ---   ", self.forcedDecisionLabel)
         elif self.trialType == 4:
-            print("          >>> Correct Right <<<   " + self.forcedDecisionLabel)
+            print("          >>> Correct Right <<<   ", self.forcedDecisionLabel)
         if self.trialID <= 10:
             print("              Performance = ", self.performance)
             print("              Bias index = ", self.biasIndex)
             if self.trialID > 1:
                 print("              Alternation index = ", self.alternationIndex)
         else:
-            print("              Performance (recent)", self.recentPerformance, "     Performance (overall) = ", self.performance)
-            print("              Bias index (recent) = ", self.recentBiasIndex,"     Bias index (overall) = ", self.biasIndex)
-            print("              Alternation index (recent) = ", self.recentAlternationIndex,"     Alternation index (overall) = ", self.alternationIndex)
+            print("              Performance (overall) = ", self.performance, "           Performance (recent)", self.recentPerformance)
+            print("              Bias index (overall) = ", self.biasIndex,"           Bias index (recent) = ", self.recentBiasIndex)
+            print("              Alternation index (overall) = ", self.alternationIndex,"     Alternation index (recent) = ", self.recentAlternationIndex)
         
         # Update behavior stats in GUI
         self.updateBehaviorStats()
@@ -1327,6 +1493,9 @@ class mazeGUI:
             elif self.startDoor == "right":
                 self.mazeState = 4
             self.updateDoors()
+            if self.stimulusOnSwitch == True or self.stimulusOffSwitch == True:
+                self.stimulusState = 5
+                self.updateStimulusDisplay()
             self.runningTask = True
             self.taskTimeStart = time.time()
             self.dataFrameRawTaskStartTime.append(self.taskTimeStart)
@@ -1348,6 +1517,8 @@ class mazeGUI:
             self.mainWindow.update()
             self.readPinStates()
             self.updateMazeState()
+            if self.stimulusOnSwitch == True or self.stimulusOffSwitch == True:
+                self.updateStimulusState()
             self.visualStimulus.updateStimulus()
             currentTime =  time.time()
             if currentTime > self.taskTimeStart + self.timeout:
