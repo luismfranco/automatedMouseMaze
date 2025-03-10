@@ -29,6 +29,8 @@
          "rightStartIRsensor": "20",
          "leftDecisionIRsensor": "18",
          "rightDecisionIRsensor": "16",
+         "startStimulusIRsensor": "15",
+         "stopStimulusIRsensor": "14",
          "leftStartDoor": "5",
          "rightStartDoor": "7",
          "leftDecisionDoor": "9",
