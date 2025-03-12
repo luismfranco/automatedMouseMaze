@@ -259,7 +259,7 @@ class mazeGUI:
         self.startStimulusBox.grid(row = 6, column = 1, sticky = 'w')
         
         # Stop stimulus checkBox
-        self.stopStimulusTrigger = tk.BooleanVar(value = True)
+        self.stopStimulusTrigger = tk.BooleanVar(value = False)
         self.stopStimulusBox = tk.Checkbutton(frame22, text = "off switch", font = 8, variable = self.stopStimulusTrigger, onvalue = True, offvalue = False)
         self.stopStimulusBox.grid(row = 7, column = 1, sticky = 'w')
 
@@ -269,6 +269,7 @@ class mazeGUI:
         self.forcedDecisionEntry = tk.Entry(frame22, font = 8, width = 14)
         self.forcedDecisionEntry.insert(0, self.forcedDecisions)
         self.forcedDecisionEntry.grid(row = 8, column = 1, sticky = 'w')
+        
         
         """
         Experiment Data
@@ -670,6 +671,7 @@ class mazeGUI:
             self.stimulusStateValue.config(text = 2)
             if self.stimulusOnSwitch == True:
                 self.visualStimulus.startStimulus(display = True)
+                self.stimulusIsOn = True
                 self.stimulusStateLabel.config(bg = '#99D492', text = "on")
                 self.startStimulusLabel.config(bg = '#99D492', text = "on")
         
@@ -680,6 +682,7 @@ class mazeGUI:
                 self.startStimulusLabel.config(bg = 'pink', text = "off")
             if self.stimulusOffSwitch == True:
                 self.visualStimulus.stopStimulus(display = False)
+                self.stimulusIsOn = False
                 self.stimulusStateLabel.config(bg = 'pink', text = "off")
                 self.stopStimulusLabel.config(bg = '#99D492', text = "on")
             
@@ -688,6 +691,10 @@ class mazeGUI:
             self.stimulusStateValue.config(text = 4)
             if self.stimulusOffSwitch == True:
                 self.stopStimulusLabel.config(bg = 'pink', text = "off")
+                # Fail-safe: in case stimulus is not turned off
+                if self.stimulusIsOn == True:
+                    self.visualStimulus.stopStimulus(display = False)
+                    self.stimulusIsOn = False
             elif self.stimulusOffSwitch == False:
                 self.stimulusStateLabel.config(bg = 'pink', text = "off")
                 self.startStimulusLabel.config(bg = 'pink', text = "off")
@@ -773,6 +780,9 @@ class mazeGUI:
         elif self.stimulusState == 2:
             if self.stimulusOff == False:
                 self.stimulusState = 3
+            # Fail-safe: in case stimulus is not turned off
+            elif self.mazeState == 2:
+                self.stimulusState = 4
         elif self.stimulusState == 3:
             if self.mazeState == 2:
                 self.stimulusState = 4
@@ -1063,10 +1073,11 @@ class mazeGUI:
         # Task
         self.runningTask = False
         self.initializeTrial = True
+        self.stimulusIsOn = False
         self.interTrialStart = 0
         self.interTrialTimeOut = 0
         self.correctInterTrialTimeOut = 3
-        self.incorrectInterTrialTimeOut = 3 # 15
+        self.incorrectInterTrialTimeOut = 15
         self.probabilityTargetLeft = 0.5
         
         # Behavior stats
