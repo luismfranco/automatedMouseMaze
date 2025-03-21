@@ -90,8 +90,10 @@ class mazeGUI:
         frame31.place(anchor = "c", relx = 0.5, rely = 0.5)
         frame4 = tk.Frame(self.mainWindow, width = 200, height = 600) #, bg = 'green')
         frame4.grid(row = 0, rowspan = 3, column = 2, sticky = 'news')
-        frame41 = tk.Frame(frame4, width = 200, height = 600)
-        frame41.place(anchor = "c", relx = 0.5, rely = 0.5)
+        frame41 = tk.Frame(frame4, width = 200, height = 400)
+        frame41.place(anchor = "c", relx = 0.5, rely = 0.3)
+        frame42 = tk.Frame(frame4, width = 200, height = 200)
+        frame42.place(anchor = "c", relx = 0.5, rely = 0.7)
         
         # Logo
         imagePath = "assets/mazeGUIlogo.png"
@@ -339,7 +341,8 @@ class mazeGUI:
         
         # Reward
         self.estimatedReward = 0
-        self.rewardStreak = [32, 36, 41, 45, 50, 54] # in ms
+        self.leftRewardStreak = [32, 36, 41, 45, 49, 54] # in ms
+        self.rightRewardStreak = [32, 37, 41, 46, 50, 55] # in ms
         self.rewardAmounts = [ 5,  6,  7,  8,  9, 10] # in μL
         
         # Behavior values in GUI
@@ -445,6 +448,21 @@ class mazeGUI:
         self.closeCameraButton.grid(row = 4, column = 0, padx = 10, pady = 10)
         self.closeCameraButton.bind('<Enter>', lambda e: self.closeCameraButton.config(fg = 'Black', bg ='#AFAFAA'))
         self.closeCameraButton.bind('<Leave>', lambda e: self.closeCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+        
+        
+        """
+        Camera Controls
+        
+        """
+        
+        # Booleans for buttons
+        self.IMUIsOn = False
+        
+        # IMU labels
+        tk.Label(frame42, font = buttonFont, text = "IMU Controls", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 4 , padx = 10, pady = 10, sticky = 'we')
+        
+        
+        
         
         
         """
@@ -671,10 +689,10 @@ class mazeGUI:
             self.stimulusStateValue.config(text = 2)
             if self.stimulusOnSwitch == True:
                 self.visualStimulus.startStimulus(display = True)
+                self.dataFrameStimulusStartTime.append(time.time() - self.taskTimeStart)
                 self.stimulusIsOn = True
                 self.stimulusStateLabel.config(bg = '#99D492', text = "on")
                 self.startStimulusLabel.config(bg = '#99D492', text = "on")
-        
         # Stimulus is off
         elif self.stimulusState == 3:
             self.stimulusStateValue.config(text = 3)
@@ -682,10 +700,10 @@ class mazeGUI:
                 self.startStimulusLabel.config(bg = 'pink', text = "off")
             if self.stimulusOffSwitch == True:
                 self.visualStimulus.stopStimulus(display = False)
+                self.dataFrameStimulusEndTime.append(time.time() - self.taskTimeStart)
                 self.stimulusIsOn = False
                 self.stimulusStateLabel.config(bg = 'pink', text = "off")
                 self.stopStimulusLabel.config(bg = '#99D492', text = "on")
-            
         # Waiting for decision after stimulus is off
         elif self.stimulusState == 4:
             self.stimulusStateValue.config(text = 4)
@@ -694,6 +712,7 @@ class mazeGUI:
                 # Fail-safe: in case stimulus is not turned off
                 if self.stimulusIsOn == True:
                     self.visualStimulus.stopStimulus(display = False)
+                    self.dataFrameStimulusEndTime.append(None)
                     self.stimulusIsOn = False
             elif self.stimulusOffSwitch == False:
                 self.stimulusStateLabel.config(bg = 'pink', text = "off")
@@ -1114,6 +1133,8 @@ class mazeGUI:
         self.dataFrameLeftProbability = []
         self.dataFrameStartTime = []
         self.dataFrameEndTime = []
+        self.dataFrameStimulusStartTime = []
+        self.dataFrameStimulusEndTime = []
         self.dataFrameRawTaskStartTime = []
     
         # Update behavior stats in GUI
@@ -1309,11 +1330,17 @@ class mazeGUI:
         self.visualStimulus.initializeStimulus(target = self.targetLocation)
         
         # Reward for upcoming trial
-        if self.correctStreak < len(self.rewardStreak):
-            self.rewardTime = self.rewardStreak[self.correctStreak] / 1000 # in s
+        if self.correctStreak < len(self.rewardAmounts):
+            if self.targetLocation == 0:
+                self.rewardTime = self.leftRewardStreak[self.correctStreak] / 1000 # in s
+            elif self.targetLocation  == 1:
+                self.rewardTime = self.rightRewardStreak[self.correctStreak] / 1000 # in s
             self.rewardSize = self.rewardAmounts[self.correctStreak] # in μL
         else:
-            self.rewardTime = self.rewardStreak[-1] / 1000 # in s
+            if self.targetLocation == 0:
+                self.rewardTime = self.leftRewardStreak[-1] / 1000 # in s
+            elif self.targetLocation == 1:
+                self.rewardTime = self.rightRewardStreak[-1] / 1000 # in s
             self.rewardSize = self.rewardAmounts[-1] # in μL
             
     def startTrial(self):
@@ -1321,7 +1348,8 @@ class mazeGUI:
         # Display visual stimulus
         if self.stimulusOnSwitch == False:
             self.visualStimulus.startStimulus(display = True)
-        
+            self.dataFrameStimulusStartTime.append(None)
+            
         # Display trial info in terminal
         if self.targetLocation == 0:
             targetLabel = "Left"
@@ -1347,7 +1375,8 @@ class mazeGUI:
         # End visual stimulus
         if self.stimulusOffSwitch == False:
             self.visualStimulus.stopStimulus(display = False)
-        
+            self.dataFrameStimulusEndTime.append(None)
+            
         # Append experiment data to data frame
         self.dataFrameDecision.append(self.lastDecision)
         self.datFrameForcedDecision.append(self.blockIncorrectDoor)
@@ -1563,10 +1592,14 @@ class mazeGUI:
                 "trialType": self.dataFrameTrialType,
                 "startTime": self.dataFrameStartTime,
                 "endTime": self.dataFrameEndTime,
-                "rawTaskStartTime": self.dataFrameRawTaskStartTime,
+                "stimulusStartTime": self.dataFrameStimulusStartTime,
+                "stimulusEndTime": self.dataFrameStimulusEndTime,
+                "taskRawStartTime": self.dataFrameRawTaskStartTime,
                                                                    }
         df = pd.DataFrame.from_dict(data, orient = 'index')
         df = df.transpose()
+        
+        print(df)
         
         # Save experiment data
         fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "behavior" + "_" + str(self.blockID)
