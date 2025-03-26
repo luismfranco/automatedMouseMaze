@@ -1397,20 +1397,20 @@ class mazeGUI:
         if self.trialID >= 10:
             recentDecisions = self.dataFrameDecision[-10:]
             self.recentBiasIndex = round((recentDecisions.count(0) - recentDecisions.count(1)) / len(recentDecisions), 2)
-            
+           
         # Alternation correction
         if self.trialID >= 11:
             recentDecisions = self.dataFrameDecision[-11:]
             self.recentAlternationIndex = round(sum(abs(np.diff(recentDecisions))) / len(recentDecisions), 2)
-            
+        
         # Updated target probability
-        if (abs(self.recentBiasIndex) > self.recentAlternationIndex) and self.trialID >= 10:
+        if (abs(self.recentBiasIndex) >= (self.recentAlternationIndex - 0.5) ) and self.trialID >= 10:
             self.probabilityTargetLeft = 0.5 - (self.recentBiasIndex/2)
-        elif (self.recentAlternationIndex >= abs(self.recentBiasIndex)) and self.trialID >= 11:
+        elif ( (self.recentAlternationIndex - 0.5) > abs(self.recentBiasIndex)) and self.trialID >= 11:
             if self.lastDecision == 0:
-                self.probabilityTargetLeft = 0.5 + (self.recentAlternationIndex/2)
+                self.probabilityTargetLeft = 0.5 - (self.recentAlternationIndex - 0.5)
             elif self.lastDecision == 1:
-                self.probabilityTargetLeft = 0.5 - (self.recentAlternationIndex/2)
+                self.probabilityTargetLeft = 0.5 + (self.recentAlternationIndex - 0.5)
         self.probabilityTargetLeft = round(self.probabilityTargetLeft, 2)
         
         # Display stats on terminal
