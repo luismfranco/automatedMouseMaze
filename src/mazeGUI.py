@@ -1408,11 +1408,11 @@ class mazeGUI:
             self.probabilityTargetLeft = 0.5 - (self.recentBiasIndex/2)
         elif ( (self.recentAlternationIndex - 0.5) > abs(self.recentBiasIndex)) and self.trialID >= 11:
             if self.lastDecision == 0:
-                self.probabilityTargetLeft = 0.5 - (self.recentAlternationIndex - 0.5)
-            elif self.lastDecision == 1:
                 self.probabilityTargetLeft = 0.5 + (self.recentAlternationIndex - 0.5)
+            elif self.lastDecision == 1:
+                self.probabilityTargetLeft = 0.5 - (self.recentAlternationIndex - 0.5)
         self.probabilityTargetLeft = round(self.probabilityTargetLeft, 2)
-        
+        git
         # Display stats on terminal
         if self.trialType == 1:
             print("          >>> Correct Left <<<   ", self.forcedDecisionLabel)
