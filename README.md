@@ -33,7 +33,7 @@ In the Command Prompt:
 If everything went well, you should be able to run the GUI:  
 ``python automatedMouseMaze.py``
 <p align="center">
-<img width="800" height="450" src="assets/mazeGUI.png">
+<img width="1025" height="600" src="assets/mazeGUI.png">
 </p>
 
 However, this app requires a connection with a Teensy board in order to work. Also, the automated maze has several other components, such as IR sensors, solenoid valves, a speaker, and LEDs. To build your own maze, follow this tutorial:  
@@ -68,20 +68,40 @@ Under ``stimulusScreen``, select the correct screen number. In Windows, you can 
 
 # How to run an experiment
 
-There are a few options you can select before running an experiment, such as:
+There are a few options you can select before running an experiment.
+
+Task Parameters:
 
 1. Maximum number of ``trials``.
 2. Maximum ``duration`` of the experiment (in seconds).
 3. The particular visual stimulus, under ``task`` (more details below).
-4. The location of the animal at the start of the session, under ``startDoor``. This is the door that will open for the first trial.
+4. The location of the animal at the start of the session, under ``start door``. This is the door that will open for the first trial.
 5. Sounds and light ``cues`` for helping during learning of the task.
-6. Name of your ``rig``.
-7. Name of your ``animal``.
-8. ``path`` for saving the experiment data.
-9. ``autoSave`` option.
+6. Triggering the display of the visual ``stimulus`` on the screen.
+7. Turning off the display of the visual ``stimulus``.
+8. Fraction of trials with ``forced choice``, where only the door for the correct decision is opened. Helpful during early stages of training.
+
+Experiment Data:
+
+1. Name of your ``rig``.
+2. Name of your ``animal``.
+3. ``block`` number.
+4. ``path`` for saving the experiment data.
+5. ``autoSave`` option.
 
 Once your have selected your desired options, you can click on ``Initialize``. This will establish a connection between the computer and Teensy. 
 In addition, this will prepare the visual stimulus, and have it ready for display after clicking on ``Start Task``.
+
+Camera Controls:
+
+1. ``Start Cameras``.
+2. ``Record Video``.
+3. ``Stop recording``.
+4. ``Close Cameras``.
+
+IMU Controls
+
+- under development...
 
 # Task
 
@@ -95,20 +115,53 @@ As mentioned above, the option ``task`` allows you to select between 3 different
 <img width="300" height="230" src="assets/valveCalibrationGUI.png">
 </p>
 
-It is easy to change the settings for the [drifting gratings](src/driftingGratings.py) and [motion selectivity](src/motionSelectivity.py) tasks under their respective ``startStimulus`` definitions. Please refer to Psychopy documentation to learn more about the available options for [GratingStim](https://www.psychopy.org/api/visual/gratingstim.html) and [DotStim](https://www.psychopy.org/api/visual/dotstim.html).
+It is easy to change the settings for the [drifting gratings](src/driftingGratings.py) and [motion selectivity](src/motionSelectivity.py) tasks under their respective ``initializeStimulus`` and ``startStimulus`` definitions. Please refer to Psychopy documentation to learn more about the available options for [GratingStim](https://www.psychopy.org/api/visual/gratingstim.html) and [DotStim](https://www.psychopy.org/api/visual/dotstim.html).
 
-# Experiment data file
+# While task is running
+
+Doors:
+
+1. ``maze state``.
+2. ``start left``.
+3. ``start right``.
+4. ``decision left``.
+5. ``decision right``.
+
+Stimulus:
+
+1. ``stimulus states``.
+2. ``on switch``.
+3. ``off switch``.
+
+Behavior:
+
+1. ``performance``.
+2.  ``bias index``.
+3.  ``alternation index``.
+4.  ``trials``.
+5.  ``correct``.
+6.  ``incorrect``.
+7.  ``left decisions``.
+8.  ``right decisions``.
+9.  ``reward (μL)``.
+
+# Behavior data file
 
 Data are automatically saved at the end of a session in the desired path as a pickle file. This file containa a Pandas DataFrame with the following fields:
 
 1. ``trial`` number.
-2. ``startDoor`` for each trial.
-3. ``target`` object for each trial.
-4. animal's ``decision`` for each trial.
-5. ``correct`` trial identifier.
-6. ``trial type``: identifier for correct left, incorrect right, incorrect left, or correct right trials.
-7. ``startTime``. Time stamp for the start of each trial.
-8. ``endTime``. Time stamp for the end of each trial.
+2. ``startDoor`` for each trial. (0) for left, (1) for right.
+3. ``leftTargetProbability`` for each trial. Probability for displaying the target object associated with the left decision.
+4. ``target`` object for each trial. (0) for left, (1) for right.
+5. animal's ``decision`` for each trial. (0) for left, (1) for right.
+6. ``forcedChoice`` for each trial. (0) for no forced choice, (1) for forced correct choice.
+7. ``correct`` trial identifier. (0) for incorrect trial, (1) for correct trial.
+8. ``trial type``: identifier for correct left (1), incorrect right (2), incorrect left (3), or correct right trials (4).
+9. ``startTime``. Time stamp for the start of each trial: opening of start door.
+10. ``endTime``. Time stamp for the end of each trial: closing of decision door.
+11. ``stimulusStartTime``. Time stamp for the display of the visual stimulus on the screen (if option is enabled).
+12. ``stimulusEndTIme``. Time stamp for turning off the display of the visual stimulus (if option is enabled).
+13. ``taskRawStartTime``. Time stamp for the start of the task. Important for synchronization with video and electrophysiology recordings.
 
 
 
