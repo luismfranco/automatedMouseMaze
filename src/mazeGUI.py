@@ -1412,7 +1412,7 @@ class mazeGUI:
             elif self.lastDecision == 1:
                 self.probabilityTargetLeft = 0.5 - (self.recentAlternationIndex - 0.5)
         self.probabilityTargetLeft = round(self.probabilityTargetLeft, 2)
-        git
+        
         # Display stats on terminal
         if self.trialType == 1:
             print("          >>> Correct Left <<<   ", self.forcedDecisionLabel)
@@ -1584,7 +1584,7 @@ class mazeGUI:
         data = {
                 "trial": self.dataFrameTrial,
                 "startDoor": self.dataFrameStartDoor,
-                "targetLeftProbability": self.dataFrameLeftProbability,
+                "leftTargetProbability": self.dataFrameLeftProbability,
                 "target": self.dataFrameTarget,
                 "decision": self.dataFrameDecision,
                 "forcedChoice": self.datFrameForcedDecision,
