@@ -34,7 +34,7 @@ In the Command Prompt:
 If everything went well, you should be able to run the GUI:  
 ``python automatedMouseMaze.py``
 <p align="center">
-<img width="1050" height="500" src="assets/mazeGUI.png">
+<img width="1025" height="600" src="assets/mazeGUI.png">
 </p>
 
 However, this app requires a connection with a Teensy board in order to work. Also, the automated maze has several other components, such as IR sensors, solenoid valves, a speaker, and LEDs. To build your own maze, follow this tutorial: 
