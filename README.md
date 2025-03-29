@@ -34,10 +34,10 @@ In the Command Prompt:
 If everything went well, you should be able to run the GUI:  
 ``python automatedMouseMaze.py``
 <p align="center">
-<img width="10500" height="500" src="assets/mazeGUI.png">
+<img width="1050" height="500" src="assets/mazeGUI.png">
 </p>
 
-However, this app requires a connection with a Teensy board in order to work. Also, the automated maze has several other components, such as IR sensors, solenoid valves, a speaker, and LEDs. To build your own maze, follow this tutorial:  
+However, this app requires a connection with a Teensy board in order to work. Also, the automated maze has several other components, such as IR sensors, solenoid valves, a speaker, and LEDs. To build your own maze, follow this tutorial: 
 [maze construction](docs/howToBuildYourOwnMaze.md).
 
 This apps also controls and triggers the recording of video, IMU sensors, and electrophysiology probes. Please refer to Parker et al., 2022 (https://doi.org/10.1016/j.neuron.2022.08.029) for more details on this.
