@@ -5,15 +5,8 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 ***Important: this tutorial is currently under development***
 
 <p align="center">
-<img width="800" height="500" src="assets/mazeFrontView.png">
-</p>
-
-<p align="center">
-<img width="800" height="500" src="assets/mazeTopView.png">
-</p>
-
-<p align="center">
-<img width="800" height="500" src="assets/mazeComponents.png">
+<img width="500" height="300" src="../assets/mazeTopView.png">
+<img width="500" height="300" src="../assets/mazeComponents.png">
 </p>
 
 # Components
@@ -49,6 +42,9 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 
 
 
+<p align="center">
+<img width="300" height="500" src="../assets/mazeFrontView.png"> 
+</p>
 
 
 
