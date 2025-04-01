@@ -1,4 +1,4 @@
-# automatedMouseMaze (under development)
+# Automated Mouse Maze (under development)
 
 GUI for behavioral and neurophysiological experiments in an automated maze for in mice.  
 Currently under development in the Niell Lab (https://nielllab.uoregon.edu/).
@@ -42,7 +42,7 @@ However, this app requires a connection with a Teensy board in order to work. Al
 
 This apps also controls and triggers the recording of video, IMU sensors, and electrophysiology probes. Please refer to Parker et al., 2022 (https://doi.org/10.1016/j.neuron.2022.08.029) for more details on this.
 
-# Configuration settings
+# Configuration Settings
 
 Before running your first experiment, make sure your Teensy board is properly [configured](config/package.json):
 1. Under ``teensyConfiguration``, select the correct serial ``port`` for communication between the computer and Teensy (e.g. ***COM3***).
@@ -76,7 +76,7 @@ Before running your first experiment, make sure your Teensy board is properly [c
 <img width="800" height="275" src="assets/circuitBottomView.png">
 </p>
 
-# How to run this app
+# How to Run this App
 
 In the Command Prompt, activate your environment. Example:  
 ``conda activate automatedMouseMaze``  
@@ -88,7 +88,7 @@ You could also create a batch file. Example:
 ``cd C:\Users\Niell Lab\Documents\automatedMouseMaze\Application\``  
 ``python automatedMouseMaze.py``  
 
-# Before running an experiment
+# Before Running an Experiment
 
 Under ``task``, please select ``valveCalibration`` and click on ``Initialize Task``. This will open a small window with three parameters:
 
@@ -111,7 +111,7 @@ Once you have calculated the correct valve opening time for 5, 6, 7, 8, 9 and 10
 ``self.rightRewardStreak = [32, 37, 41, 46, 50, 55] # in ms``  
 ``self.rewardAmounts = [ 5,  6,  7,  8,  9, 10] # in μL``  
 
-# How to run an experiment
+# How to Run an Experiment
 
 There are a few options you can select before running an experiment.
 
@@ -169,7 +169,7 @@ As mentioned above, the option ``task`` allows you to select between 4 different
 
 It is easy to change the settings for the [drifting gratings](src/driftingGratings.py), [motion selectivity](src/motionSelectivity.py) and [white noise](src/whiteNoise.py) tasks under their respective ``initializeStimulus`` and ``startStimulus`` methods. Please refer to Psychopy documentation to learn more about the available options for [GratingStim](https://www.psychopy.org/api/visual/gratingstim.html) and [DotStim](https://www.psychopy.org/api/visual/dotstim.html).
 
-# While task is running
+# While Task is Running
 
 The app GUI displays general maze parameters and behavior stats on the left-hand side that continuously update through the experiemntal session.
 
@@ -199,7 +199,7 @@ Behavior:
 8.  ``right decisions``.
 9.  ``reward (μL)``.
 
-# Behavior data file
+# Behavior Data File
 
 Data are automatically saved at the end of a session in the desired path as a pickle file. This file containa a Pandas DataFrame with the following fields:
 
