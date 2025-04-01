@@ -1,9 +1,8 @@
 # Automated Mouse Maze (under development)
 
-GUI for behavioral and neurophysiological experiments in an automated maze for in mice.  
+GUI for behavioral and neurophysiological experiments in an automated maze for mice.  
 Currently under development in the Niell Lab (https://nielllab.uoregon.edu/).
 
-***Important: this app is currently under development***  
 ***Disclamimer: the initial designs for this automated maze are based on previous work done at the Sylwestrak Lab*** (https://www.sylwestraklab.com/)  
 
 # Installation
