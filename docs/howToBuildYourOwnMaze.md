@@ -14,7 +14,7 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 ## Maze
 
 1. 1" T-slotted [squared](https://www.mcmaster.com/47065T101/) and [rounded](https://www.mcmaster.com/3136N27/) framing rails, cut to a custom size with 1/4"-20 threads on both ends.
-2. Sign white 9 % light transmission [acrylic](https://www.tapplastics.com/product/plastics/cut_to_size_plastic/acrylic_sheets_color/341) for the floor and walls of the maze.
+2. Sign white 9 % light transmission [acrylic](https://www.tapplastics.com/product/plastics/cut_to_size_plastic/acrylic_sheets_color/341) for the floor, walls and doors of the maze.
 3. 1" [brakets](https://www.mcmaster.com/47065T236/) and [cubes](https://www.mcmaster.com/47065T244/) to assemble the structural frame of the maze.
 4. A white melamine [wood shelf](https://www.homedepot.com/p/White-Melamine-Wood-Shelf-23-75-in-D-x-48-in-L-252297/202089063) with 2" [caster wheels](https://www.amazon.com/Casters-Locking-Castors-Furniture-Kitchen/dp/B09QZMTSCQ/ref=pd_bxgy_img_d_sccl_2/142-9516444-0421340?pd_rd_w=h5m3x&content-id=amzn1.sym.839d7715-b862-4989-8f65-c6f9502d15f9&pf_rd_p=839d7715-b862-4989-8f65-c6f9502d15f9&pf_rd_r=FRMHFY3ZBWA5QW7X6ASM&pd_rd_wg=8v5Oh&pd_rd_r=5618abc9-7d00-4d7a-a696-668fa49b88b9&pd_rd_i=B0BFXLTQNH&th=1) for the base of the maze.
 5. A 10" [screen](https://www.amazon.com/dp/B0987468N2/ref=sspa_dk_detail_4?pd_rd_i=B0987468N2&pd_rd_w=QqC5K&content-id=amzn1.sym.386c274b-4bfe-4421-9052-a1a56db557ab&pf_rd_p=386c274b-4bfe-4421-9052-a1a56db557ab&pf_rd_r=1QH3Q0EH5X5P3PGTJ3EK&pd_rd_wg=wrki0&pd_rd_r=280cd8b9-b4b4-4a81-84ca-9a71bb273634&s=pc&sp_csd=d2lkZ2V0TmFtZT1zcF9kZXRhaWxfdGhlbWF0aWM&th=1) for displaying visual stimuli.
@@ -23,6 +23,7 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 8. [Solenoid valves](https://www.theleeco.com/industries/scientific-instruments/products/solenoid-valves/browse/?filters[subtype][]=Control+Solenoid+Valves) for control of water delivery.
 9. 1/16" ID x 1/8" OD Tygon [tubing](https://www.usplastic.com/catalog/item.aspx?itemid=91104&catid=864) for the water delivery system.
 10. 14 gauge luer-lock blunt tip [needles](https://www.amazon.com/Syringe-Dispensing-Needles-Length-Interface/dp/B07DZC225B/ref=pd_ci_mcx_di_int_sccai_cn_d_sccl_2_1/133-0408013-9182656?pd_rd_w=JuARf&content-id=amzn1.sym.751acc83-5c05-42d0-a15e-303622651e1e&pf_rd_p=751acc83-5c05-42d0-a15e-303622651e1e&pf_rd_r=SDJGVFYGQZ0KS2EZG109&pd_rd_wg=XP1nb&pd_rd_r=9ea53b80-e963-4a30-bfc5-857ae6b058f9&pd_rd_i=B07DZC225B&psc=1) as spouts for water delivery.
+11. Custom [3D-printed objects](https://github.com/luismfranco/automatedMouseMaze/tree/99c225861e82ac3776c7e1dc496d73c4fc0f3bcc/assets/hardware) as rail brakets, as pieces of wall (for water ports, and to secure the stimulus screen), and as holders (for IR sensors, speaker, cables, and for the water system).
 
 ## Automated Doors
 
@@ -33,8 +34,13 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 5. IR [beam breaks](https://www.adafruit.com/product/2167) for detecting the mouse traverse through the maze.
 6. 100 cm M/M [wires](https://www.amazon.com/EDGELEC-Breadboard-Optional-Assorted-Multicolored/dp/B07GD1W7XV/ref=sr_1_1_sspa?crid=1D6I1EZM32X2T&dib=eyJ2IjoiMSJ9.tjHxIQLJsk16_0YVtUGN6YeXdt0VqIwh7Zmfzd7nvfTaoSMecktPIPsgfi6eLwfPrpE-Z7TFF3Gb6OmAsEyH4OuRfeKQ2U6yeUaDnbuFGswrOXPukg3xDJGZqP0xiogOAQo_2PqBlSW5yXpFgDqxkBzMUHsNNzfc4F-zrGIxkpvzX6CnOzBpjidBHCxZRSphsHbICibgDRfXkQytRIVXbw9Gbyz2Bt6wmlDkohLT7gUYbs8jQcpc5IITMBIXfrioVjBJ50nB4BJkOvXv_kzaIx5H3ulgZPomOofbuDLn7Cw.BAJcuUxcOIL5un-H80QwuIrBCIlUhJ-gg4DElPhICeA&dib_tag=se&keywords=jumper%2Bwires&qid=1718926518&s=industrial&sprefix=jumper%2Bwire%2Cindustrial%2C148&sr=1-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&th=1) and 1" F/F [wires](https://www.digikey.com/en/products/detail/pololu-corporation/3860/10451018) for connections between IR sensors, water valves and LEDs to the Teensy circuit.
 7. 12" M/M [wires](https://www.digikey.com/en/products/detail/pololu-corporation/1765/10450795) and 2" M/F [wires](https://www.digikey.com/en/products/detail/pololu-corporation/3845/10451009) for connections between the solenoid manifold and the Teensy circuit.
+8. Custom [3D-printed objects](https://github.com/luismfranco/automatedMouseMaze/tree/99c225861e82ac3776c7e1dc496d73c4fc0f3bcc/assets/hardware) to mount the pneumatic actuators, and to secure the acrylic doors to the actuators.
 
 ## Teensy Circuit
+
+<p align="center">
+<img width="800" height="275" src="../assets/circuitTopView.png">
+</p>
 
 1. [Teensy 4.0](https://www.sparkfun.com/teensy-4-0-headers.html) for processing inputs and outputs between the computer and the different components in the maze.
 2. [Bread board](https://www.digikey.com/en/products/detail/sparkfun-electronics/PRT-12699/5762439?utm_adgroup=&utm_source=google&utm_medium=cpc&utm_campaign=PMax%20Shopping_Product_High%20ROAS%20Categories&utm_term=&utm_content=&utm_id=go_cmp-20222717502_adg-_ad-__dev-c_ext-_prd-5762439_sig-CjwKCAjwr7ayBhAPEiwA6EIGxH0-nJ1QtJauifHs8d_4uKSnMKyhCQBnSeDmUdDhgQHYUU73eKNs0RoCaYkQAvD_BwE&gad_source=1&gclid=CjwKCAjwr7ayBhAPEiwA6EIGxH0-nJ1QtJauifHs8d_4uKSnMKyhCQBnSeDmUdDhgQHYUU73eKNs0RoCaYkQAvD_BwE) for building the circuit.
@@ -55,14 +61,34 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 2. An analog 5 mm x 5 mm [camera](https://www.aliexpress.us/item/3256803738909660.html?spm=a2g0o.detail.pcDetailTopMoreOtherSeller.10.47a4Gmv2Gmv2Vk&gps-id=pcDetailTopMoreOtherSeller&scm=1007.40196.422467.0&scm_id=1007.40196.422467.0&scm-url=1007.40196.422467.0&pvid=40156854-8944-49dc-8f22-28e36af707d0&_t=gps-id:pcDetailTopMoreOtherSeller,scm-url:1007.40196.422467.0,pvid:40156854-8944-49dc-8f22-28e36af707d0,tpp_buckets:668%232846%238108%231977&pdp_ext_f=%7B%22order%22%3A%2273%22%2C%22eval%22%3A%221%22%2C%22sceneId%22%3A%2230050%22%7D&pdp_npi=4%40dis%21USD%2117.62%2110.12%21%21%2117.62%2110.12%21%402101c5b217435439061578444e0ef5%2112000027485322782%21rec%21US%21%21ABXZ&utparam-url=scene%3ApcDetailTopMoreOtherSeller%7Cquery_from%3A) for recoridng the eye of the mouse.
 3. TDK InvenSense [inertial measurement unit](https://invensense.tdk.com/products/motion-tracking/9-axis/icm-20948/) for measuring the position of the head of the mouse.
 4. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for video and IMU data.
+5. We used a custom-made **crown** to assemble both cameras and the IMU:
+   <p align="center">
+   <img width="300" height="385" src="../assets/crownLeftSide.png">
+   <img width="300" height="385" src="../assets/crownRightSide.png">
+   </p>
+7. We also used a custom-made breakout board to send video and IMU data from the **crown** to the video capture devices and to the RoSco head motion tracking device, respectively:
+   <p align="center">
+   <img width="430" height="300" src="../assets/crownBreakoutBoard.png">
+   </p>
 
 ## Electrophysiology
 
 1. Open Ephys [acquisition board](https://open-ephys.org/acquisition-system/oeps-9029).
 2. Open Ephys [I/O Board](https://open-ephys.org/acquisition-system/io-board-pcb), with through-hole vertical female [BNC connectors](https://www.peconnectors.com/coaxial-rf-connectors-bnc-f-rca/hws3912/?srsltid=AfmBOoo6W5EEuw7a9Wj3TCphOwvCRphM8mKeDhZolUMiHQv2XTFZ-yY3QIs&gQT=1) and a surface-mount [HDMI connector](https://www.digikey.com/en/products/detail/amphenol-cs-fci/10029449-111RLF/2785386?s=N4IgTCBcDaIGwAYCcBaALHAjGlmUDkAREAXQF8g) for connection between the RoSco head motion tracking device and the Open Ephys acquisition board.
-3. A male DB15 to terminal breakout board [connector](https://www.amazon.com/DB15-Breakout-Connector-Pin-Male/dp/B073RGHNVD) for connections between single pins to the Open Ephys I/O board.
-4. A male to female DB15 [cable](https://www.amazon.com/Female-Extension-tinned-Shielded-soliConnector/dp/B093P4W22V/ref=sr_1_5?crid=130GIODUV9ZMD&dib=eyJ2IjoiMSJ9.8Dfuw8gbwaj0Ltt9hNVz6aKSq_yqtXQj2jlV4QmFc4y4sT0Htf3cpZzMWrKl_7DuRt3OoqQtyYHA00QE4swo7XOP6aDjIESvzWZJz_AbNq9HKS9-otb72Ef0sy9F2O8FNDBNScFXaFDjZ9bGLp1yK329s55HWbS-tm0ppJejqisqmffPmw2CRpsBq8liHvQWkC3pBj9iQ86vSZMEVUKZuIpHASC8Zus6WETTaYYXqhI.G9BbIbfxLHvFTva8zR1PQ_lCHkEM7KjyQC1bDxgmQvE&dib_tag=se&keywords=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft&qid=1742251738&sprefix=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft%2Caps%2C152&sr=8-5&th=1) to connect the RoSco head motion tracking device to the Open Ephys I/O board.
-5. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for ephys data.
+3. A male DB15 to terminal breakout board [connector](https://www.amazon.com/DB15-Breakout-Connector-Pin-Male/dp/B073RGHNVD) for connections between single pins in the D-Sub connector to the Open Ephys I/O board. This is how we connected those pins, and the correspondance to the IMU data pins through the RoSco head motion tracking device.
+
+   | I/O board hole | DB15 pin | IMU pin |
+   | :---: | :---: | :---: |
+   | gnd | 8 | GND |
+   | 1 | 4 | ACC_X |
+   | 2 | 12 | ACC_Y |
+   | 3 | 5 | ACC_Z |
+   | 5 | 13 | GYRO_X |
+   | 6 | 6 | GYRO_Y |
+   | 7 | 14 | GYRO_Z |
+
+5. A male to female DB15 [cable](https://www.amazon.com/Female-Extension-tinned-Shielded-soliConnector/dp/B093P4W22V/ref=sr_1_5?crid=130GIODUV9ZMD&dib=eyJ2IjoiMSJ9.8Dfuw8gbwaj0Ltt9hNVz6aKSq_yqtXQj2jlV4QmFc4y4sT0Htf3cpZzMWrKl_7DuRt3OoqQtyYHA00QE4swo7XOP6aDjIESvzWZJz_AbNq9HKS9-otb72Ef0sy9F2O8FNDBNScFXaFDjZ9bGLp1yK329s55HWbS-tm0ppJejqisqmffPmw2CRpsBq8liHvQWkC3pBj9iQ86vSZMEVUKZuIpHASC8Zus6WETTaYYXqhI.G9BbIbfxLHvFTva8zR1PQ_lCHkEM7KjyQC1bDxgmQvE&dib_tag=se&keywords=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft&qid=1742251738&sprefix=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft%2Caps%2C152&sr=8-5&th=1) to connect the RoSco head motion tracking device to the Open Ephys I/O board.
+6. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for ephys data.
 
 ## Rig
 
