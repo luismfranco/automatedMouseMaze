@@ -7,13 +7,13 @@ Currently under development in the Niell Lab (https://nielllab.uoregon.edu/).
 
 # Installation
 
-### Requirements:
+## Requirements
 
 1. Operating System: Windows.
 2. Anaconda (https://www.anaconda.com/).
 3. Microsoft Visual C++ 14.0 or greater (https://visualstudio.microsoft.com/visual-cpp-build-tools/).  
 
-### Step by step:
+## Step by step
 
 In the Command Prompt:
 1. Create your environment. Example:  
@@ -48,7 +48,7 @@ Before running your first experiment, make sure your Teensy board is properly [c
 2. Under ``stimulusScreen``, select the correct ``screenNumber``. In Windows, you can verify the screen number in: ``Display settings > Display > Identify``.
 3. There are also a number of input and output digintal pins under ``teensyConfiguration``. Make sure they are properly assigned according to your electronic circuit (see example below).
 
-### Example board with connections for Teensy pins:
+## Example board with connections for Teensy pins
 
 1. Solenoid valves, including transistors and diodes. The solenoids for the maze doors (green wires) require a 24 V power supply. The solenoids for the water rewards (blue wires) require a 12 V power supply. **Important: use diodes to make sure current doesn't flow back from solenoids to Teensy**. In this example, the configuration is:  
    ``"leftStartDoor": "5"``  
@@ -114,7 +114,7 @@ Once you have calculated the correct valve opening time for 5, 6, 7, 8, 9 and 10
 
 There are a few options you can select before running an experiment.
 
-Task Parameters:
+## Task Parameters
 
 1. Maximum number of ``trials``.
 2. Maximum ``duration`` of the experiment (in seconds).
@@ -125,7 +125,7 @@ Task Parameters:
 7. Turning off the display of the visual ``stimulus``.
 8. Fraction of trials with ``forced choice``, where only the door for the correct decision is opened. Helpful during early stages of training.
 
-Experiment Data:
+## Experiment Data
 
 1. Name of your ``rig``.
 2. Name of your ``animal``.
@@ -172,31 +172,33 @@ It is easy to change the settings for the [drifting gratings](src/driftingGratin
 
 The app GUI displays general maze parameters and behavior stats on the left-hand side that continuously update through the experiemntal session.
 
-Doors:
+## Doors
 
-1. ``maze state``.
-2. ``start left``.
-3. ``start right``.
-4. ``decision left``.
-5. ``decision right``.
+1. ``maze state``. (0) *ready*, before session starts running, (1) *start*, once a trial has started, (2) *end*, once the mouse has made a decision, (3) *ITI-left*, mouse is on the left side of the maze, waiting for the *left start door* to open, (4) *ITI-right*, mouse is on the right side of the maze, waiting for the *right start door* to open.
+2. ``start left``. displays *open* or *closed* for the *left start door*. It also displays the state of its corresponding beam break, a (0) indicates the mouse is passing through its beam break, otherwise it shows (1).
+3. ``start right``. same, but for the *right start door*.
+4. ``decision left``. same, but for the *left decision door*.
+5. ``decision right``. same, but for the *right decision door*.
 
-Stimulus:
+## Stimulus
 
-1. ``stimulus states``.
-2. ``on switch``.
-3. ``off switch``.
+1. ``stimulus states``. (0) *ready*, before session starts running, (1) a trial has started, it can display *on* or *off* depending on the configuration for the stimulus *on switch*, (2) *on*, either the stimulus has been on since trial start, or the stimulus just turned on when the mouse passed the *on switch* beam break, (3) the mouse just passed the *off switch* beam break, it can display *on* or *off* depending on the configuration for the stimulus *off switch*, (4) waiting for a decision to be made, (5) "ready", ITI, waiting for a new trial to begin.
+2. ``on switch``. if its box is checked, it will display when the stimulus is turned "on" and "off" by the corresponding beam breaks.
+3. ``off switch``. if its box is checked, it will display "on" when the stimulus is intentionally turned off by the second beam break in the central corridor of the maze. It will display "off" once a decision has been made by the mouse.
 
-Behavior:
+**Note: positioning the beam breaks for the *on* and *off* switches along the central corridor of the maze allows for different experimental configurations, where attention to the visual stimuli can be triggered at different locations, or, to test working memory, the visual stimulus can also be removed at different locations**
 
-1. ``performance``.
-2.  ``bias index``.
-3.  ``alternation index``.
-4.  ``trials``.
-5.  ``correct``.
-6.  ``incorrect``.
-7.  ``left decisions``.
-8.  ``right decisions``.
-9.  ``reward (μL)``.
+## Behavior
+
+1. ``performance``. Mouse performance, calculated as *P = C / (C + I)*.
+2.  ``bias index``. Decision bias, calculated as *BI = (L - R) / (L + R)*.
+3.  ``alternation index``. Index to measure how much a mouse just alternates between decisions (e.g. L, R, L, R, L, R, ...). Calculated as *AI = sum(abs(diff(decisions)))/length(decisions)*, where *decisions* are zeros and ones.
+4.  ``trials``. Trial number.
+5.  ``correct``. Number of correct decisions.
+6.  ``incorrect``. Number of incorrect decisions.
+7.  ``left decisions``. Number of decisions to the left.
+8.  ``right decisions``. Number of decisions to the right. 
+9.  ``reward (μL)``. Estimated reward, based on the parameters obtained by the calibration curve.
 
 # Behavior Data File
 
