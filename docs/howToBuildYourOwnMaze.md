@@ -23,7 +23,7 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 8. [Solenoid valves](https://www.theleeco.com/industries/scientific-instruments/products/solenoid-valves/browse/?filters[subtype][]=Control+Solenoid+Valves) for control of water delivery.
 9. 1/16" ID x 1/8" OD Tygon [tubing](https://www.usplastic.com/catalog/item.aspx?itemid=91104&catid=864) for the water delivery system.
 10. 14 gauge luer-lock blunt tip [needles](https://www.amazon.com/Syringe-Dispensing-Needles-Length-Interface/dp/B07DZC225B/ref=pd_ci_mcx_di_int_sccai_cn_d_sccl_2_1/133-0408013-9182656?pd_rd_w=JuARf&content-id=amzn1.sym.751acc83-5c05-42d0-a15e-303622651e1e&pf_rd_p=751acc83-5c05-42d0-a15e-303622651e1e&pf_rd_r=SDJGVFYGQZ0KS2EZG109&pd_rd_wg=XP1nb&pd_rd_r=9ea53b80-e963-4a30-bfc5-857ae6b058f9&pd_rd_i=B07DZC225B&psc=1) as spouts for water delivery.
-11. Custom [3D-printed objects](https://github.com/luismfranco/automatedMouseMaze/tree/99c225861e82ac3776c7e1dc496d73c4fc0f3bcc/assets/hardware) as rail brakets, as pieces of wall (for water ports, and to secure the stimulus screen), and as holders (for IR sensors, speaker, cables, and for the water system).
+11. Custom [3D-printed objects](https://github.com/luismfranco/automatedMouseMaze/tree/99c225861e82ac3776c7e1dc496d73c4fc0f3bcc/assets/hardware) as rail brakets, sections of walls (i.e., water ports, stimulus screen holders), and to mount other components (i.e., IR sensors, speaker, cables, water system).
 
 ## Automated Doors
 
@@ -34,7 +34,7 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 5. IR [beam breaks](https://www.adafruit.com/product/2167) for detecting the mouse traverse through the maze.
 6. 100 cm M/M [wires](https://www.amazon.com/EDGELEC-Breadboard-Optional-Assorted-Multicolored/dp/B07GD1W7XV/ref=sr_1_1_sspa?crid=1D6I1EZM32X2T&dib=eyJ2IjoiMSJ9.tjHxIQLJsk16_0YVtUGN6YeXdt0VqIwh7Zmfzd7nvfTaoSMecktPIPsgfi6eLwfPrpE-Z7TFF3Gb6OmAsEyH4OuRfeKQ2U6yeUaDnbuFGswrOXPukg3xDJGZqP0xiogOAQo_2PqBlSW5yXpFgDqxkBzMUHsNNzfc4F-zrGIxkpvzX6CnOzBpjidBHCxZRSphsHbICibgDRfXkQytRIVXbw9Gbyz2Bt6wmlDkohLT7gUYbs8jQcpc5IITMBIXfrioVjBJ50nB4BJkOvXv_kzaIx5H3ulgZPomOofbuDLn7Cw.BAJcuUxcOIL5un-H80QwuIrBCIlUhJ-gg4DElPhICeA&dib_tag=se&keywords=jumper%2Bwires&qid=1718926518&s=industrial&sprefix=jumper%2Bwire%2Cindustrial%2C148&sr=1-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&th=1) and 1" F/F [wires](https://www.digikey.com/en/products/detail/pololu-corporation/3860/10451018) for connections between IR sensors, water valves and LEDs to the Teensy circuit.
 7. 12" M/M [wires](https://www.digikey.com/en/products/detail/pololu-corporation/1765/10450795) and 2" M/F [wires](https://www.digikey.com/en/products/detail/pololu-corporation/3845/10451009) for connections between the solenoid manifold and the Teensy circuit.
-8. Custom [3D-printed objects](https://github.com/luismfranco/automatedMouseMaze/tree/99c225861e82ac3776c7e1dc496d73c4fc0f3bcc/assets/hardware) to mount the pneumatic actuators, and to secure the acrylic doors to the actuators.
+8. Custom [3D-printed objects](https://github.com/luismfranco/automatedMouseMaze/tree/99c225861e82ac3776c7e1dc496d73c4fc0f3bcc/assets/hardware) to mount the pneumatic actuators, to cushion and limit the range of motion of actuators, and to secure the acrylic doors to the actuators.
 
 ## Teensy Circuit
 
@@ -58,15 +58,16 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 ## Mouse Cameras and Inertial Measurement Unit (IMU)
 
 1. [Video capture devices](https://www.amazon.com/StarTech-com-USB3HDCAP-Video-Capture-Device/dp/B00PC5HUA6/ref=sr_1_3?crid=1AFS4ZNT5DLU3&dib=eyJ2IjoiMSJ9.2LWQRFf16ZPMxyykpqUm1QtyUSt6AnmngN9oj-gAVxMcaWOHj-sg9mHyR_VOyZlGUHDAgP-RiLVpqHIJ-4CsqHQrcvttvKUw0d4jl_iBUglC5TElRCm2L9J60tKoq5Ut_k4KGTKNtWHq8QpZT8mpwddy7JufOzukyDw1aMnpO24DBLibw6otOFhMhWo_Zq9ubgKt0tLhXP5yMT88ZsZAhWJNJHszQvsijkaGipRK1V4.3MNmDwkGFHCEMfpO7wPUEYZ5Zc35iEvtZ5vzg5dQjI0&dib_tag=se&keywords=startech+usb+3.0+hd+video+capture+device+1080p&qid=1743533019&sprefix=startech+usb+3.0+hd+video+capture+device+1080p%2Caps%2C130&sr=8-3) for converting analog video from both the eye and the world cameras into digital video.
-2. An analog 5 mm x 5 mm [camera](https://www.aliexpress.us/item/3256803738909660.html?spm=a2g0o.detail.pcDetailTopMoreOtherSeller.10.47a4Gmv2Gmv2Vk&gps-id=pcDetailTopMoreOtherSeller&scm=1007.40196.422467.0&scm_id=1007.40196.422467.0&scm-url=1007.40196.422467.0&pvid=40156854-8944-49dc-8f22-28e36af707d0&_t=gps-id:pcDetailTopMoreOtherSeller,scm-url:1007.40196.422467.0,pvid:40156854-8944-49dc-8f22-28e36af707d0,tpp_buckets:668%232846%238108%231977&pdp_ext_f=%7B%22order%22%3A%2273%22%2C%22eval%22%3A%221%22%2C%22sceneId%22%3A%2230050%22%7D&pdp_npi=4%40dis%21USD%2117.62%2110.12%21%21%2117.62%2110.12%21%402101c5b217435439061578444e0ef5%2112000027485322782%21rec%21US%21%21ABXZ&utparam-url=scene%3ApcDetailTopMoreOtherSeller%7Cquery_from%3A) for recoridng the eye of the mouse.
-3. TDK InvenSense [inertial measurement unit](https://invensense.tdk.com/products/motion-tracking/9-axis/icm-20948/) for measuring the position of the head of the mouse.
-4. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for video and IMU data.
-5. We used a custom-made **crown** to assemble both cameras and the IMU:
+2. An analog 5 mm x 5 mm x 3.6 mm [camera](https://www.aliexpress.us/item/3256803738909660.html?spm=a2g0o.detail.pcDetailTopMoreOtherSeller.10.47a4Gmv2Gmv2Vk&gps-id=pcDetailTopMoreOtherSeller&scm=1007.40196.422467.0&scm_id=1007.40196.422467.0&scm-url=1007.40196.422467.0&pvid=40156854-8944-49dc-8f22-28e36af707d0&_t=gps-id:pcDetailTopMoreOtherSeller,scm-url:1007.40196.422467.0,pvid:40156854-8944-49dc-8f22-28e36af707d0,tpp_buckets:668%232846%238108%231977&pdp_ext_f=%7B%22order%22%3A%2273%22%2C%22eval%22%3A%221%22%2C%22sceneId%22%3A%2230050%22%7D&pdp_npi=4%40dis%21USD%2117.62%2110.12%21%21%2117.62%2110.12%21%402101c5b217435439061578444e0ef5%2112000027485322782%21rec%21US%21%21ABXZ&utparam-url=scene%3ApcDetailTopMoreOtherSeller%7Cquery_from%3A) for recoridng the eye of the mouse.
+3. An analog 11 mm x 14.1 mm x 13.5 mm [camera](https://www.amazon.com/BETAFPV-Camera-Sensor-1200TVL-Global/dp/B0BMVFGHB1/ref=asc_df_B0BMVFGHB1?mcid=da343b1b22f63402b7daf4ad020d87c1&hvocijid=17462633199980442399-B0BMVFGHB1-&hvexpln=73&tag=hyprod-20&linkCode=df0&hvadid=721245378154&hvpos=&hvnetw=g&hvrand=17462633199980442399&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9189768&hvtargid=pla-2281435177658&psc=1) for recording the *world* in front of the mouse head.
+4. TDK InvenSense [inertial measurement unit](https://invensense.tdk.com/products/motion-tracking/9-axis/icm-20948/) for measuring the position of the head of the mouse.
+5. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for video and IMU data.
+6. We used a custom-made **crown** to assemble both cameras and the IMU:
    <p align="center">
    <img width="300" height="385" src="../assets/crownLeftSide.png">
    <img width="300" height="385" src="../assets/crownRightSide.png">
    </p>
-7. We also used a custom-made breakout board to send video and IMU data from the **crown** to the video capture devices and to the RoSco head motion tracking device, respectively:
+7. We also used a custom-made breakout board to send video and IMU data from the **crown** to the video capture devices, and to the RoSco head motion tracking device, respectively:
    <p align="center">
    <img width="430" height="300" src="../assets/crownBreakoutBoard.png">
    </p>
@@ -88,7 +89,8 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
    | 7 | 14 | GYRO_Z |
 
 5. A male to female DB15 [cable](https://www.amazon.com/Female-Extension-tinned-Shielded-soliConnector/dp/B093P4W22V/ref=sr_1_5?crid=130GIODUV9ZMD&dib=eyJ2IjoiMSJ9.8Dfuw8gbwaj0Ltt9hNVz6aKSq_yqtXQj2jlV4QmFc4y4sT0Htf3cpZzMWrKl_7DuRt3OoqQtyYHA00QE4swo7XOP6aDjIESvzWZJz_AbNq9HKS9-otb72Ef0sy9F2O8FNDBNScFXaFDjZ9bGLp1yK329s55HWbS-tm0ppJejqisqmffPmw2CRpsBq8liHvQWkC3pBj9iQ86vSZMEVUKZuIpHASC8Zus6WETTaYYXqhI.G9BbIbfxLHvFTva8zR1PQ_lCHkEM7KjyQC1bDxgmQvE&dib_tag=se&keywords=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft&qid=1742251738&sprefix=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft%2Caps%2C152&sr=8-5&th=1) to connect the RoSco head motion tracking device to the Open Ephys I/O board.
-6. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for ephys data.
+6. An [HDMI cable](https://www.amazon.com/8K-HDMI-Cable-Highwings-Braided/dp/B08NX5CZTF/ref=sr_1_3?crid=2SKNV3K7FT856&dib=eyJ2IjoiMSJ9.0s7nNXqA8Cyls4m55p6IICY9LFpXeLHEcHy1I_FPqAV92uDbZ6TIhbl41YOCkCFidSRUzabDXBDrvh4pv0ZoePQDTtZaBJQwBT6txrHYD13xFO7OUg2KzzUmhyB9yriOJ4LIp5eHkThv963hRvpSOWb0zHB9D1R0EtGbtDyiY9zcurTbybNtn6B363BnccMLb0wQFV-ME9-Ql8XH9SsLLeq9nGqnEYX7qHf7zJj3Bog.j3JsmHsvfzkTRXN6iaeko4XzVftNXnVeqkv6F7fscjs&dib_tag=se&keywords=hdmi%2Bcable&qid=1742258716&sprefix=hdmi%2Bcable%2Caps%2C144&sr=8-3&th=1) to connect the Open Ephys I/O board to the Open Ephys acquisition board.
+7. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for ephys data.
 
 ## Rig
 
