@@ -186,13 +186,13 @@ The app GUI displays general maze parameters and behavior stats on the left-hand
 2. ``on switch``. if its box is checked, it will display when the stimulus is turned "on" and "off" by the corresponding beam breaks.
 3. ``off switch``. if its box is checked, it will display "on" when the stimulus is intentionally turned off by the second beam break in the central corridor of the maze. It will display "off" once a decision has been made by the mouse.
 
-**Note: positioning the beam breaks for the *on* and *off* switches along the central corridor of the maze allows for different experimental configurations, where attention to the visual stimuli can be triggered at different locations, or, to test working memory, the visual stimulus can also be removed at different locations**
+**Note: positioning the beam breaks for the *on* and *off* switches along the central corridor of the maze allows for different experimental configurations, where attention to the visual stimuli can be triggered at different locations, or, to test working memory, the visual stimulus can also be removed at different locations.**
 
 ## Behavior
 
-1. ``performance``. Mouse performance, calculated as *P = C / (C + I)*.
-2.  ``bias index``. Decision bias, calculated as *BI = (L - R) / (L + R)*.
-3.  ``alternation index``. Index to measure how much a mouse just alternates between decisions (e.g. L, R, L, R, L, R, ...). Calculated as *AI = sum(abs(diff(decisions)))/length(decisions)*, where *decisions* are zeros and ones.
+1. ``performance``. Mouse performance, calculated as *P = C / (C + I)*, where *C* and *I* are the total number of correct and incorrect decisions, respectively.
+2.  ``bias index``. Decision bias, calculated as *BI = (L - R) / (L + R)*, where *L* and *R* are the total number of left and right decisions, respectively.
+3.  ``alternation index``. Rate of switching between decisions (e.g. L, R, L, R, L, R, ...), calculated as *AI = sum(abs(diff(D)))/length(D)*, where *D* is a sequence of zeros and ones corresponding to L and R decisions.
 4.  ``trials``. Trial number.
 5.  ``correct``. Number of correct decisions.
 6.  ``incorrect``. Number of incorrect decisions.
