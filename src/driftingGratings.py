@@ -36,7 +36,7 @@ class driftingGratings:
             self.target = self.leftTarget
         elif self.targetLocation == 1:
             self.target = self.rightTarget
-        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "raisedCos", size = 30, pos = [0, 0], sf = 0.1, ori = self.target)
+        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "raisedCos", size = 20, pos = [0, 0], sf = 0.1, ori = self.target)
         
     def startStimulus(self, **kwargs):
         

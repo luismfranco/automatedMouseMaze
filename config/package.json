@@ -24,7 +24,7 @@
      },
      
      "teensyConfiguration": {
-         "port": "COM4",
+         "port": "COM3",
          "leftStartIRsensor": "22",
          "rightStartIRsensor": "20",
          "leftDecisionIRsensor": "18",
@@ -42,7 +42,7 @@
      },
      
      "stimulusScreen": {
-         "screenNumber": "2",
+         "screenNumber": "1",
          "screenWidth": "1024",
          "screenHeight": "600"
      }
