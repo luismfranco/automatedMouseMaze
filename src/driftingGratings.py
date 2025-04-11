@@ -7,7 +7,7 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 from psychopy import visual
 
-# changes made by cf - 12/16/24: self.leftTarget = 180 instead of 90, added self.gratingsetPos (7,0), changed self.grating.setPhase(0.025, '-') to 0.025,+
+
 """
 Drifting Gratings
 
@@ -36,8 +36,8 @@ class driftingGratings:
             self.target = self.leftTarget
         elif self.targetLocation == 1:
             self.target = self.rightTarget
-        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = None, size = self.stimulusWindow.size, pos = [0, 0], sf = 0.1, ori = self.target)
-        # mask = "raisedCos", size = 20
+        # self.grating = visual.GratingStim(win = self.stimulusWindow, mask = None, size = self.stimulusWindow.size, pos = [0, 0], sf = 0.1, ori = self.target)
+        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = "raisedCos", size = 20, pos = [0, 0], sf = 0.1, ori = self.target)
         
     def startStimulus(self, **kwargs):
         

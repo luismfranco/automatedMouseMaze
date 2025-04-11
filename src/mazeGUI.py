@@ -14,6 +14,10 @@ from datetime import datetime
 from pathlib import Path
 import cv2
 
+# Open Ephys modules
+import subprocess
+from open_ephys.control import OpenEphysHTTPServer
+
 # Teensy modules
 import pyfirmata
 import serial
@@ -56,11 +60,11 @@ class mazeGUI:
         
         """
         
-        # Geometry
+        # Geometry and location
         self.mainWindow = mainWindow
         self.mainWindow.title('Automated Mouse Maze')
-        windowWidth = 1025
-        windowHeight = 600
+        windowWidth = 1000
+        windowHeight = 650
         screenWidth = self.mainWindow.winfo_screenwidth()
         screenHeight = self.mainWindow.winfo_screenheight()
         x = (screenWidth/1.5) - (windowWidth/2)
@@ -69,8 +73,8 @@ class mazeGUI:
         self.backGroundColor = self.mainWindow.cget('bg')
         buttonFont = tkFont.Font(family = 'helvetica', size = 12)
         
-        # Frames
-        frame1 = tk.Frame(self.mainWindow, width = 225, height = 600) #, bg = 'green')
+        # Frame 1: Maze states and mouse behavior
+        frame1 = tk.Frame(self.mainWindow, width = 225, height = 650)
         frame1.grid(row = 0, rowspan = 3, column = 0, sticky = 'news')
         frame11 = tk.Frame(frame1, width = 225, height = 200)
         frame11.place(anchor = "c", relx = 0.5, rely = 0.15)
@@ -78,28 +82,34 @@ class mazeGUI:
         frame12.place(anchor = "c", relx = 0.5, rely = 0.415)
         frame13 = tk.Frame(frame1, width = 225, height = 300)
         frame13.place(anchor = "c", relx = 0.5, rely = 0.75)
-        frame2 = tk.Frame(self.mainWindow, width = 600, height = 450) #, bg = 'red')
+        
+        # Frame 2: Logo and main task parameters
+        frame2 = tk.Frame(self.mainWindow, width = 550, height = 500)
         frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
-        frame21 = tk.Frame(frame2, width = 600, height = 150)
+        frame21 = tk.Frame(frame2, width = 550, height = 175)
         frame21.place(anchor = "c", relx = 0.5, rely = 0.215)
-        frame22 = tk.Frame(frame2, width = 600, height = 300)
+        frame22 = tk.Frame(frame2, width = 550, height = 325)
         frame22.place(anchor = "c", relx = 0.5, rely = 0.71)
-        frame3 = tk.Frame(self.mainWindow, width = 500, height = 150) #, bg = 'blue')
+        
+        # Frame 3: Task buttons
+        frame3 = tk.Frame(self.mainWindow, width = 550, height = 150)
         frame3.grid(row = 2, column = 1, sticky = 'news')
-        frame31 = tk.Frame(frame3, width = 600, height = 150)
+        frame31 = tk.Frame(frame3, width = 550, height = 150)
         frame31.place(anchor = "c", relx = 0.5, rely = 0.5)
-        frame4 = tk.Frame(self.mainWindow, width = 200, height = 600) #, bg = 'green')
+        
+        # Frame 4: Camera and Open Ephys controls
+        frame4 = tk.Frame(self.mainWindow, width = 225, height = 650)
         frame4.grid(row = 0, rowspan = 3, column = 2, sticky = 'news')
-        frame41 = tk.Frame(frame4, width = 200, height = 400)
-        frame41.place(anchor = "c", relx = 0.5, rely = 0.3)
-        frame42 = tk.Frame(frame4, width = 200, height = 200)
-        frame42.place(anchor = "c", relx = 0.5, rely = 0.7)
+        frame41 = tk.Frame(frame4, width = 225, height = 300)
+        frame41.place(anchor = "c", relx = 0.5, rely = 0.225)
+        frame42 = tk.Frame(frame4, width = 225, height = 350)
+        frame42.place(anchor = "c", relx = 0.5, rely = 0.725)
         
         # Logo
         imagePath = "assets/mazeGUIlogo.png"
         img = Image.open(imagePath)
-        img = img.resize((420, 150))
-        self.img = ImageTk.PhotoImage(master = frame21, width = 150, height = 150, image = img)
+        img = img.resize((490, 175))
+        self.img = ImageTk.PhotoImage(master = frame21, width = 175, height = 175, image = img)
         logo = tk.Label(frame21, image = self.img)
         logo.place(anchor = "c", relx = 0.5, rely = 0.5)
             
@@ -423,7 +433,7 @@ class mazeGUI:
         self.saveVideo = False
         
         # Camera labels
-        tk.Label(frame41, font = buttonFont, text = "Camera Controls", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 4 , padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame41, font = buttonFont, text = "Camera Controls", width = 12, anchor  = 'c').grid(row = 0, column = 0, padx = 10, pady = 10, sticky = 'we')
         
         # Initialize cameras
         self.startCameraButton = tk.Button(frame41, text = 'Start Cameras', font = buttonFont, width = 17, command = self.startCameras)
@@ -451,18 +461,50 @@ class mazeGUI:
         
         
         """
-        Camera Controls
+        Open Ephys Controls
         
         """
         
+        # Path for Open Ephys exe
+        self.OpenEphysPath = "C:\\Program Files\\Open Ephys\\open-ephys.exe"
+        
         # Booleans for buttons
-        self.IMUIsOn = False
+        self.OpenEphysGUIHasBeenLaunched = False
+        self.EphysRecordingInProgress = False
+        self.previewOpenEphysIsOn = False
         
-        # IMU labels
-        tk.Label(frame42, font = buttonFont, text = "IMU Controls", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 4 , padx = 10, pady = 10, sticky = 'we')
+        # Open Ephys labels
+        tk.Label(frame42, font = buttonFont, text = "Ephys and IMU Controls", width = 25, anchor  = 'c').grid(row = 0, column = 0, padx = 10, pady = 10, sticky = 'we')
         
+        # Initialize Open Ephys GUI
+        self.launchOpenEphysButton = tk.Button(frame42, text = 'Launch Open Ephys', font = buttonFont, width = 17, command = self.launchOpenEphysGUI)
+        self.launchOpenEphysButton.grid(row = 1, column = 0, padx = 10, pady = 10)
+        self.launchOpenEphysButton.bind('<Enter>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='#A9C6E3'))
+        self.launchOpenEphysButton.bind('<Leave>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
+        # Preview
+        self.previewOpenEphysButton = tk.Button(frame42, text = 'Preview Off', font = buttonFont, width = 17, command = self.previewOpenEphysChannels)
+        self.previewOpenEphysButton.grid(row = 2, column = 0, padx = 10, pady = 10)
+        self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='#99D492'))
+        self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
+        # Start recording
+        self.startEphysRecordingButton = tk.Button(frame42, text = 'Start Recording', font = buttonFont, width = 17, command = self.startEphysRecording)
+        self.startEphysRecordingButton.grid(row = 3, column = 0, padx = 10, pady = 10)
+        self.startEphysRecordingButton.bind('<Enter>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='#DC5B5B'))
+        self.startEphysRecordingButton.bind('<Leave>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='SystemButtonFace'))
+        
+        # Stop recording
+        self.stopEphysRecordingButton = tk.Button(frame42, text = 'Stop Recording', font = buttonFont, width = 17, command = self.stopEphysRecording)
+        self.stopEphysRecordingButton.grid(row = 4, column = 0, padx = 10, pady = 10)
+        self.stopEphysRecordingButton.bind('<Enter>', lambda e: self.stopEphysRecordingButton.config(fg = 'Black', bg ='#FFB844'))
+        self.stopEphysRecordingButton.bind('<Leave>', lambda e: self.stopEphysRecordingButton.config(fg = 'Black', bg ='SystemButtonFace'))
+        
+        # Close Open Ephys GUI
+        self.closeOpenEphysGUIButton = tk.Button(frame42, text = 'Close Open Ephys', font = buttonFont, width = 17, command = self.closeOpenEphysGUI)
+        self.closeOpenEphysGUIButton.grid(row = 5, column = 0, padx = 10, pady = 10)
+        self.closeOpenEphysGUIButton.bind('<Enter>', lambda e: self.closeOpenEphysGUIButton.config(fg = 'Black', bg ='#AFAFAA'))
+        self.closeOpenEphysGUIButton.bind('<Leave>', lambda e: self.closeOpenEphysGUIButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         
         """
@@ -1081,11 +1123,151 @@ class mazeGUI:
 
 
     """ 
-    Task Functions
+    Open Ephys Functions
     
     """
     
+    def launchOpenEphysGUI(self):
+        
+        if self.OpenEphysGUIHasBeenLaunched == False:
+            
+            # Check for task parameters
+            self.updateTrialParameters()
+            
+            # Launch Open Ephys GUI
+            subprocess.Popen(self.OpenEphysPath)
+            
+            # Communicate with Open Ephys HTTP Server
+            self.GUIstatus = []
+            while self.GUIstatus != "connected":
+                try:
+                    self.OpenEphysGUI = OpenEphysHTTPServer()
+                    if self.OpenEphysGUI.status() == "IDLE":
+                        self.OpenEphysGUIHasBeenLaunched = True
+                        self.GUIstatus = "connected"
+                except:
+                    time.sleep(1)
+            
+            # Path and data file name
+            self.OpenEphysGUI.set_start_new_dir()
+            self.OpenEphysGUI.set_parent_dir(self.pathForSavingData)
+            self.OpenEphysGUI.set_prepend_text(self.animalID + "_")
+            self.OpenEphysGUI.set_base_text(self.currentDate)
+            self.OpenEphysGUI.set_append_text("_" + "ephysData" + "_" + str(self.blockID))
+            recordNodeID = self.OpenEphysGUI.get_recording_info(key = "record_nodes")
+            recordNodeID = recordNodeID[0]["node_id"]
+            self.OpenEphysGUI.set_file_path(recordNodeID, self.pathForSavingData)
+
+            # Update launchOpenEphysButton: GUI has been launched...
+            self.launchOpenEphysButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Launched')
+            self.launchOpenEphysButton.bind('<Enter>', lambda e: self.launchOpenEphysButton.config(fg = 'Blue', bg ='#A9C6E3'))
+            self.launchOpenEphysButton.bind('<Leave>', lambda e: self.launchOpenEphysButton.config(fg = 'Blue', bg = '#A9C6E3'))
+            self.launchOpenEphysButton.update_idletasks()
+            
+    def previewOpenEphysChannels(self):
+        
+        if self.OpenEphysGUIHasBeenLaunched == True and self.previewOpenEphysIsOn == False and self.EphysRecordingInProgress == False:
+            
+            # Update previewOpenEphysButton: preview mode...
+            self.previewOpenEphysButton.config(fg = 'Black', bg = '#99D492', relief = 'sunken', text = 'Preview On')
+            self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Blue', bg ='#99D492'))
+            self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Blue', bg = '#99D492'))
+            self.previewOpenEphysButton.update_idletasks()
+            
+            # Start preview mode
+            self.OpenEphysGUI.acquire()
+            self.previewOpenEphysIsOn = True
+            
+        elif self.OpenEphysGUIHasBeenLaunched == True and self.previewOpenEphysIsOn == True and self.EphysRecordingInProgress == False:
+            
+            # Update previewOpenEphysButton: preview mode...
+            self.previewOpenEphysButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Preview Off')
+            self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='#99D492'))
+            self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg = 'SystemButtonFace'))
+            self.previewOpenEphysButton.update_idletasks()
+            
+            # Stop preview mode
+            self.OpenEphysGUI.idle()
+            self.previewOpenEphysIsOn = False
+            
+        elif self.OpenEphysGUIHasBeenLaunched == False:
+            print("Open Ephys GUI has not been launched yet.")
+            
+        elif self.EphysRecordingInProgress == True:
+            print("There is an ongoing recording in progress.")
+            
+    def startEphysRecording(self):
+        
+        if self.OpenEphysGUIHasBeenLaunched == True and self.EphysRecordingInProgress == False:
+            
+            # Update previewOpenEphysButton: preview mode...
+            if self.previewOpenEphysIsOn == True:
+                self.previewOpenEphysButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Preview Off')
+                self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='#99D492'))
+                self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg = 'SystemButtonFace'))
+                self.previewOpenEphysButton.update_idletasks()
+                
+            # Update startEphysRecordingButton. Recording in progress...
+            self.startEphysRecordingButton.config(fg = 'Black', bg = '#DC5B5B', relief = 'sunken', text = 'Recording')
+            self.startEphysRecordingButton.bind('<Enter>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='#DC5B5B'))
+            self.startEphysRecordingButton.bind('<Leave>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg = '#DC5B5B'))
+            self.startEphysRecordingButton.update_idletasks()
+            
+            # Start recording
+            self.OpenEphysGUI.record()
+            self.EphysRecordingInProgress = True
+        
+        elif self.OpenEphysGUIHasBeenLaunched == False:
+            print("Open Ephys GUI has not been launched yet.")
+        
+    def stopEphysRecording(self):
+        
+        if self.OpenEphysGUIHasBeenLaunched == True and self.EphysRecordingInProgress == True:
+            
+            # Update startEphysRecordingButton. Recording in progress...
+            self.startEphysRecordingButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Recording')
+            self.startEphysRecordingButton.bind('<Enter>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='#DC5B5B'))
+            self.startEphysRecordingButton.bind('<Leave>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg = 'SystemButtonFace'))
+            self.startEphysRecordingButton.update_idletasks()
+            
+            # Stop recording
+            self.OpenEphysGUI.idle()
+            self.EphysRecordingInProgress = False
+            
+        elif self.OpenEphysGUIHasBeenLaunched == False:
+            print("Open Ephys GUI has not been launched yet.")
+            
+        elif self.EphysRecordingInProgress == False:
+            print("No recording in progress.")
+        
+    def closeOpenEphysGUI(self):
+
+        if self.OpenEphysGUIHasBeenLaunched == True and self.previewOpenEphysIsOn == False and self.EphysRecordingInProgress == False:
+            
+            # Close Open Ephys GUI
+            self.OpenEphysGUI.quit()
+            self.OpenEphysGUIHasBeenLaunched = False
+            
+            # Update launchOpenEphysButton: GUI has been closed...
+            self.launchOpenEphysButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Launch Open Ephys')
+            self.launchOpenEphysButton.bind('<Enter>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='#A9C6E3'))
+            self.launchOpenEphysButton.bind('<Leave>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='SystemButtonFace'))
+            self.launchOpenEphysButton.update_idletasks()
+            
+        elif self.OpenEphysGUIHasBeenLaunched == False:
+            print("Open Ephys GUI has not been launched yet.")
+            
+        elif self.previewOpenEphysIsOn == True:
+            print("Open Ephys is currently in preview mode.")
+            
+        elif self.EphysRecordingInProgress == True:
+            print("There is an ongoing recording in progress.")
+
     
+    """ 
+    Task Functions
+    
+    """    
     
     def initializeTaskParameters(self):
         
