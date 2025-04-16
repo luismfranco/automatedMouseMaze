@@ -76,7 +76,9 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 
 1. Open Ephys [acquisition board](https://open-ephys.org/acquisition-system/oeps-9029).
 2. Open Ephys [I/O Board](https://open-ephys.org/acquisition-system/io-board-pcb), with through-hole vertical female [BNC connectors](https://www.peconnectors.com/coaxial-rf-connectors-bnc-f-rca/hws3912/?srsltid=AfmBOoo6W5EEuw7a9Wj3TCphOwvCRphM8mKeDhZolUMiHQv2XTFZ-yY3QIs&gQT=1) and a surface-mount [HDMI connector](https://www.digikey.com/en/products/detail/amphenol-cs-fci/10029449-111RLF/2785386?s=N4IgTCBcDaIGwAYCcBaALHAjGlmUDkAREAXQF8g) for connection between the RoSco head motion tracking device and the Open Ephys acquisition board.
-3. A male DB15 to terminal breakout board [connector](https://www.amazon.com/DB15-Breakout-Connector-Pin-Male/dp/B073RGHNVD) for connections between single pins in the D-Sub connector to the Open Ephys I/O board. This is how we connected those pins, and the correspondance to the IMU data pins through the RoSco head motion tracking device.
+3. A male DB15 to terminal breakout board [connector](https://www.amazon.com/DB15-Breakout-Connector-Pin-Male/dp/B073RGHNVD) for connections between single pins in the D-Sub connector to the Open Ephys I/O board. This is how we connected the DB15 pins to the I/O board, and their correspondance to the IMU data pins through the RoSco head motion tracking device:
+
+<div align = "center">
 
    | I/O board hole | DB15 pin | IMU pin |
    | :---: | :---: | :---: |
@@ -88,9 +90,16 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
    | 6 | 6 | GYRO_Y |
    | 7 | 14 | GYRO_Z |
 
-5. A male to female DB15 [cable](https://www.amazon.com/Female-Extension-tinned-Shielded-soliConnector/dp/B093P4W22V/ref=sr_1_5?crid=130GIODUV9ZMD&dib=eyJ2IjoiMSJ9.8Dfuw8gbwaj0Ltt9hNVz6aKSq_yqtXQj2jlV4QmFc4y4sT0Htf3cpZzMWrKl_7DuRt3OoqQtyYHA00QE4swo7XOP6aDjIESvzWZJz_AbNq9HKS9-otb72Ef0sy9F2O8FNDBNScFXaFDjZ9bGLp1yK329s55HWbS-tm0ppJejqisqmffPmw2CRpsBq8liHvQWkC3pBj9iQ86vSZMEVUKZuIpHASC8Zus6WETTaYYXqhI.G9BbIbfxLHvFTva8zR1PQ_lCHkEM7KjyQC1bDxgmQvE&dib_tag=se&keywords=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft&qid=1742251738&sprefix=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft%2Caps%2C152&sr=8-5&th=1) to connect the RoSco head motion tracking device to the Open Ephys I/O board.
-6. An [HDMI cable](https://www.amazon.com/8K-HDMI-Cable-Highwings-Braided/dp/B08NX5CZTF/ref=sr_1_3?crid=2SKNV3K7FT856&dib=eyJ2IjoiMSJ9.0s7nNXqA8Cyls4m55p6IICY9LFpXeLHEcHy1I_FPqAV92uDbZ6TIhbl41YOCkCFidSRUzabDXBDrvh4pv0ZoePQDTtZaBJQwBT6txrHYD13xFO7OUg2KzzUmhyB9yriOJ4LIp5eHkThv963hRvpSOWb0zHB9D1R0EtGbtDyiY9zcurTbybNtn6B363BnccMLb0wQFV-ME9-Ql8XH9SsLLeq9nGqnEYX7qHf7zJj3Bog.j3JsmHsvfzkTRXN6iaeko4XzVftNXnVeqkv6F7fscjs&dib_tag=se&keywords=hdmi%2Bcable&qid=1742258716&sprefix=hdmi%2Bcable%2Caps%2C144&sr=8-3&th=1) to connect the Open Ephys I/O board to the Open Ephys acquisition board.
-7. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for ephys data.
+</div>
+
+<p align="center">
+<img width="430" height="325" src="../assets/DB15connectorWithIOboard.png">
+</p>
+
+
+4. A male to female DB15 [cable](https://www.amazon.com/Female-Extension-tinned-Shielded-soliConnector/dp/B093P4W22V/ref=sr_1_5?crid=130GIODUV9ZMD&dib=eyJ2IjoiMSJ9.8Dfuw8gbwaj0Ltt9hNVz6aKSq_yqtXQj2jlV4QmFc4y4sT0Htf3cpZzMWrKl_7DuRt3OoqQtyYHA00QE4swo7XOP6aDjIESvzWZJz_AbNq9HKS9-otb72Ef0sy9F2O8FNDBNScFXaFDjZ9bGLp1yK329s55HWbS-tm0ppJejqisqmffPmw2CRpsBq8liHvQWkC3pBj9iQ86vSZMEVUKZuIpHASC8Zus6WETTaYYXqhI.G9BbIbfxLHvFTva8zR1PQ_lCHkEM7KjyQC1bDxgmQvE&dib_tag=se&keywords=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft&qid=1742251738&sprefix=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft%2Caps%2C152&sr=8-5&th=1) to connect the RoSco head motion tracking device to the Open Ephys I/O board.
+5. An [HDMI cable](https://www.amazon.com/8K-HDMI-Cable-Highwings-Braided/dp/B08NX5CZTF/ref=sr_1_3?crid=2SKNV3K7FT856&dib=eyJ2IjoiMSJ9.0s7nNXqA8Cyls4m55p6IICY9LFpXeLHEcHy1I_FPqAV92uDbZ6TIhbl41YOCkCFidSRUzabDXBDrvh4pv0ZoePQDTtZaBJQwBT6txrHYD13xFO7OUg2KzzUmhyB9yriOJ4LIp5eHkThv963hRvpSOWb0zHB9D1R0EtGbtDyiY9zcurTbybNtn6B363BnccMLb0wQFV-ME9-Ql8XH9SsLLeq9nGqnEYX7qHf7zJj3Bog.j3JsmHsvfzkTRXN6iaeko4XzVftNXnVeqkv6F7fscjs&dib_tag=se&keywords=hdmi%2Bcable&qid=1742258716&sprefix=hdmi%2Bcable%2Caps%2C144&sr=8-3&th=1) to connect the Open Ephys I/O board to the Open Ephys acquisition board.
+6. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for ephys data.
 
 ## Rig
 
