@@ -1,4 +1,4 @@
-# Automated Mouse Maze (under development)
+# Automated Mouse Maze
 
 GUI for behavioral and neurophysiological experiments in an automated maze for mice.  
 Currently under development in the [Niell Lab](https://nielllab.uoregon.edu/).
