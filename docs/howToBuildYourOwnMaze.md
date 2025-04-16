@@ -1,6 +1,6 @@
-# Automated Maze (under development)
+# Maze Construction
 
-This tutorial describes how we built our autoamted maze in the Niell Lab.
+This tutorial describes how we built our autoamted maze in the [Niell Lab](https://nielllab.uoregon.edu/).
 
 ***Important: this tutorial is currently under development***
 
@@ -101,7 +101,7 @@ This tutorial describes how we built our autoamted maze in the Niell Lab.
 5. An [HDMI cable](https://www.amazon.com/8K-HDMI-Cable-Highwings-Braided/dp/B08NX5CZTF/ref=sr_1_3?crid=2SKNV3K7FT856&dib=eyJ2IjoiMSJ9.0s7nNXqA8Cyls4m55p6IICY9LFpXeLHEcHy1I_FPqAV92uDbZ6TIhbl41YOCkCFidSRUzabDXBDrvh4pv0ZoePQDTtZaBJQwBT6txrHYD13xFO7OUg2KzzUmhyB9yriOJ4LIp5eHkThv963hRvpSOWb0zHB9D1R0EtGbtDyiY9zcurTbybNtn6B363BnccMLb0wQFV-ME9-Ql8XH9SsLLeq9nGqnEYX7qHf7zJj3Bog.j3JsmHsvfzkTRXN6iaeko4XzVftNXnVeqkv6F7fscjs&dib_tag=se&keywords=hdmi%2Bcable&qid=1742258716&sprefix=hdmi%2Bcable%2Caps%2C144&sr=8-3&th=1) to connect the Open Ephys I/O board to the Open Ephys acquisition board.
 6. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for ephys data.
 
-## Rig
+## Full Rig
 
 <p align="center">
 <img width="300" height="500" src="../assets/mazeFrontView.png"> 
