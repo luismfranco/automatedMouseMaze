@@ -83,7 +83,7 @@ class mazeGUI:
         frame13 = tk.Frame(frame1, width = 225, height = 300)
         frame13.place(anchor = "c", relx = 0.5, rely = 0.75)
         
-        # Frame 2: Logo and main task parameters
+        # Frame 2: Logo and main task settings
         frame2 = tk.Frame(self.mainWindow, width = 550, height = 500)
         frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
         frame21 = tk.Frame(frame2, width = 550, height = 175)
@@ -194,12 +194,12 @@ class mazeGUI:
         
         
         """
-        Task Parameters
+        Task Settings
         
         """
         
-        # Parameters labels
-        tk.Label(frame22, font = buttonFont, text = "Task Parameters", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 2 , padx = 10, pady = 10, sticky = 'we')
+        # Settings labels
+        tk.Label(frame22, font = buttonFont, text = "Task Settings", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 2 , padx = 10, pady = 10, sticky = 'we')
         tk.Label(frame22, font = buttonFont, text = "Experiment Data", width = 12, anchor  = 'c').grid(row = 0, column = 2, columnspan = 2 , padx = 10, pady = 10, sticky = 'we')
         entryLabels0 = ["trials", "duration", "task", "start door", "cues", "stimulus", "stimulus", "forced choice"]
         entryLabels2 = ["rig", "animal", "block", " ", "path", "auto save", " ", " "]
@@ -735,6 +735,7 @@ class mazeGUI:
                 self.stimulusIsOn = True
                 self.stimulusStateLabel.config(bg = '#99D492', text = "on")
                 self.startStimulusLabel.config(bg = '#99D492', text = "on")
+        
         # Stimulus is off
         elif self.stimulusState == 3:
             self.stimulusStateValue.config(text = 3)
@@ -746,6 +747,7 @@ class mazeGUI:
                 self.stimulusIsOn = False
                 self.stimulusStateLabel.config(bg = 'pink', text = "off")
                 self.stopStimulusLabel.config(bg = '#99D492', text = "on")
+        
         # Waiting for decision after stimulus is off
         elif self.stimulusState == 4:
             self.stimulusStateValue.config(text = 4)
@@ -892,8 +894,8 @@ class mazeGUI:
         
         if self.camerasAreOn == False:
         
-            # Check for task parameters
-            self.updateTrialParameters()
+            # Check for task settings
+            self.updateTrialSettings()
         
             # Update startCameraButton: starting cameras...
             self.startCameraButton.config(fg = 'Black', bg = '#A9C6E3', text = 'Starting...', relief = 'sunken')
@@ -1131,8 +1133,8 @@ class mazeGUI:
         
         if self.OpenEphysGUIHasBeenLaunched == False:
             
-            # Check for task parameters
-            self.updateTrialParameters()
+            # Check for task settings
+            self.updateTrialSettings()
             
             # Launch Open Ephys GUI
             subprocess.Popen(self.OpenEphysPath)
@@ -1322,9 +1324,9 @@ class mazeGUI:
         # Update behavior stats in GUI
         self.updateBehaviorStats()
     
-    def updateTrialParameters(self):
+    def updateTrialSettings(self):
         
-        # Input task parameters
+        # Input task settings
         self.maximumTrialNumber = int(self.trialsEntry.get())
         self.timeout = int(self.timeEntry.get())
         self.taskName = str(self.taskBox.get())
@@ -1337,7 +1339,40 @@ class mazeGUI:
         self.rigID = str(self.rigEntry.get())
         self.blockID = str(self.blockEntry.get())
         self.autoSave = bool(self.autoSaveData.get())
+    
+    def retrieveTaskParameters(self):
         
+        # Table for task settings
+        taskSettings = {
+                          "rigID": self.rigID,              
+                          "animalID": self.animalID,
+                          "blockID": str(self.blockID),
+                          "taskName": self.taskName,
+                          "maximumNumberOfTrials": str(self.maximumTrialNumber),
+                          "maximumSessionTime": str(self.timeout),
+                          "initialStartDoor": self.startDoor,
+                          "useSoundCues": str(self.trialCues),
+                          "startStimulusTrigger": str(self.stimulusOnSwitch),
+                          "stopStimulusTrigger": str(self.stimulusOffSwitch),
+                          "forcedDecisionProbability": str(self.forcedDecisions),
+                          "initialLeftTargetProbability": str(self.probabilityTargetLeft),
+                          "correctInterTrialTimeOut": str(self.correctInterTrialTimeOut),
+                          "incorrectInterTrialTimeOut": str(self.incorrectInterTrialTimeOut),
+                          "rewardAmounts": str(self.rewardAmounts),
+                          "leftRewardStreak": str(self.leftRewardStreak),
+                          "rightRewardStreak": str(self.rightRewardStreak),
+                                                                               }
+        taskSettings = pd.DataFrame.from_dict(taskSettings, orient = 'index')
+
+        # Table for stimulus settings
+        stimulusParameters = self.visualStimulus.retrieveStimulusParameters()
+    
+        # Concatenate both tables
+        taskParameters = [taskSettings, stimulusParameters]
+        taskParameters = pd.concat(taskParameters)
+        taskParameters = taskParameters.transpose()
+        self.taskParameters = taskParameters
+    
     def readyTask(self):
         
         # Check if Teensy 4.0 is available before attempting to initialize a task
@@ -1345,29 +1380,32 @@ class mazeGUI:
         
         if boardAvailable is True:
         
-            # Update task parameters
-            self.updateTrialParameters()
+            # Update task settings
+            self.updateTrialSettings()
             
             # Flush all data from previous task
             self.initializeTaskParameters()
             
-            # Display task parameters when initializing task
+            # Display task settings when initializing task
             print(" ")
             if not self.taskName == "valveCalibration":
-                print("     Task Parameters:")
-                print("          Task name:",self.taskName)
-                print("          Maximum number of trials:",self.maximumTrialNumber)
-                print("          Maximum session time (s):",self.timeout)
-                print("          Start door:",self.startDoor)
-                print("          Use sound cues:",str(self.trialCues).lower())
-                print("          Start stimulus trigger:",str(self.stimulusOnSwitch).lower())
-                print("          Stop stimulus trigger:",str(self.stimulusOffSwitch).lower())
+                # Display on terminal
+                print("     Task Settings:")
+                print("          Rig ID:", self.rigID)
+                print("          Animal ID:", self.animalID)
+                print("          Block ID:", self.blockID)
+                print("          Task name:", self.taskName)
+                print("          Maximum number of trials:", self.maximumTrialNumber)
+                print("          Maximum session time (s):", self.timeout)
+                print("          Start door:", self.startDoor)
+                print("          Use sound cues:", str(self.trialCues).lower())
+                print("          Start stimulus trigger:", str(self.stimulusOnSwitch).lower())
+                print("          Stop stimulus trigger:", str(self.stimulusOffSwitch).lower())
                 print("          Forced decision probability = ", str(self.forcedDecisions))
-                print("          Animal ID:",self.animalID)
-                print("          Rig ID:",self.rigID)
-                print("          Block ID:",self.blockID)
-                print("          AutoSave:",self.autoSave)
+                print("          AutoSave:", self.autoSave)
             else:
+                # Display calibration curve example on terminal
+                print(" ")
                 print("     Valve Calibration:")
                 print("          Try different opening time windows to build your calibration curve.")
                 print("          Example:")
@@ -1416,25 +1454,24 @@ class mazeGUI:
                 
             # Prepare upcoming stimulus
             if self.taskName in self.taskList and not self.taskName == "valveCalibration":
-                
                 # Disable task parameter boxes
                 entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
                               self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
                 for i in range(len(entryBoxes)):
                     entryBoxes[i].config(state = 'disabled')
                     entryBoxes[i].update_idletasks()
-                    
+                # Retrieve task and stimulus settings (for now, it will only work for driftingGratings)
+                if self.taskName == "driftingGratings":
+                    self.retrieveTaskParameters()
                 # Prepare first trial
                 self.initializeUpcomingTrial()
                 
         else:
             
+            # Handle cases when Teensy 4.0 is not available
             if self.runningTask == True:
-                
                 print("Failed to initialize a task. There might be an ongoing task currently running...")
-                
             else:
-                
                 print("Task has been already initialized. Waiting to start...")
             
     def cancelTask(self):
@@ -1763,7 +1800,7 @@ class mazeGUI:
     def saveData(self):
         
         # Build dataFrame
-        data = {
+        behaviorData = {
                 "trial": self.dataFrameTrial,
                 "startDoor": self.dataFrameStartDoor,
                 "leftTargetProbability": self.dataFrameLeftProbability,
@@ -1778,18 +1815,23 @@ class mazeGUI:
                 "stimulusEndTime": self.dataFrameStimulusEndTime,
                 "taskRawStartTime": self.dataFrameRawTaskStartTime,
                                                                    }
-        df = pd.DataFrame.from_dict(data, orient = 'index')
-        df = df.transpose()
+        behaviorData = pd.DataFrame.from_dict(behaviorData, orient = 'index')
+        behaviorData = behaviorData.transpose()
         
-        print(df)
+        # Concatenate behavior data and task parameters (for now, it will only work for driftingGratings)
+        if self.taskName == "driftingGratings":
+            taskData = [behaviorData, self.taskParameters]
+            taskData = pd.concat(taskData, axis = 1, join = 'outer')
+        else:
+            taskData = behaviorData
         
         # Save experiment data
         fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "behavior" + "_" + str(self.blockID)
-        if df.empty:
+        if taskData.empty:
             print("DataFrame is empty. Most likely an experiment has not been run yet.")
         else:
             if not os.path.isfile(fileName + self.fileExtension):
-                df.to_pickle(fileName + self.fileExtension)
+                taskData.to_pickle(fileName + self.fileExtension)
                 messagebox.showinfo("Data Saved", "Experiment data have been saved at " + self.pathForSavingData)
             else:
                 isNotSaved = True
@@ -1799,7 +1841,7 @@ class mazeGUI:
                     blockID += 1
                     fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "behavior" + "_" + str(blockID)
                     if not os.path.isfile(fileName + self.fileExtension):
-                        df.to_pickle(fileName + self.fileExtension)
+                        taskData.to_pickle(fileName + self.fileExtension)
                         messagebox.showwarning("Data Saved", "Experiment data have been saved at " + self.pathForSavingData +
                                                "\n " +
                                                "\nHowever, the block number was changed to " + str(blockID) + " to avoid overwriting existing file." +
