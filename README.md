@@ -158,7 +158,7 @@ To close the app GUI, click on ``Close`` or on the upper right "X".
 Before you can use these controls, make sure you have installed the [Open Ephys GUI](https://open-ephys.org/gui). Please refer to the Open Ephys [documentation](https://open-ephys.github.io/gui-docs/) to learn more about this GUI. For instance, you can begin by dragging and adding: 1) an acquisition board, 2) a record node, and 3) an LFP viewer to the signal chain at the bottom of the GUI from the list of processors on the left pannel.
 
 <p align="center">
-<img width="800" height="200" src="assets/openEphysProcessors.png">
+<img width="800" height="150" src="assets/openEphysProcessors.png">
 </p>
 
 Once you have done that, you can control the Open Ephys GUI with the buttons in the Automated Mouse Maze GUI. 
