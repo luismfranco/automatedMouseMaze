@@ -1,18 +1,18 @@
 # Automated Mouse Maze (under development)
 
 GUI for behavioral and neurophysiological experiments in an automated maze for mice.  
-Currently under development in the Niell Lab (https://nielllab.uoregon.edu/).
+Currently under development in the [Niell Lab](https://nielllab.uoregon.edu/).
 
-***Disclamimer: the initial designs for this automated maze are based on previous work done at the Sylwestrak Lab*** (https://www.sylwestraklab.com/)  
+***Disclamimer: the initial designs for this automated maze are based on previous work done at the [Sylwestrak Lab](https://www.sylwestraklab.com/)***
 
 # Installation
 
 ## Requirements
 
 1. Operating System: Windows.
-2. Anaconda (https://www.anaconda.com/).
-3. Microsoft Visual C++ 14.0 or greater (https://visualstudio.microsoft.com/visual-cpp-build-tools/).
-4. Open Ephys GUI (https://open-ephys.org/gui)
+2. [Anaconda](https://www.anaconda.com/).
+3. [Microsoft Visual C++ 14.0](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or greater.
+4. [Open Ephys GUI](https://open-ephys.org/gui)
 
 ## Step by step
 
@@ -40,7 +40,7 @@ If everything went well, you should be able to run the GUI:
 However, this app requires a connection with a Teensy board in order to work. Also, the automated maze has several other components, such as IR sensors, solenoid valves, a speaker, and LEDs. To build your own maze, follow this tutorial: 
 [maze construction](docs/howToBuildYourOwnMaze.md).
 
-This apps also controls and triggers the recording of video, IMU sensors, and electrophysiology probes. Please refer to Parker et al., 2022 (https://doi.org/10.1016/j.neuron.2022.08.029) for more details on this.
+This apps also controls and triggers the recording of video, IMU sensors, and electrophysiology probes. Please refer to [Parker et al., 2022](https://doi.org/10.1016/j.neuron.2022.08.029) for more details on this.
 
 # Configuration Settings
 
@@ -115,7 +115,7 @@ Once you have calculated the correct valve opening time for 5, 6, 7, 8, 9 and 10
 
 There are a few options you can select before running an experiment.
 
-## Task Parameters
+## Task Settings
 
 1. Maximum number of ``trials``.
 2. Maximum ``duration`` of the experiment (in seconds).
@@ -134,7 +134,7 @@ There are a few options you can select before running an experiment.
 4. ``path`` for saving the experiment data.
 5. ``autoSave`` option.
 
-Once your have selected your desired options, you can click on ``Initialize Task``. This will establish a connection between the computer and Teensy. It will also initialize the visual stimulus in the background, but it will not show it yet. Clicking on ``Initialize Task`` disables all fields in the "Task Parameters" and "Experiment Data" boxes. If you would like to change something, click on ``Cancel Task``. This will allow you to access all fields again, but you will need to ``Initialize Task`` again afterwards.
+Once your have selected your desired options, you can click on ``Initialize Task``. This will establish a connection between the computer and Teensy. It will also initialize the visual stimulus in the background, but it will not show it yet. Clicking on ``Initialize Task`` disables all fields in the "Task Settings" and "Experiment Data" boxes. If you would like to change something, click on ``Cancel Task``. This will allow you to access all fields again, but you will need to ``Initialize Task`` again afterwards.
 
 Next, clikc on ``Start Task`` to start running your experiment. If you would like to record video and do electrophysiology as well (see below), make sure you have initialized those options before clickin on ``Start Task``. After a task has started, only the door selected in ``start door`` (see above) will open, and the visual stimulus will be displayed on the screen throughout the trial, unless the on and/or off switchs are enabled (see above).
 
@@ -153,9 +153,21 @@ To close the app GUI, click on ``Close`` or on the upper right "X".
 
 ***Important: make sure you start your video recordings before starting your task to avoid losing data***
 
-# Electrophysiology and IMU Controls
+# Ephys and IMU Controls
 
-- under development...
+Before you can use these controls, make sure you have installed the [Open Ephys GUI](https://open-ephys.org/gui). Please refer to the Open Ephys [documentation](https://open-ephys.github.io/gui-docs/) to learn more about this GUI. For instance, you can begin by dragging and adding: 1) an acquisition board, 2) a record node, and 3) an LFP viewer to the signal chain at the bottom of the GUI from the list of processors on the left pannel.
+
+<p align="center">
+<img width="800" height="200" src="assets/openEphysProcessors.png">
+</p>
+
+Once you have done that, you can control the Open Ephys GUI with the buttons in the Automated Mouse Maze GUI. 
+
+1. ``Launch Open Ephys`` launches the GUI. The GUI automatically detects the inputs to the Open Ephys acquisition board. For instance, it will automatically detect the HDMI input from the I/O board (carrying data from the IMU), and the Intan cable (carrying data from the neural probe).
+2. ``Preview Off`` switches to ``Preview On`` upon clicking on it. This function allows you to see ongoing neural activity and IMU signals without the need to record them.
+3. ``Start Recording`` starts a new recording.
+4. ``Stop Recording`` stops recording in progress. Data are automatically saved once the recording is stopped.
+5. ``Close Open Ephys`` closes the Open Ephys GUI.
 
 # Task
 
@@ -171,7 +183,7 @@ It is easy to change the settings for the [drifting gratings](src/driftingGratin
 
 # While Task is Running
 
-The app GUI displays general maze parameters and behavior stats on the left-hand side that continuously update through the experiemntal session.
+The app GUI displays general maze information and behavior stats on the left-hand side that continuously update through the experiemntal session.
 
 ## Doors
 
@@ -203,7 +215,7 @@ The app GUI displays general maze parameters and behavior stats on the left-hand
 
 # Behavior Data File
 
-Data are automatically saved at the end of a session in the desired path as a pickle file. This file containa a Pandas DataFrame with the following fields:
+Data are automatically saved at the end of a session in the desired path as a pickle file. This file contains a Pandas DataFrame with the following fields:
 
 1. ``trial`` number.
 2. ``startDoor`` for each trial. (0) for left, (1) for right.
@@ -219,4 +231,4 @@ Data are automatically saved at the end of a session in the desired path as a pi
 12. ``stimulusEndTIme``. Time stamp for turning off the display of the visual stimulus (if option is enabled).
 13. ``taskRawStartTime``. Time stamp for the start of the task. Important for synchronization with video and electrophysiology recordings.
 
-
+In addition, **task settings** and **visual stimulus parameters** are saved in the same DataFrame. These include the input values for the fields in ``task settings`` and ``experiment data``, the values for water rewards obtained from the ``calibration curves``, as well as specific parameters for the **visual stimulus** defined by the corresponding ``task``.
