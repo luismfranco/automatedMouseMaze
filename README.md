@@ -169,6 +169,8 @@ Once you have done that, you can control the Open Ephys GUI with the buttons in 
 4. ``Stop Recording`` stops recording in progress. Data are automatically saved once the recording is stopped.
 5. ``Close Open Ephys`` closes the Open Ephys GUI.
 
+***Important: make sure you start your ephys recordings before starting your task to avoid losing data***
+
 # Task
 
 As mentioned above, the option ``task`` allows you to select between 4 different built-in tasks:
