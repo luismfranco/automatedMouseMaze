@@ -1827,7 +1827,7 @@ class mazeGUI:
         
         # Save experiment data
         fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "behavior" + "_" + str(self.blockID)
-        if taskData.empty:
+        if behaviorData.empty:
             print("DataFrame is empty. Most likely an experiment has not been run yet.")
         else:
             if not os.path.isfile(fileName + self.fileExtension):
