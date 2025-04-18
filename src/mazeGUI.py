@@ -1158,7 +1158,7 @@ class mazeGUI:
             self.OpenEphysGUI.set_append_text("_" + "ephysData" + "_" + str(self.blockID))
             recordNodeID = self.OpenEphysGUI.get_recording_info(key = "record_nodes")
             recordNodeID = recordNodeID[0]["node_id"]
-            self.OpenEphysGUI.set_file_path(recordNodeID, self.pathForSavingData)
+            self.OpenEphysGUI.send("/api/recording/" + str(recordNodeID), payload = {'parent_directory' : self.pathForSavingData})
 
             # Update launchOpenEphysButton: GUI has been launched...
             self.launchOpenEphysButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Launched')

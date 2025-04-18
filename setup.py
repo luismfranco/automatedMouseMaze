@@ -4,7 +4,7 @@ setup(
       
       # App Info
       name = "automatedMouseMaze",
-      version = "0.1.0", 
+      version = "1.0.0", 
       description = "GUI for experiments in an automated maze for mice",
       author = "Luis M. Franco",
       author_email = "luisfran@uoregon.edu",
