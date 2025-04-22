@@ -12,7 +12,9 @@ Currently under development in the [Niell Lab](https://nielllab.uoregon.edu/).
 1. Operating System: Windows.
 2. [Anaconda](https://www.anaconda.com/).
 3. [Microsoft Visual C++ 14.0](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or greater.
-4. [Open Ephys GUI](https://open-ephys.org/gui)
+4. [Arduino IDE](https://www.arduino.cc/en/software/).
+5. [StreamCatcherPro](https://www.startech.com/en-us/audio-video-products/usb3hdcap).
+6. [Open Ephys GUI](https://open-ephys.org/gui)
 
 ## Step by step
 
@@ -44,7 +46,10 @@ This apps also controls and triggers the recording of video, IMU sensors, and el
 
 # Configuration Settings
 
-Before running your first experiment, make sure your Teensy board is properly [configured](config/package.json):
+Before running your first experiment, make sure you have uploaded the [Standard Firmata](https://github.com/firmata/arduino/blob/main/examples/StandardFirmata/StandardFirmata.ino) sketch into your Teensy board, which you can find in Arduino IDE at:  
+``File --> Examples --> Firmata --> Standard Firmata``
+
+Also, ensure Teensy is properly [configured](config/package.json):
 1. Under ``teensyConfiguration``, select the correct serial ``port`` for communication between the computer and Teensy (e.g. ***COM3***).
 2. Under ``stimulusScreen``, select the correct ``screenNumber``. In Windows, you can verify the screen number in: ``Display settings > Display > Identify``.
 3. There are also a number of input and output digintal pins under ``teensyConfiguration``. Make sure they are properly assigned according to your electronic circuit (see example below).
@@ -145,6 +150,9 @@ At the end of each experiment, if ``auto save`` is enabled, data are automatical
 To close the app GUI, click on ``Close`` or on the upper right "X".
 
 # Camera Controls
+
+Before using the cameras for the first time, make sure you have set their IDs properly under ``crownCameras`` in the [configuration](config/package.json) file. You can find their IDs by running this script in the Command Prompt:  
+``python src\findCameras.py``  
 
 1. ``Start Cameras`` opens a preview window for the eye and the world cameras, which record the movement of one eye of the mouse and the world in front of its head, respectively. This preview also creates temporary files in the ``path`` for saving data. Data will only be permanently saved if the ``Record Video`` button is pressed.
 2. ``Record Video`` starts the recording of video from both the eye and the world cameras.
