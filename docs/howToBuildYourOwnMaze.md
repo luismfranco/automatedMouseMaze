@@ -62,21 +62,26 @@ This tutorial describes how we built our autoamted maze in the [Niell Lab](https
 3. An analog 11 mm x 14.1 mm x 13.5 mm [camera](https://www.amazon.com/BETAFPV-Camera-Sensor-1200TVL-Global/dp/B0BMVFGHB1/ref=asc_df_B0BMVFGHB1?mcid=da343b1b22f63402b7daf4ad020d87c1&hvocijid=17462633199980442399-B0BMVFGHB1-&hvexpln=73&tag=hyprod-20&linkCode=df0&hvadid=721245378154&hvpos=&hvnetw=g&hvrand=17462633199980442399&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9189768&hvtargid=pla-2281435177658&psc=1) for recording the *world* in front of the mouse head.
 4. TDK InvenSense [inertial measurement unit](https://invensense.tdk.com/products/motion-tracking/9-axis/icm-20948/) for measuring the position of the head of the mouse.
 5. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for video and IMU data.
-6. We used a custom-made **crown** to assemble both cameras and the IMU:
+6. A custom-made **crown** to assemble both cameras and the IMU:
    <p align="center">
    <img width="300" height="385" src="../assets/crownLeftSide.png">
    <img width="300" height="385" src="../assets/crownRightSide.png">
    </p>
-7. We also used a custom-made breakout board to send video and IMU data from the **crown** to the video capture devices, and to the RoSco head motion tracking device, respectively:
+7. A custom-made breakout board to send video and IMU data from the **crown** to the video capture devices, and to a custom head motion tracking device, respectively:
    <p align="center">
    <img width="430" height="300" src="../assets/crownBreakoutBoard.png">
+   </p>
+8. A custom head motion tracking device, that uses an [Arduino Nano](https://www.digikey.com/en/products/detail/arduino/A000005/2638989?gclsrc=aw.ds&&utm_adgroup=&utm_source=google&utm_medium=cpc&utm_campaign=PMax%20Shopping_Product_Low%20ROAS%20Categories&utm_term=&utm_content=&utm_id=go_cmp-20243063506_adg-_ad-__dev-c_ext-_prd-2638989_sig-Cj0KCQjw_JzABhC2ARIsAPe3ynqEVYD-BFVXE8fA5tr5GG1G9iT6tvCJUC13k_Zf8-BZ9pDcu-J1IRoaAi5cEALw_wcB&gad_source=1&gbraid=0AAAAADrbLljSkpDyIa89TUOGUGG77v6sQ&gclid=Cj0KCQjw_JzABhC2ARIsAPe3ynqEVYD-BFVXE8fA5tr5GG1G9iT6tvCJUC13k_Zf8-BZ9pDcu-J1IRoaAi5cEALw_wcB&gclsrc=aw.ds) board to read data from the IMU, and send them to the Open Ephys I/O board.
+   <p align="center">
+   <img width="430" height="300" src="../assets/HMTdeviceFrontView.png">
+   <img width="430" height="300" src="../assets/HMTdeviceCircuit.png">
    </p>
 
 ## Electrophysiology
 
 1. Open Ephys [acquisition board](https://open-ephys.org/acquisition-system/oeps-9029).
-2. Open Ephys [I/O Board](https://open-ephys.org/acquisition-system/io-board-pcb), with through-hole vertical female [BNC connectors](https://www.peconnectors.com/coaxial-rf-connectors-bnc-f-rca/hws3912/?srsltid=AfmBOoo6W5EEuw7a9Wj3TCphOwvCRphM8mKeDhZolUMiHQv2XTFZ-yY3QIs&gQT=1) and a surface-mount [HDMI connector](https://www.digikey.com/en/products/detail/amphenol-cs-fci/10029449-111RLF/2785386?s=N4IgTCBcDaIGwAYCcBaALHAjGlmUDkAREAXQF8g) for connection between the RoSco head motion tracking device and the Open Ephys acquisition board.
-3. A male DB15 to terminal breakout board [connector](https://www.amazon.com/DB15-Breakout-Connector-Pin-Male/dp/B073RGHNVD) for connections between single pins in the D-Sub connector to the Open Ephys I/O board. This is how we connected the DB15 pins to the I/O board, and their correspondance to the IMU data pins through the RoSco head motion tracking device:
+2. Open Ephys [I/O Board](https://open-ephys.org/acquisition-system/io-board-pcb), with through-hole vertical female [BNC connectors](https://www.peconnectors.com/coaxial-rf-connectors-bnc-f-rca/hws3912/?srsltid=AfmBOoo6W5EEuw7a9Wj3TCphOwvCRphM8mKeDhZolUMiHQv2XTFZ-yY3QIs&gQT=1) and a surface-mount [HDMI connector](https://www.digikey.com/en/products/detail/amphenol-cs-fci/10029449-111RLF/2785386?s=N4IgTCBcDaIGwAYCcBaALHAjGlmUDkAREAXQF8g) for connection between the custom head motion tracking device and the Open Ephys acquisition board.
+3. A male DB15 to terminal breakout board [connector](https://www.amazon.com/DB15-Breakout-Connector-Pin-Male/dp/B073RGHNVD) for connections between single pins in the D-Sub connector to the Open Ephys I/O board. This is how we connected the DB15 pins to the I/O board, and their correspondance to the IMU data pins through the custom head motion tracking device:
 
 <div align = "center">
 
@@ -97,7 +102,7 @@ This tutorial describes how we built our autoamted maze in the [Niell Lab](https
 </p>
 
 
-4. A male to female DB15 [cable](https://www.amazon.com/Female-Extension-tinned-Shielded-soliConnector/dp/B093P4W22V/ref=sr_1_5?crid=130GIODUV9ZMD&dib=eyJ2IjoiMSJ9.8Dfuw8gbwaj0Ltt9hNVz6aKSq_yqtXQj2jlV4QmFc4y4sT0Htf3cpZzMWrKl_7DuRt3OoqQtyYHA00QE4swo7XOP6aDjIESvzWZJz_AbNq9HKS9-otb72Ef0sy9F2O8FNDBNScFXaFDjZ9bGLp1yK329s55HWbS-tm0ppJejqisqmffPmw2CRpsBq8liHvQWkC3pBj9iQ86vSZMEVUKZuIpHASC8Zus6WETTaYYXqhI.G9BbIbfxLHvFTva8zR1PQ_lCHkEM7KjyQC1bDxgmQvE&dib_tag=se&keywords=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft&qid=1742251738&sprefix=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft%2Caps%2C152&sr=8-5&th=1) to connect the RoSco head motion tracking device to the Open Ephys I/O board.
+4. A male to female DB15 [cable](https://www.amazon.com/Female-Extension-tinned-Shielded-soliConnector/dp/B093P4W22V/ref=sr_1_5?crid=130GIODUV9ZMD&dib=eyJ2IjoiMSJ9.8Dfuw8gbwaj0Ltt9hNVz6aKSq_yqtXQj2jlV4QmFc4y4sT0Htf3cpZzMWrKl_7DuRt3OoqQtyYHA00QE4swo7XOP6aDjIESvzWZJz_AbNq9HKS9-otb72Ef0sy9F2O8FNDBNScFXaFDjZ9bGLp1yK329s55HWbS-tm0ppJejqisqmffPmw2CRpsBq8liHvQWkC3pBj9iQ86vSZMEVUKZuIpHASC8Zus6WETTaYYXqhI.G9BbIbfxLHvFTva8zR1PQ_lCHkEM7KjyQC1bDxgmQvE&dib_tag=se&keywords=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft&qid=1742251738&sprefix=db15%2Bcable%2Bmale%2Bto%2Bfemale%2B3%2Bft%2Caps%2C152&sr=8-5&th=1) to connect the custom head motion tracking device to the Open Ephys I/O board.
 5. An [HDMI cable](https://www.amazon.com/8K-HDMI-Cable-Highwings-Braided/dp/B08NX5CZTF/ref=sr_1_3?crid=2SKNV3K7FT856&dib=eyJ2IjoiMSJ9.0s7nNXqA8Cyls4m55p6IICY9LFpXeLHEcHy1I_FPqAV92uDbZ6TIhbl41YOCkCFidSRUzabDXBDrvh4pv0ZoePQDTtZaBJQwBT6txrHYD13xFO7OUg2KzzUmhyB9yriOJ4LIp5eHkThv963hRvpSOWb0zHB9D1R0EtGbtDyiY9zcurTbybNtn6B363BnccMLb0wQFV-ME9-Ql8XH9SsLLeq9nGqnEYX7qHf7zJj3Bog.j3JsmHsvfzkTRXN6iaeko4XzVftNXnVeqkv6F7fscjs&dib_tag=se&keywords=hdmi%2Bcable&qid=1742258716&sprefix=hdmi%2Bcable%2Caps%2C144&sr=8-3&th=1) to connect the Open Ephys I/O board to the Open Ephys acquisition board.
 6. Intan Technologies RHD 6 ft ultra thin SPI [cable](https://intantech.com/RHD_SPI_cables.html?tabSelect=RHDSPIcables) for ephys data.
 
