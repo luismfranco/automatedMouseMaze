@@ -50,6 +50,11 @@
          "screenNumber": "1",
          "screenWidth": "1024",
          "screenHeight": "600"
+     },
+     
+     "crownCameras": {
+         "eyeCamera": "1",
+         "worldCamera": "2"
      }
      
 }

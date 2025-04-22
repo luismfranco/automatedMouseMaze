@@ -424,6 +424,10 @@ class mazeGUI:
         
         """
         
+        # Cameras
+        self.eyeCameraID = int(configurationData["crownCameras"]["eyeCamera"])
+        self.worldCameraID = int(configurationData["crownCameras"]["worldCamera"])
+        
         # Frame rate
         frameRate = 100                                  # (Hz). True frame rate must estimated. Delays caused by other computations in the code, and camera limitations
         self.cameraTimeBetweenFrames = 1000/frameRate    # miliseconds betweem frames
@@ -906,8 +910,8 @@ class mazeGUI:
             self.cameraWindow.title("Cameras")
             
             # Initialize camera objects
-            self.eyeCamera = cv2.VideoCapture(0) 
-            self.worldCamera = cv2.VideoCapture(1) 
+            self.eyeCamera = cv2.VideoCapture(self.eyeCameraID) 
+            self.worldCamera = cv2.VideoCapture(self.worldCameraID) 
             self.cameraTimeStamps = []
             self.eyeCamRet = None
             self.worldCamRet = None
