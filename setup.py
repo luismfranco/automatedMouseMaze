@@ -21,6 +21,7 @@ setup(
                           "simpleaudio == 1.0.4",
                           "pandas == 2.2.2",
                           "numpy == 1.25.2",
+                          "ntplib == 0.4.0",
                           "open-ephys-python-tools == 0.1.12",
                           "psychopy == 2024.2.1",
                           "moderngl == 5.11.1",
