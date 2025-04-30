@@ -11,10 +11,11 @@ Currently under development in the [Niell Lab](https://nielllab.uoregon.edu/).
 
 1. Operating System: Windows.
 2. [Anaconda](https://www.anaconda.com/).
-3. [Microsoft Visual C++ 14.0](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or greater.
-4. [Arduino IDE](https://www.arduino.cc/en/software/).
-5. [StreamCatcherPro](https://www.startech.com/en-us/audio-video-products/usb3hdcap).
-6. [Open Ephys GUI](https://open-ephys.org/gui)
+3. [Git](https://git-scm.com/downloads).
+4. [Microsoft Visual C++ 14.0](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or greater.
+5. [Arduino IDE](https://www.arduino.cc/en/software/).
+6. [StreamCatcherPro](https://www.startech.com/en-us/audio-video-products/usb3hdcap).
+7. [Open Ephys GUI](https://open-ephys.org/gui)
 
 ## Step by step
 
