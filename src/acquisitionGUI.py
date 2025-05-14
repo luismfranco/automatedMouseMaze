@@ -763,9 +763,9 @@ class acquisitionGUI:
         if self.aRecordingWasStarted is True:
 
             programStillRunning = False
-            for name in (self.crownCameras, self.openEphys):
+            for name in ("self.crownCameras", "self.openEphys"):
                 try:
-                    name
+                    exec(name)
                 except:
                     ...
                 else:
