@@ -302,6 +302,7 @@ class acquisitionGUI:
             # Experiment data
             self.cameraIDs = self.clientData[0]
             self.sessionInfo = self.clientData[1]
+            self.animalID, self.currentDate, self.blockID = self.clientData[1]
             self.clientData = []
             print("Acquisition Panel received experimental session data.")
         elif self.clientCommand == "initializeCameras":
@@ -350,6 +351,7 @@ class acquisitionGUI:
         elif self.clientCommand == "launchOpenEphys":
             # Experiment data
             self.sessionInfo = self.clientData[0]
+            self.animalID, self.currentDate, self.blockID = self.clientData[0]
             self.clientData = []
             print("Acquisition Panel received experimental session data.")
             # Launch Open Ephys GUI
@@ -812,7 +814,7 @@ class acquisitionGUI:
                 
                 messagebox.showinfo("No Data Saved", "The Crown Cameras and/or the Open Ephys GUI are still running." +
                                     "\n"
-                                    "\nPlease close both programs before saving the time stamsp.")
+                                    "\nPlease close both programs before saving time stamps.")
         
     def closeMainWindow(self):
         
