@@ -79,7 +79,7 @@ class valveCalibration:
         
         # Input calibration parameters
         self.openTime = int(self.openTimeEntry.get())
-        self.frequency = int(self.frequencyEntry.get())
+        self.frequency = float(self.frequencyEntry.get())
         self.repetitions = int(self.repetitionsEntry.get())
         
     def closeValves(self):
@@ -122,3 +122,12 @@ class valveCalibration:
             self.startButton.bind('<Enter>', lambda e: self.startButton.config(fg = 'Black', bg ='#99D492'))
             self.startButton.bind('<Leave>', lambda e: self.startButton.config(fg = 'Black', bg ='SystemButtonFace'))
             self.startButton.update_idletasks()
+            
+            
+"""
+Main Block
+
+"""
+
+if __name__ == "__main__":
+    valveCalibration = valveCalibration.__init__()

@@ -851,3 +851,29 @@ class objectDiscrimination:
         pg.quit()
         
         
+"""
+Main Block
+
+"""
+
+if __name__ == "__main__":
+    GraphicsEngine = GraphicsEngine.__init__()
+    Camera = Camera.__init__()
+    Light = Light.__init__()
+    Mesh = Mesh.__init__()
+    Texture = Texture.__init__()
+    ShaderProgram = ShaderProgram.__init__()
+    SceneRenderer = SceneRenderer.__init__()
+    VAO = VAO.__init__()
+    VBO = VBO.__init__()
+    BaseVBO = BaseVBO.__init__()
+    BananaVBO = BananaVBO.__init__()
+    CheeseVBO = CheeseVBO.__init__()
+    CheesecakeVBO = CheesecakeVBO.__init__()
+    BaseModel = BaseModel.__init__()
+    ExtendedBaseModel = ExtendedBaseModel.__init__()
+    Banana = Banana.__init__()
+    Cheese = Cheese.__init__()
+    Cheesecake = Cheesecake.__init__()
+    Scene = Scene.__init__()
+    objectDiscrimination = objectDiscrimination.__init__()

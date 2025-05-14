@@ -238,3 +238,12 @@ class createWhiteNoise:
         
         return whiteNoiseMovie
         
+
+# """
+# Main Block
+
+# """
+
+# if __name__ == "__main__":
+#     whiteNoise = whiteNoise.__init__()
+#     createWhiteNoise = createWhiteNoise.__init__()

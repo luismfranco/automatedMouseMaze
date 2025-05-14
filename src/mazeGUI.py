@@ -12,11 +12,16 @@ from PIL import ImageTk, Image
 import os
 from datetime import datetime
 from pathlib import Path
-import cv2
 
-# Open Ephys modules
-import subprocess
-from open_ephys.control import OpenEphysHTTPServer
+# Connectivity
+import socket
+import select
+
+# Crown cameras
+import crownCameras
+
+# Open Ephys
+import openEphys
 
 # Teensy modules
 import pyfirmata
@@ -24,7 +29,7 @@ import serial
 import serial.tools.list_ports
 import simpleaudio as sa
 
-# Visual stimulus module
+# Visual stimulus
 import driftingGratings
 import motionSelectivity
 import whiteNoise
@@ -35,6 +40,8 @@ import valveCalibration
 
 # Data modules
 import time
+import ntplib
+import pickle
 import numpy as np
 import pandas as pd
 
@@ -64,7 +71,7 @@ class mazeGUI:
         self.mainWindow = mainWindow
         self.mainWindow.title('Automated Mouse Maze')
         windowWidth = 1000
-        windowHeight = 650
+        windowHeight = 700
         screenWidth = self.mainWindow.winfo_screenwidth()
         screenHeight = self.mainWindow.winfo_screenheight()
         x = (screenWidth/1.5) - (windowWidth/2)
@@ -74,21 +81,21 @@ class mazeGUI:
         buttonFont = tkFont.Font(family = 'helvetica', size = 12)
         
         # Frame 1: Maze states and mouse behavior
-        frame1 = tk.Frame(self.mainWindow, width = 225, height = 650)
+        frame1 = tk.Frame(self.mainWindow, width = 225, height = 700)
         frame1.grid(row = 0, rowspan = 3, column = 0, sticky = 'news')
-        frame11 = tk.Frame(frame1, width = 225, height = 200)
+        frame11 = tk.Frame(frame1, width = 225, height = 235)
         frame11.place(anchor = "c", relx = 0.5, rely = 0.15)
-        frame12 = tk.Frame(frame1, width = 225, height = 100)
+        frame12 = tk.Frame(frame1, width = 225, height = 130)
         frame12.place(anchor = "c", relx = 0.5, rely = 0.415)
-        frame13 = tk.Frame(frame1, width = 225, height = 300)
+        frame13 = tk.Frame(frame1, width = 225, height = 335)
         frame13.place(anchor = "c", relx = 0.5, rely = 0.75)
         
         # Frame 2: Logo and main task settings
-        frame2 = tk.Frame(self.mainWindow, width = 550, height = 500)
+        frame2 = tk.Frame(self.mainWindow, width = 550, height = 550)
         frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
         frame21 = tk.Frame(frame2, width = 550, height = 175)
         frame21.place(anchor = "c", relx = 0.5, rely = 0.215)
-        frame22 = tk.Frame(frame2, width = 550, height = 325)
+        frame22 = tk.Frame(frame2, width = 550, height = 375)
         frame22.place(anchor = "c", relx = 0.5, rely = 0.71)
         
         # Frame 3: Task buttons
@@ -98,18 +105,18 @@ class mazeGUI:
         frame31.place(anchor = "c", relx = 0.5, rely = 0.5)
         
         # Frame 4: Camera and Open Ephys controls
-        frame4 = tk.Frame(self.mainWindow, width = 225, height = 650)
+        frame4 = tk.Frame(self.mainWindow, width = 225, height = 700)
         frame4.grid(row = 0, rowspan = 3, column = 2, sticky = 'news')
-        frame41 = tk.Frame(frame4, width = 225, height = 300)
+        frame41 = tk.Frame(frame4, width = 225, height = 325)
         frame41.place(anchor = "c", relx = 0.5, rely = 0.225)
-        frame42 = tk.Frame(frame4, width = 225, height = 350)
+        frame42 = tk.Frame(frame4, width = 225, height = 375)
         frame42.place(anchor = "c", relx = 0.5, rely = 0.725)
         
         # Logo
         imagePath = "assets/mazeGUIlogo.png"
         img = Image.open(imagePath)
         img = img.resize((490, 175))
-        self.img = ImageTk.PhotoImage(master = frame21, width = 175, height = 175, image = img)
+        self.img = ImageTk.PhotoImage(master = frame21, width = 490, height = 175, image = img)
         logo = tk.Label(frame21, image = self.img)
         logo.place(anchor = "c", relx = 0.5, rely = 0.5)
             
@@ -124,6 +131,7 @@ class mazeGUI:
         
         # Maze state
         self.mazeState = 0
+        self.currentMazeState = 0
         tk.Label(frame11, font = buttonFont, text = "maze state", width = 12, anchor  = 'e').grid(row = 1, column = 0, padx = 10)
         self.mazeStateLabel = tk.Label(frame11, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
         self.mazeStateLabel.grid(row = 1, column = 1)
@@ -131,7 +139,7 @@ class mazeGUI:
         self.mazeStateValue.grid(row = 1, column = 2)
         
         # Door labels
-        tk.Label(frame11, font = buttonFont, text = "Doors", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame11, font = buttonFont, text = "Doors", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3, padx = 10, pady = 10, sticky = 'we')
         labelList = ["start left", "start right", "decision left", "decision right"]
         nrow = 2
         for i in range(len(labelList)):
@@ -157,6 +165,14 @@ class mazeGUI:
         self.leftDecisionValue.grid(row = 4, column = 2)
         self.rightDecisionValue = tk.Label(frame11, font = buttonFont, text = 0)
         self.rightDecisionValue.grid(row = 5, column = 2)
+
+        # Current pin values
+        self.LS = 0
+        self.RS = 0
+        self.LD = 0
+        self.RD = 0
+        self.stimulusOn = 0
+        self.stimulusOff = 0
         
         
         """
@@ -166,6 +182,7 @@ class mazeGUI:
         
         # Stimulus state
         self.stimulusState = 0
+        self.currentStimulusState = 0
         tk.Label(frame12, font = buttonFont, text = "stimulus state", width = 12, anchor  = 'e').grid(row = 1, column = 0, padx = 10)
         self.stimulusStateLabel = tk.Label(frame12, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
         self.stimulusStateLabel.grid(row = 1, column = 1)
@@ -173,7 +190,7 @@ class mazeGUI:
         self.stimulusStateValue.grid(row = 1, column = 2)
         
         # Stimulus labels
-        tk.Label(frame12, font = buttonFont, text = "Stimulus", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame12, font = buttonFont, text = "Stimulus", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3, padx = 10, pady = 10, sticky = 'we')
         labelList = ["on switch", "off switch"]
         nrow = 2
         for i in range(len(labelList)):
@@ -199,15 +216,18 @@ class mazeGUI:
         """
         
         # Settings labels
-        tk.Label(frame22, font = buttonFont, text = "Task Settings", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 2 , padx = 10, pady = 10, sticky = 'we')
-        tk.Label(frame22, font = buttonFont, text = "Experiment Data", width = 12, anchor  = 'c').grid(row = 0, column = 2, columnspan = 2 , padx = 10, pady = 10, sticky = 'we')
+        self.taskSettingsLabel = tk.Label(frame22, font = buttonFont, text = "Task Settings", width = 12, anchor  = 'c')
+        self.taskSettingsLabel.grid(row = 0, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = 'we')
+        self.experimentDataLabel = tk.Label(frame22, font = buttonFont, text = "Experiment Data", width = 12, anchor  = 'c')
+        self.experimentDataLabel.grid(row = 0, column = 2, columnspan = 2, padx = 10, pady = 10, sticky = 'we')
         entryLabels0 = ["trials", "duration", "task", "start door", "cues", "stimulus", "stimulus", "forced choice"]
-        entryLabels2 = ["rig", "animal", "block", " ", "path", "auto save", " ", " "]
+        entryLabels2 = ["rig", "animal", "block", "path", "auto save", " ", " ", " "]
         nrow = 1
         for i in range(len(entryLabels0)):
             tk.Label(frame22, font = buttonFont, text = entryLabels0[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
             tk.Label(frame22, font = buttonFont, text = entryLabels2[i], width = 10, anchor  = 'e').grid(row = nrow, column = 2, padx = 10)
             nrow += 1
+        tk.Label(frame22, font = buttonFont, text = "Acquisition Panel", width = 12, anchor  = 'c').grid(row = 6, column = 2, columnspan = 2, padx = 10, pady = 10, sticky = 'we')
         
         # Maximum number of trials entry
         self.maximumTrialNumber = 200
@@ -312,7 +332,7 @@ class mazeGUI:
         self.pathForSavingData = "C:\\Users\\" + userName + "\\Documents\\automatedMouseMaze\\Data\\" + self.currentDate + "\\"
         self.pathEntry = tk.Entry(frame22, font = 8, width = 14)
         self.pathEntry.insert(0, self.pathForSavingData)
-        self.pathEntry.grid(row = 5, column = 3, sticky ='w')
+        self.pathEntry.grid(row = 4, column = 3, sticky ='w')
         
         # Prepare directory to save data
         Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
@@ -320,7 +340,7 @@ class mazeGUI:
         # AutoSave checkBox
         self.autoSaveData = tk.BooleanVar(value = True)
         self.autoSaveBox = tk.Checkbutton(frame22, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
-        self.autoSaveBox.grid(row = 6, column = 3, sticky = 'w')
+        self.autoSaveBox.grid(row = 5, column = 3, sticky = 'w')
         
         
         """
@@ -329,7 +349,7 @@ class mazeGUI:
         """
         
         # Stats labels
-        tk.Label(frame13, font = buttonFont, text = "Behavior", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3 , padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame13, font = buttonFont, text = "Behavior", width = 12, anchor  = 'c').grid(row = 0, column = 0, columnspan = 3, padx = 10, pady = 10, sticky = 'we')
         labelList = ["performance", "bias index", "alternation index", "trials", "correct", "incorrect", "left decisions", "right decisions", "reward (μL)"]
         nrow = 1
         for i in range(len(labelList)):
@@ -374,6 +394,8 @@ class mazeGUI:
         self.rightValue.grid(row = 8, column = 1)
         self.rewardValue = tk.Label(frame13, font = buttonFont, text = self.estimatedReward)
         self.rewardValue.grid(row = 9, column = 1)
+        self.behaviorStats = [self.performance, self.biasIndex, self.alternationIndex, self.trialID, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
+        self.behaviorValues = [self.performanceValue, self.biasIndexValue, self.alternationIndexValue, self.trialValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
         
         
         """
@@ -420,21 +442,37 @@ class mazeGUI:
         
         
         """
+        Connection with Acquisition Panel
+        
+        """
+        
+        # Acquisition panel controls
+        self.controlPanelAddress = configurationData["acquisitionControlPanel"]["controlPanelAddress"]
+        self.acquisitionPanelConnection = False
+        self.command = None
+        
+        # Connect to acquisition panel
+        self.connectToPanelButton = tk.Button(frame22, text = 'Connect', font = buttonFont, width = 17, command = self.startConnection)
+        self.connectToPanelButton.grid(row = 7, column = 2, columnspan = 2, padx = 10, pady = 10)
+        self.connectToPanelButton.bind('<Enter>', lambda e: self.connectToPanelButton.config(fg = 'Black', bg ='#A9C6E3'))
+        self.connectToPanelButton.bind('<Leave>', lambda e: self.connectToPanelButton.config(fg = 'Black', bg ='SystemButtonFace'))
+        
+        # Close connection with acquisition panel
+        self.disconnectFromPanelButton = tk.Button(frame22, text = 'Disconnect', font = buttonFont, width = 17, command = self.closeConnection)
+        self.disconnectFromPanelButton.grid(row = 8, column = 2, columnspan = 2, padx = 10, pady = 10)
+        self.disconnectFromPanelButton.bind('<Enter>', lambda e: self.disconnectFromPanelButton.config(fg = 'Black', bg ='#AFAFAA'))
+        self.disconnectFromPanelButton.bind('<Leave>', lambda e: self.disconnectFromPanelButton.config(fg = 'Black', bg ='SystemButtonFace'))
+        
+        
+        """
         Camera Controls
         
         """
         
         # Cameras
-        self.eyeCameraID = int(configurationData["crownCameras"]["eyeCamera"])
-        self.worldCameraID = int(configurationData["crownCameras"]["worldCamera"])
-        
-        # Frame rate
-        frameRate = 100                                  # (Hz). True frame rate must estimated. Delays caused by other computations in the code, and camera limitations
-        self.cameraTimeBetweenFrames = 1000/frameRate    # miliseconds betweem frames
-        
-        # Booleans for buttons
-        self.camerasAreOn = False
-        self.saveVideo = False
+        eyeCameraID = int(configurationData["crownCameras"]["eyeCamera"])
+        worldCameraID = int(configurationData["crownCameras"]["worldCamera"])
+        self.cameraIDs = [eyeCameraID, worldCameraID]
         
         # Camera labels
         tk.Label(frame41, font = buttonFont, text = "Camera Controls", width = 12, anchor  = 'c').grid(row = 0, column = 0, padx = 10, pady = 10, sticky = 'we')
@@ -470,12 +508,7 @@ class mazeGUI:
         """
         
         # Path for Open Ephys exe
-        self.OpenEphysPath = "C:\\Program Files\\Open Ephys\\open-ephys.exe"
-        
-        # Booleans for buttons
-        self.OpenEphysGUIHasBeenLaunched = False
-        self.EphysRecordingInProgress = False
-        self.previewOpenEphysIsOn = False
+        self.OpenEphysPath = configurationData["openEphys"]["openEphysPath"]
         
         # Open Ephys labels
         tk.Label(frame42, font = buttonFont, text = "Ephys and IMU Controls", width = 25, anchor  = 'c').grid(row = 0, column = 0, padx = 10, pady = 10, sticky = 'we')
@@ -542,6 +575,10 @@ class mazeGUI:
         self.leftLED = int(configurationData["teensyConfiguration"]["leftLED"])
         self.rightLED = int(configurationData["teensyConfiguration"]["rightLED"])
         
+        # Labels and pin states in GUI
+        self.sensorLabelValues = [self.leftStartValue, self.rightStartValue, self.leftDecisionValue, self.rightDecisionValue, self.startStimulusValue, self.stopStimulusValue]
+        self.pinStates = [self.LS,self.RS,self.LD,self.RD, self.stimulusOn, self.stimulusOff]
+        
         # Check available serial ports
         availableSerialPorts = serial.tools.list_ports.comports()
         portIDs = []
@@ -553,6 +590,7 @@ class mazeGUI:
             messagebox.showerror("Error", "Make sure the serial port for Teensy 4.0 in 'config/package.json' is correct before initializing maze.")
         else:
             self.closeGUIWithoutCheckouts = False
+    
     
     """
     Teensy 4.0 Functions
@@ -784,21 +822,21 @@ class mazeGUI:
         self.RS = self.board.digital[self.rightStartIRsensor].read()
         self.stimulusOn = self.board.digital[self.startStimulusIRsensor].read()
         self.stimulusOff = self.board.digital[self.stopStimulusIRsensor].read()
-        
+
         # Update IR sensor values in GUI
-        sensorLabelValues = [self.leftStartValue, self.rightStartValue, self.leftDecisionValue, self.rightDecisionValue, self.startStimulusValue, self.stopStimulusValue]
-        pinStates = [self.LS,self.RS,self.LD,self.RD, self.stimulusOn, self.stimulusOff]
-        for i in range(len(sensorLabelValues)):
-            if pinStates[i] is False:
-                sensorLabelValues[i].config(text = 0)
+        self.sensorLabelValues = [self.leftStartValue, self.rightStartValue, self.leftDecisionValue, self.rightDecisionValue, self.startStimulusValue, self.stopStimulusValue]
+        self.pinStates = [self.LS,self.RS,self.LD,self.RD, self.stimulusOn, self.stimulusOff]
+        for i in range(len(self.sensorLabelValues)):
+            if self.pinStates[i] is False:
+                self.sensorLabelValues[i].config(text = 0)
             elif self.LD is True or self.RD is True:
-                sensorLabelValues[i].config(text = 1)
-            sensorLabelValues[i].update_idletasks()
+                self.sensorLabelValues[i].config(text = 1)
+            self.sensorLabelValues[i].update_idletasks()
             
     def updateMazeState(self):
         
         # Maze state
-        currentMazeState = self.mazeState
+        self.currentMazeState = self.mazeState
         
         # Update maze states
         if self.mazeState == 1:
@@ -811,12 +849,10 @@ class mazeGUI:
                 elif self.RD is False:
                     self.startDoor = "right"
         elif self.mazeState == 2:
-            self.closeValve()
-            if self.reward == False and self.initializeTrial == True:
+            if self.reward is False and self.initializeTrial is True:
                 self.initializeUpcomingTrial()
                 self.initializeTrial = False
-            currentTime = time.time()
-            if currentTime > self.interTrialStart + self.interTrialTimeOut:
+            if time.time() > self.interTrialStart + self.interTrialTimeOut:
                 if self.startDoor == "left":
                     self.mazeState = 3
                 elif self.startDoor == "right":
@@ -832,13 +868,13 @@ class mazeGUI:
                 self.startTrial()
                 
         # Update doors
-        if currentMazeState != self.mazeState:
+        if self.currentMazeState != self.mazeState:
             self.updateDoors()
 
     def updateStimulusState(self):
         
         # Stimulus state
-        currentStimulusState = self.stimulusState
+        self.currentStimulusState = self.stimulusState
         
         # Update stimulus states
         if self.stimulusState == 1:
@@ -861,20 +897,21 @@ class mazeGUI:
                 self.stimulusState = 1
         
         # Update stimulus
-        if currentStimulusState != self.stimulusState:
+        if self.currentStimulusState != self.stimulusState:
             self.updateStimulusDisplay()
 
     def closeValve(self):
         
-        if self.reward is True:
-            currentTime =  time.time()
-            if currentTime > self.rewardStart + self.rewardTime:
+        # Close valve
+        while self.reward is True:
+            if time.time() > self.rewardStart + self.rewardTime:
                 self.board.digital[self.waterPort].write(0)
                 self.board.digital[self.LED].write(0)
                 self.reward = False
-
+            
     def giveReward(self):
         
+        # Trigger reward
         if self.reward is False:
             if self.targetLocation == 0:
                 self.waterPort = self.leftWaterPort
@@ -887,106 +924,186 @@ class mazeGUI:
             self.board.digital[self.waterPort].write(1)
             self.board.digital[self.LED].write(1)
             self.rewardStart = time.time()
+        
+        # Check on valve
+        self.rewardThread = Thread(target = self.closeValve())
+        self.rewardThread.start()
 
 
     """ 
-    Camera Functions
+    Connection with Acquisition Panel
+    
+    """
+
+    def startConnection(self):
+        
+        if self.acquisitionPanelConnection is False:
+            
+            # Initialize Maze GUI socket (client)
+            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client.connect(('127.0.0.1', 12345))                                #(('184.171.85.162', 12345))
+            # self.client.connect((self.controlPanelAddress, 12345)) 
+            self.acquisitionPanelConnection = True
+            print("Connection with Acquisition Panel is ready.")
+            
+            # Thread to handle initialization of camera feed
+            self.listenToServer = Thread(target = self.checkOnServer())
+            self.listenToServer.start()
+            
+            # Update connectToPanelButton: connection has been established...
+            self.connectToPanelButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Connected')
+            self.connectToPanelButton.bind('<Enter>', lambda e: self.connectToPanelButton.config(fg = 'Blue', bg ='#A9C6E3'))
+            self.connectToPanelButton.bind('<Leave>', lambda e: self.connectToPanelButton.config(fg = 'Blue', bg = '#A9C6E3'))
+            self.connectToPanelButton.update_idletasks()
+            
+        elif self.acquisitionPanelConnection is True:
+            
+            print("Acquisition Panel is not available. It might be already connected.")
+
+    def closeConnection(self):
+        
+        if self.acquisitionPanelConnection is True:
+            
+            # Close Maze GUI socket (client)
+            self.command = ["closeConnection", False]
+            self.command = pickle.dumps(self.command)
+            self.client.send(self.command)
+            self.client.close()
+            self.acquisitionPanelConnection = False
+            print("Connection with Acquisition Panel has now been been closed.")
+            
+            # Reset connectToPanelButton
+            self.connectToPanelButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Connect')
+            self.connectToPanelButton.bind('<Enter>', lambda e: self.connectToPanelButton.config(fg = 'Black', bg ='#A9C6E3'))
+            self.connectToPanelButton.bind('<Leave>', lambda e: self.connectToPanelButton.config(fg = 'Black', bg ='SystemButtonFace'))
+            self.connectToPanelButton.update_idletasks()
+            
+            # Final checks
+            try:
+                self.crownCameras
+            except:
+                ... # Crown cameras have been properly closed
+            else:
+                self.closeCameras()
+            try:
+                self.openEphys
+            except:
+                ... # Open Ephys has been properly closed
+            else:
+                self.closeOpenEphysGUI()
+            
+        elif self.acquisitionPanelConnection is False:
+            
+            print("Connection with Acquisition Panel has not been established yet.")
+        
+    def checkOnServer(self):
+        
+        if self.acquisitionPanelConnection is True:
+            
+            # Read data from Acquisition Panel (server)
+            listenToServer, _, _ = select.select([self.client], [], [], 0.05)
+            for s in listenToServer:
+                if s == self.client:
+                    data = s.recv(1024)
+                    if data:
+                        try:
+                            serverData = pickle.loads(data)
+                            if serverData[0] == "closeConnection":
+                                self.closeConnection()
+                        except pickle.UnpicklingError:
+                            print("Error processing client data.")
+            
+            # Loop
+            self.mainWindow.after(1000, self.checkOnServer)
+        
+
+    """ 
+    Crown Camera Functions
     
     """
 
     def startCameras(self):
         
-        if self.camerasAreOn == False:
+        try:
+            
+            self.crownCameras
         
-            # Check for task settings
-            self.updateTrialSettings()
-        
+        except:
+            
             # Update startCameraButton: starting cameras...
             self.startCameraButton.config(fg = 'Black', bg = '#A9C6E3', text = 'Starting...', relief = 'sunken')
             self.startCameraButton.update_idletasks()
-    
-            # Create window
-            self.cameraWindow = tk.Toplevel()
-            self.cameraWindow.title("Cameras")
             
-            # Initialize camera objects
-            self.eyeCamera = cv2.VideoCapture(self.eyeCameraID) 
-            self.worldCamera = cv2.VideoCapture(self.worldCameraID) 
-            self.cameraTimeStamps = []
-            self.eyeCamRet = None
-            self.worldCamRet = None
-            self.eyeCamFrame = None
-            self.worldCamFrame = None
-            self.camerasAreOn = True
-            self.okToSaveVideoFiles = False
-            self.saveVideo = False
-            self.noVideoRecorded = True
-       
-            # Check if cameras are already open
-            if (self.eyeCamera.isOpened() == False):  
-                print("Error reading eye camera") 
-            if (self.worldCamera.isOpened() == False):  
-                print("Error reading world camera") 
-              
-            # Camera resolution. Convert from float to integer
-            frameWidth = int(self.eyeCamera.get(3)) 
-            frameHeight = int(self.eyeCamera.get(4)) 
-            eyeCamSize = (frameWidth, frameHeight) 
-            frameWidth = int(self.worldCamera.get(3)) 
-            frameHeight = int(self.worldCamera.get(4)) 
-            worldCamSize = (frameWidth, frameHeight) 
-    
-            # Canvas
-            self.canvas = tk.Canvas(self.cameraWindow, width = eyeCamSize[0], height = eyeCamSize[1] + worldCamSize[1])
-            self.canvas.pack()
-            self.combinedFrame = None
-            self.canvasImage = self.canvas.create_image(0, 0, image = self.combinedFrame, anchor = tk.NW)
-    
-            # Window
-            windowWidth = eyeCamSize[0]
-            windowHeight = eyeCamSize[1] + worldCamSize[1]
-            screenWidth = self.cameraWindow.winfo_screenwidth()
-            screenHeight = self.cameraWindow.winfo_screenheight()
-            x = (screenWidth/5) - (windowWidth/2)
-            y = (screenHeight/2.15) - (windowHeight/2)
-            self.cameraWindow.geometry('%dx%d+%d+%d' % (windowWidth, windowHeight, x, y))
-    
-            # Check for existing video files
-            fileName1 = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "eyeCamera" + "_" + str(self.blockID) + ".avi"
-            fileName2 = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "worldCamera" + "_" + str(self.blockID) + ".avi"
-            if not os.path.isfile(fileName1) and not os.path.isfile(fileName2):
-                self.okToSaveVideoFiles = True
-            else:
-                self.okToSaveVideoFiles = messagebox.askyesno("Existing file", "Do you want to overwrite video files?")
+            # Experiment data
+            self.updateTrialSettings()
+            sessionInfo = [self.animalID, self.currentDate, self.blockID]
             
-            # Video files
-            if self.okToSaveVideoFiles == True:
-                self.eyeCameraVideo = cv2.VideoWriter(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "eyeCamera" + "_" + str(self.blockID) + ".avi",
-                                                      cv2.VideoWriter_fourcc(*'MJPG'), 10, eyeCamSize)
-                self.worldCameraVideo = cv2.VideoWriter(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "worldCamera" + "_" + str(self.blockID) + ".avi",
-                                                        cv2.VideoWriter_fourcc(*'MJPG'), 10, worldCamSize)
-                videoFilesReady = True
+            # Initialize crown cameras locally
+            if self.acquisitionPanelConnection is False:
+                
+                self.crownCameras = crownCameras.crownCameras(self.cameraIDs, self.pathForSavingData , sessionInfo)
+                
+            # Initialize crown cameras in Acquisition Panel (server)
+            elif self.acquisitionPanelConnection is True:
+                
+                # Prepare local camera object
+                class shamCameraObject:
+                    pass
+                self.crownCameras = shamCameraObject()
+                
+                # Input for camera object
+                dataForServer = ["cameraInput", self.cameraIDs, self.pathForSavingData , sessionInfo]
+                dataForServer = pickle.dumps(dataForServer)
+                self.client.send(dataForServer)
+                time.sleep(1)
+                
+                # Initialize camera object in Acquisition Panel (server)
+                self.command = ["initializeCameras"]
+                self.command = pickle.dumps(self.command)
+                self.client.send(self.command)
+                time.sleep(1)
+                
+                # Retrieve data from Acquisition Panel (server)
+                data = self.client.recv(1024)
+                serverData = pickle.loads(data)
+                self.crownCameras.camerasAreOn = serverData[0]
+                self.crownCameras.eyeCameraAvailable = serverData[1]
+                self.crownCameras.worldCameraAvailable = serverData[2]
+                
+            if self.crownCameras.eyeCameraAvailable is True and self.crownCameras.worldCameraAvailable is True:
+                
+                if self.crownCameras.camerasAreOn is True:
+                    
+                    # Update startCameraButton: cameras are open (preview mode)...
+                    self.startCameraButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Preview')
+                    self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Blue', bg ='#A9C6E3'))
+                    self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Blue', bg = '#A9C6E3'))
+                    self.startCameraButton.update_idletasks()
+                    
+                    if self.acquisitionPanelConnection is False:
+                        
+                        # Start camera feed (preview)
+                        self.crownCameras.startCameras()
+                    
+                    elif self.acquisitionPanelConnection is True:
+
+                        # Start camera feed (preview) in Acquisition Panel (server)
+                        self.command = ["startCameras"]
+                        self.command = pickle.dumps(self.command)
+                        self.client.send(self.command)
+                        
+                elif self.crownCameras.camerasAreOn is False:
+                    
+                    # Reset startCameraButton
+                    self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
+                    self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+                    self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+                    self.startCameraButton.update_idletasks()
+                
+                    # Delete camera object
+                    del self.crownCameras
+                    
             else:
-                videoFilesReady = False
-                self.camerasAreOn = False
-    
-            if videoFilesReady == True:
-                
-                # Update startCameraButton: cameras are open (preview mode)...
-                self.startCameraButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Preview')
-                self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Blue', bg ='#A9C6E3'))
-                self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Blue', bg = '#A9C6E3'))
-                self.startCameraButton.update_idletasks()
-                
-                # Start cameras
-                self.cameraThread = Thread(target = self.updateCameras)
-                self.cameraThread.start()
-                
-                # Camera window
-                self.cameraWindow.protocol('WM_DELETE_WINDOW', self.closeCameras)
-                self.cameraWindow.mainloop()
-                
-            elif videoFilesReady == False:
                 
                 # Reset startCameraButton
                 self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
@@ -994,138 +1111,156 @@ class mazeGUI:
                 self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
                 self.startCameraButton.update_idletasks()
                 
-                # Destroy camera window
-                self.resetCameras()
+                if self.acquisitionPanelConnection is True:
+                    
+                    # Delete camera object in Acquisition Panel (server)
+                    self.command = ["deleteCameras"]
+                    self.command = pickle.dumps(self.command)
+                    self.client.send(self.command)
+                    time.sleep(1)
                 
-                # Warning: change block number
-                messagebox.showwarning("Video recording", "Please choose a different block number for you experiment." +
-                                                          "\n" +
-                                                          "\nCurrent block number already exists.")
-            
+                # Delete camera object
+                del self.crownCameras
+                
         else:
             
-            print("Cameras are already on.")
+            print("Cameras are already in use.")
         
     def recordVideo(self):
         
-        if self.camerasAreOn == True:
+        try:
             
-            # Update camera buttons. Recording video...
-            self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
-            self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
-            self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
-            self.startCameraButton.update_idletasks()
-            self.recordCameraButton.config(fg = 'Black', bg = '#DC5B5B', relief = 'sunken', text = 'Recording')
-            self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#DC5B5B'))
-            self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg = '#DC5B5B'))
-            self.recordCameraButton.update_idletasks()
+            self.crownCameras
+        
+        except:
             
-            # Turning saving frames on
-            self.saveVideo = True
-            self.noVideoRecorded = False
+            messagebox.showinfo("Cameras", "Cameras have not been started yet.", parent = self.mainWindow)
             
         else:
             
-            messagebox.showinfo("Cameras", "Cameras have not been started yet.", parent = self.mainWindow)
+            if self.crownCameras.camerasAreOn is True:
+                
+                # Update camera buttons. Recording video...
+                self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
+                self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+                self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+                self.startCameraButton.update_idletasks()
+                self.recordCameraButton.config(fg = 'Black', bg = '#DC5B5B', relief = 'sunken', text = 'Recording')
+                self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#DC5B5B'))
+                self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg = '#DC5B5B'))
+                self.recordCameraButton.update_idletasks()
+                
+            if self.acquisitionPanelConnection is False:
+    
+                # Start video recording
+                try:
+                    self.crownCameras.recordVideo()
+                except:
+                    print("Connection stopped unexpectedly. You can control cameras from the Acquisition Control Panel.")
+    
+            elif self.acquisitionPanelConnection is True:
+    
+                # Start video recording in Acquisition Panel (server)
+                self.command = ["recordVideo"]
+                self.command = pickle.dumps(self.command)
+                self.client.send(self.command)
+                time.sleep(1)
+                
+                # Retrieve data from Acquisition Panel (server)
+                data = self.client.recv(1024)
+                serverData = pickle.loads(data)
+                self.crownCameras.saveVideo = serverData[0]
         
     def stopVideo(self):
         
-        if self.saveVideo == True:
-        
-            # Update recordCameraButton: stop video recording...
-            self.recordCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Record Video')
-            self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
-            self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg = 'SystemButtonFace'))
-            self.recordCameraButton.update_idletasks()
+        try:
             
-            # Turning saving frames off
-            self.saveVideo = False
+            self.crownCameras
+        
+        except:
+            
+            messagebox.showinfo("Cameras", "Cameras have not been started yet.", parent = self.mainWindow)
             
         else:
             
-            print("There is no ongoing video recording...")
-        
-    def updateCameras(self):
-        
-        if self.camerasAreOn == True:
-        
-                # Grab frame
-                self.eyeCamRet, self.eyeCamFrame = self.eyeCamera.read()
-                self.worldCamRet, self.worldCamFrame = self.worldCamera.read()
-                self.cameraTimeStamps.append(time.time())
-                self.worldCamFrame = cv2.rotate(self.worldCamFrame, cv2.ROTATE_180)
+            if self.crownCameras.saveVideo is True:
                 
-                if self.eyeCamRet == True or self.worldCamRet == True:
-                    
-                    # Save frame to video file
-                    if self.saveVideo == True:
-                        self.eyeCameraVideo.write(self.eyeCamFrame)
-                        self.worldCameraVideo.write(self.worldCamFrame)
-                    
-                    # Update frame to display
-                    self.combinedFrame = cv2.vconcat([self.worldCamFrame, self.eyeCamFrame])
-                    self.combinedFrame = ImageTk.PhotoImage(image = Image.fromarray(cv2.cvtColor(self.combinedFrame, cv2.COLOR_BGR2RGB)))
-                    self.canvas.itemconfig(self.canvasImage, image = self.combinedFrame)
-                    
-                # Loop
-                self.cameraWindow.after(int(self.cameraTimeBetweenFrames), self.updateCameras)
+                # Update recordCameraButton: stop video recording...
+                self.recordCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Record Video')
+                self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+                self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg = 'SystemButtonFace'))
+                self.recordCameraButton.update_idletasks()
+                
+            if self.acquisitionPanelConnection is False:
+    
+                # Stop video recording
+                try:
+                    self.crownCameras.stopVideo()
+                except:
+                    print("Connection stopped unexpectedly. You can control cameras from the Acquisition Control Panel.")
+    
+            elif self.acquisitionPanelConnection is True:
+    
+                # Stop video recording in Acquisition Panel (server)
+                self.command = ["stopVideo"]
+                self.command = pickle.dumps(self.command)
+                self.client.send(self.command)
+                time.sleep(1)
+                
+                # Retrieve data from Acquisition Panel (server)
+                data = self.client.recv(1024)
+                serverData = pickle.loads(data)
+                self.crownCameras.saveVideo = serverData[0]
+        
         
     def closeCameras(self):
         
-        if self.camerasAreOn == True:
+        try:
             
-            # Reset camera buttons
-            self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
-            self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
-            self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
-            self.startCameraButton.update_idletasks()
-            self.recordCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Record Video')
-            self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#DC5B5B'))
-            self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
-            self.recordCameraButton.update_idletasks()
+            self.crownCameras
+        
+        except:
             
-            # Stop grabing frames and close window
-            self.camerasAreOn = False
-            self.saveVideo = False
-            self.cameraWindow.after(50, self.resetCameras)
+            messagebox.showinfo("Cameras", "Cameras have not been started yet.", parent = self.mainWindow)
             
         else:
             
-            print("Cameras are currently closed.")
-        
-    def resetCameras(self):
-        
-        # Stop camera objects
-        self.eyeCamera.release() 
-        self.worldCamera.release()
-        
-        # Stop video files
-        if self.okToSaveVideoFiles == True:
-            
-            # Close video files
-            self.eyeCameraVideo.release() 
-            self.worldCameraVideo.release()
-            
-            # If frames were not recorded, destroy video files
-            if self.noVideoRecorded == True:
-                os.remove(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "eyeCamera" + "_" + str(self.blockID) + ".avi")
-                os.remove(self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "worldCamera" + "_" + str(self.blockID) + ".avi")
+            if self.crownCameras.camerasAreOn is True:
                 
-            # If frames were recorded, save time stamps
-            if self.noVideoRecorded == False:
-                data = {
-                        "rawCameraTimeStamps": self.cameraTimeStamps,
-                                                                     }
-                df = pd.DataFrame.from_dict(data, orient = 'index')
-                df = df.transpose()    
-                fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "cameraTimeStamps" + "_" + str(self.blockID)
-                df.to_pickle(fileName + self.fileExtension)
-            
-        # Closes all the frames 
-        cv2.destroyAllWindows() 
-        
-        # Destroy camera window
-        self.cameraWindow.destroy()
+                # Reset camera buttons
+                self.startCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Cameras')
+                self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
+                self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+                self.startCameraButton.update_idletasks()
+                self.recordCameraButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Record Video')
+                self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#DC5B5B'))
+                self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
+                self.recordCameraButton.update_idletasks()
+    
+            if self.acquisitionPanelConnection is False:
+    
+                # Close crown cameras
+                try:
+                    self.crownCameras.closeCameras()
+                except:
+                    print("Connection stopped unexpectedly. You can control cameras from the Acquisition Control Panel.")
+    
+            elif self.acquisitionPanelConnection is True:
+    
+                # Close crown cameras in Acquisition Panel (server)
+                self.command = ["closeCameras"]
+                self.command = pickle.dumps(self.command)
+                self.client.send(self.command)
+                time.sleep(1)
+                
+                # Retrieve data from Acquisition Panel (server)
+                data = self.client.recv(1024)
+                serverData = pickle.loads(data)
+                self.crownCameras.camerasAreOn = serverData[0]
+                self.crownCameras.saveVideo = serverData[1]
+                
+            # Delete camera object
+            del self.crownCameras
 
 
     """ 
@@ -1135,139 +1270,251 @@ class mazeGUI:
     
     def launchOpenEphysGUI(self):
         
-        if self.OpenEphysGUIHasBeenLaunched == False:
+        try:
             
-            # Check for task settings
+            self.openEphys
+            
+        except:
+            
+            # Experiment data
             self.updateTrialSettings()
-            
-            # Launch Open Ephys GUI
-            subprocess.Popen(self.OpenEphysPath)
-            
-            # Communicate with Open Ephys HTTP Server
-            self.GUIstatus = []
-            while self.GUIstatus != "connected":
-                try:
-                    self.OpenEphysGUI = OpenEphysHTTPServer()
-                    if self.OpenEphysGUI.status() == "IDLE":
-                        self.OpenEphysGUIHasBeenLaunched = True
-                        self.GUIstatus = "connected"
-                except:
-                    time.sleep(1)
-            
-            # Path and data file name
-            self.OpenEphysGUI.set_start_new_dir()
-            self.OpenEphysGUI.set_parent_dir(self.pathForSavingData)
-            self.OpenEphysGUI.set_prepend_text(self.animalID + "_")
-            self.OpenEphysGUI.set_base_text(self.currentDate)
-            self.OpenEphysGUI.set_append_text("_" + "ephysData" + "_" + str(self.blockID))
-            recordNodeID = self.OpenEphysGUI.get_recording_info(key = "record_nodes")
-            recordNodeID = recordNodeID[0]["node_id"]
-            self.OpenEphysGUI.send("/api/recording/" + str(recordNodeID), payload = {'parent_directory' : self.pathForSavingData})
-
-            # Update launchOpenEphysButton: GUI has been launched...
-            self.launchOpenEphysButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Launched')
-            self.launchOpenEphysButton.bind('<Enter>', lambda e: self.launchOpenEphysButton.config(fg = 'Blue', bg ='#A9C6E3'))
-            self.launchOpenEphysButton.bind('<Leave>', lambda e: self.launchOpenEphysButton.config(fg = 'Blue', bg = '#A9C6E3'))
-            self.launchOpenEphysButton.update_idletasks()
+            sessionInfo = [self.animalID, self.currentDate, self.blockID]    
+        
+            # Launch Open Ephys GUI locally
+            if self.acquisitionPanelConnection is False:
+                
+                self.openEphys = openEphys.openEphys(self.OpenEphysPath, self.pathForSavingData , sessionInfo)
+                
+            # Launch Open Ephys from Acquisition Panel (server)
+            elif self.acquisitionPanelConnection is True:
+                
+                # Prepare local Open Ephys object
+                class shamOpenEphysObject:
+                    pass
+                self.openEphys = shamOpenEphysObject()
+        
+                # Input for Open Ephys object
+                dataForServer = ["launchOpenEphys", self.OpenEphysPath, self.pathForSavingData , sessionInfo]
+                dataForServer = pickle.dumps(dataForServer)
+                self.client.send(dataForServer)
+                time.sleep(1)
+                
+                # Retrieve data from Acquisition Panel (server)
+                data = self.client.recv(1024)
+                serverData = pickle.loads(data)
+                self.openEphys.OpenEphysGUIHasBeenLaunched = serverData[0]
+                self.openEphys.ephysPreviewIsOn = serverData[1]
+                self.openEphys.ephysRecordingInProgress = serverData[2]
+                
+            if self.openEphys.OpenEphysGUIHasBeenLaunched is True:
+                
+                # Update launchOpenEphysButton: GUI has been launched...
+                self.launchOpenEphysButton.config(fg = 'Blue', bg = '#A9C6E3', relief = 'sunken', text = 'Launched')
+                self.launchOpenEphysButton.bind('<Enter>', lambda e: self.launchOpenEphysButton.config(fg = 'Blue', bg ='#A9C6E3'))
+                self.launchOpenEphysButton.bind('<Leave>', lambda e: self.launchOpenEphysButton.config(fg = 'Blue', bg = '#A9C6E3'))
+                self.launchOpenEphysButton.update_idletasks()        
+        
+        else:
+        
+            print("Open Ephys GUI has been already launched.")
             
     def previewOpenEphysChannels(self):
         
-        if self.OpenEphysGUIHasBeenLaunched == True and self.previewOpenEphysIsOn == False and self.EphysRecordingInProgress == False:
+        try:
             
-            # Update previewOpenEphysButton: preview mode...
-            self.previewOpenEphysButton.config(fg = 'Black', bg = '#99D492', relief = 'sunken', text = 'Preview On')
-            self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Blue', bg ='#99D492'))
-            self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Blue', bg = '#99D492'))
-            self.previewOpenEphysButton.update_idletasks()
-            
-            # Start preview mode
-            self.OpenEphysGUI.acquire()
-            self.previewOpenEphysIsOn = True
-            
-        elif self.OpenEphysGUIHasBeenLaunched == True and self.previewOpenEphysIsOn == True and self.EphysRecordingInProgress == False:
-            
-            # Update previewOpenEphysButton: preview mode...
-            self.previewOpenEphysButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Preview Off')
-            self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='#99D492'))
-            self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg = 'SystemButtonFace'))
-            self.previewOpenEphysButton.update_idletasks()
-            
-            # Stop preview mode
-            self.OpenEphysGUI.idle()
-            self.previewOpenEphysIsOn = False
-            
-        elif self.OpenEphysGUIHasBeenLaunched == False:
-            print("Open Ephys GUI has not been launched yet.")
-            
-        elif self.EphysRecordingInProgress == True:
-            print("There is an ongoing recording in progress.")
-            
-    def startEphysRecording(self):
+            self.openEphys
         
-        if self.OpenEphysGUIHasBeenLaunched == True and self.EphysRecordingInProgress == False:
+        except:
             
-            # Update previewOpenEphysButton: preview mode...
-            if self.previewOpenEphysIsOn == True:
+            messagebox.showinfo("Open Ephys GUI", "Open Ephys GUI has not been laucnhed yet.", parent = self.mainWindow)
+            
+        else:
+            
+            if self.openEphys.OpenEphysGUIHasBeenLaunched is True and self.openEphys.ephysPreviewIsOn is False and self.openEphys.ephysRecordingInProgress is False:
+                
+                # Update previewOpenEphysButton: preview mode...
+                self.previewOpenEphysButton.config(fg = 'Black', bg = '#99D492', relief = 'sunken', text = 'Preview On')
+                self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Blue', bg ='#99D492'))
+                self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Blue', bg = '#99D492'))
+                self.previewOpenEphysButton.update_idletasks()
+                
+                if self.acquisitionPanelConnection is False:
+                
+                    # Start preview mode
+                    self.openEphys.previewOpenEphysChannels()
+                    
+                elif self.acquisitionPanelConnection is True:
+                    
+                    # Start preview mode in Acquisition Panel (server)
+                    self.command = ["previewOpenEphysChannels"]
+                    self.command = pickle.dumps(self.command)
+                    self.client.send(self.command)
+                    time.sleep(1)
+                    
+                    # Retrieve data from Acquisition Panel (server)
+                    data = self.client.recv(1024)
+                    serverData = pickle.loads(data)
+                    self.openEphys.ephysPreviewIsOn = serverData[0]
+            
+            elif self.openEphys.OpenEphysGUIHasBeenLaunched is True and self.openEphys.ephysPreviewIsOn is True and self.openEphys.ephysRecordingInProgress is False:
+                
+                # Update previewOpenEphysButton: preview mode...
                 self.previewOpenEphysButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Preview Off')
                 self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='#99D492'))
                 self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg = 'SystemButtonFace'))
                 self.previewOpenEphysButton.update_idletasks()
                 
-            # Update startEphysRecordingButton. Recording in progress...
-            self.startEphysRecordingButton.config(fg = 'Black', bg = '#DC5B5B', relief = 'sunken', text = 'Recording')
-            self.startEphysRecordingButton.bind('<Enter>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='#DC5B5B'))
-            self.startEphysRecordingButton.bind('<Leave>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg = '#DC5B5B'))
-            self.startEphysRecordingButton.update_idletasks()
+                if self.acquisitionPanelConnection is False:
+                
+                    # Stop preview mode
+                    self.openEphys.previewOpenEphysChannels()
+                    
+                elif self.acquisitionPanelConnection is True:
+                    
+                    # Stop preview mode in Acquisition Panel (server)
+                    self.command = ["previewOpenEphysChannels"]
+                    self.command = pickle.dumps(self.command)
+                    self.client.send(self.command)
+                    time.sleep(1)
+                    
+                    # Retrieve data from Acquisition Panel (server)
+                    data = self.client.recv(1024)
+                    serverData = pickle.loads(data)
+                    self.openEphys.ephysPreviewIsOn = serverData[0] 
             
-            # Start recording
-            self.OpenEphysGUI.record()
-            self.EphysRecordingInProgress = True
+    def startEphysRecording(self):
         
-        elif self.OpenEphysGUIHasBeenLaunched == False:
-            print("Open Ephys GUI has not been launched yet.")
+        try:
+            
+            self.openEphys
+        
+        except:
+            
+            messagebox.showinfo("Open Ephys GUI", "Open Ephys GUI has not been laucnhed yet.", parent = self.mainWindow)
+            
+        else:
+            
+            if self.openEphys.OpenEphysGUIHasBeenLaunched is True and self.openEphys.ephysRecordingInProgress is False:
+                
+                # Update previewOpenEphysButton: preview mode...
+                if self.openEphys.ephysPreviewIsOn is True:
+                    self.previewOpenEphysButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Preview Off')
+                    self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='#99D492'))
+                    self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg = 'SystemButtonFace'))
+                    self.previewOpenEphysButton.update_idletasks()
+                    
+                # Update startEphysRecordingButton. Recording in progress...
+                self.startEphysRecordingButton.config(fg = 'Black', bg = '#DC5B5B', relief = 'sunken', text = 'Recording')
+                self.startEphysRecordingButton.bind('<Enter>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='#DC5B5B'))
+                self.startEphysRecordingButton.bind('<Leave>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg = '#DC5B5B'))
+                self.startEphysRecordingButton.update_idletasks()
+                
+                if self.acquisitionPanelConnection is False:
+                
+                    # Start ephys recording
+                    try:
+                        self.openEphys.startEphysRecording()
+                    except:
+                        print("Connection stopped unexpectedly. You can control Open Ephys from the Acquisition Control Panel.")
+                    
+                elif self.acquisitionPanelConnection is True:
+                    
+                    # Start ephys recording in Acquisition Panel (server)
+                    self.command = ["startEphysRecording"]
+                    self.command = pickle.dumps(self.command)
+                    self.client.send(self.command)
+                    time.sleep(1)
+                    
+                    # Retrieve data from Acquisition Panel (server)
+                    data = self.client.recv(1024)
+                    serverData = pickle.loads(data)
+                    self.openEphys.ephysRecordingInProgress = serverData[0]
         
     def stopEphysRecording(self):
         
-        if self.OpenEphysGUIHasBeenLaunched == True and self.EphysRecordingInProgress == True:
+        try:
             
-            # Update startEphysRecordingButton. Recording in progress...
-            self.startEphysRecordingButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Recording')
-            self.startEphysRecordingButton.bind('<Enter>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='#DC5B5B'))
-            self.startEphysRecordingButton.bind('<Leave>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg = 'SystemButtonFace'))
-            self.startEphysRecordingButton.update_idletasks()
+            self.openEphys
+        
+        except:
             
-            # Stop recording
-            self.OpenEphysGUI.idle()
-            self.EphysRecordingInProgress = False
+            messagebox.showinfo("Open Ephys GUI", "Open Ephys GUI has not been laucnhed yet.", parent = self.mainWindow)
             
-        elif self.OpenEphysGUIHasBeenLaunched == False:
-            print("Open Ephys GUI has not been launched yet.")
+        else:
             
-        elif self.EphysRecordingInProgress == False:
-            print("No recording in progress.")
+            if self.openEphys.OpenEphysGUIHasBeenLaunched is True and self.openEphys.ephysRecordingInProgress is True:
+                
+                # Update startEphysRecordingButton. Recording in progress...
+                self.startEphysRecordingButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Start Recording')
+                self.startEphysRecordingButton.bind('<Enter>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='#DC5B5B'))
+                self.startEphysRecordingButton.bind('<Leave>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg = 'SystemButtonFace'))
+                self.startEphysRecordingButton.update_idletasks()
+                
+                if self.acquisitionPanelConnection is False:
+                    
+                    # Stop ephys recording
+                    try:
+                        self.openEphys.stopEphysRecording()
+                    except:
+                        print("Connection stopped unexpectedly. You can control Open Ephys from the Acquisition Control Panel.")
+                    
+                    
+                elif self.acquisitionPanelConnection is True:
+                    
+                    # Stop ephys recording in Acquisition Panel (server)
+                    self.command = ["stopEphysRecording"]
+                    self.command = pickle.dumps(self.command)
+                    self.client.send(self.command)
+                    time.sleep(1)
+                    
+                    # Retrieve data from Acquisition Panel (server)
+                    data = self.client.recv(1024)
+                    serverData = pickle.loads(data)
+                    self.openEphys.ephysRecordingInProgress = serverData[0]
         
     def closeOpenEphysGUI(self):
-
-        if self.OpenEphysGUIHasBeenLaunched == True and self.previewOpenEphysIsOn == False and self.EphysRecordingInProgress == False:
+        
+        try:
             
-            # Close Open Ephys GUI
-            self.OpenEphysGUI.quit()
-            self.OpenEphysGUIHasBeenLaunched = False
+            self.openEphys
+        
+        except:
             
-            # Update launchOpenEphysButton: GUI has been closed...
-            self.launchOpenEphysButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Launch Open Ephys')
-            self.launchOpenEphysButton.bind('<Enter>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='#A9C6E3'))
-            self.launchOpenEphysButton.bind('<Leave>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='SystemButtonFace'))
-            self.launchOpenEphysButton.update_idletasks()
+            messagebox.showinfo("Open Ephys GUI", "Open Ephys GUI has not been laucnhed yet.", parent = self.mainWindow)
             
-        elif self.OpenEphysGUIHasBeenLaunched == False:
-            print("Open Ephys GUI has not been launched yet.")
+        else:
             
-        elif self.previewOpenEphysIsOn == True:
-            print("Open Ephys is currently in preview mode.")
-            
-        elif self.EphysRecordingInProgress == True:
-            print("There is an ongoing recording in progress.")
+            if self.openEphys.OpenEphysGUIHasBeenLaunched is True and self.openEphys.ephysPreviewIsOn is False and self.openEphys.ephysRecordingInProgress is False:
+                
+                # Update launchOpenEphysButton: GUI has been closed...
+                self.launchOpenEphysButton.config(fg = 'Black', bg = self.backGroundColor, relief = 'raised', text = 'Launch Open Ephys')
+                self.launchOpenEphysButton.bind('<Enter>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='#A9C6E3'))
+                self.launchOpenEphysButton.bind('<Leave>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='SystemButtonFace'))
+                self.launchOpenEphysButton.update_idletasks()
+                
+                if self.acquisitionPanelConnection is False:
+                
+                    # Close Open Ephys GUI
+                    try:
+                        self.openEphys.closeOpenEphysGUI()
+                    except:
+                        print("Connection stopped unexpectedly. You can control Open Ephys from the Acquisition Control Panel.")
+                
+                elif self.acquisitionPanelConnection is True:
+                
+                    # Close Open Ephys GUI in Acquisition Panel (server)
+                    self.command = ["closeOpenEphys"]
+                    self.command = pickle.dumps(self.command)
+                    self.client.send(self.command)
+                    time.sleep(1)
+                    
+                    # Retrieve data from Acquisition Panel (server)
+                    data = self.client.recv(1024)
+                    serverData = pickle.loads(data)
+                    self.openEphys.OpenEphysGUIHasBeenLaunched = serverData[0]
+                
+                # Delete camera object
+                del self.openEphys
 
     
     """ 
@@ -1286,6 +1533,7 @@ class mazeGUI:
         self.correctInterTrialTimeOut = 3
         self.incorrectInterTrialTimeOut = 15
         self.probabilityTargetLeft = 0.5
+        self.targetLocation = None
         
         # Behavior stats
         self.performance = 0
@@ -1297,18 +1545,25 @@ class mazeGUI:
         self.left = 0
         self.right = 0
         self.trialType = 0
-        self.lastDecision = []
+        self.lastDecision = None
         self.decisionAlternations = 0
         
         # Recent behavior
         self.recentPerformance = 0
         self.recentBiasIndex = 0
+        self.recentBiasDecisions = []
         self.recentAlternationIndex = 0
+        self.recentSwitchDecisions = []
         
         # Reward
         self.reward = False
+        self.rewardSize = 0
+        self.rewardStart = 0
+        self.rewardTime = 0
         self.estimatedReward = 0
         self.correctStreak = 0
+        self.waterPort = None
+        self.LED = None
         
         # Experiment data
         self.dataFrameTrial = []
@@ -1319,6 +1574,7 @@ class mazeGUI:
         self.dataFrameTrialType = []
         self.dataFrameStartDoor = []
         self.dataFrameLeftProbability = []
+        self.dataFrameTimeStampOffest = []
         self.dataFrameStartTime = []
         self.dataFrameEndTime = []
         self.dataFrameStimulusStartTime = []
@@ -1459,8 +1715,8 @@ class mazeGUI:
             # Prepare upcoming stimulus
             if self.taskName in self.taskList and not self.taskName == "valveCalibration":
                 # Disable task parameter boxes
-                entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
-                              self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+                entryBoxes = [self.taskSettingsLabel, self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
+                              self.experimentDataLabel, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
                 for i in range(len(entryBoxes)):
                     entryBoxes[i].config(state = 'disabled')
                     entryBoxes[i].update_idletasks()
@@ -1473,7 +1729,7 @@ class mazeGUI:
         else:
             
             # Handle cases when Teensy 4.0 is not available
-            if self.runningTask == True:
+            if self.runningTask is True:
                 print("Failed to initialize a task. There might be an ongoing task currently running...")
             else:
                 print("Task has been already initialized. Waiting to start...")
@@ -1517,8 +1773,8 @@ class mazeGUI:
             self.readyButton.update_idletasks()
         
         # Reactivate task parameter boxes
-        entryBoxes = [self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
-                      self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+        entryBoxes = [self.taskSettingsLabel, self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
+                      self.experimentDataLabel, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
         for i in range(len(entryBoxes)):
             entryBoxes[i].config(state = 'normal')
             entryBoxes[i].update_idletasks()
@@ -1568,11 +1824,6 @@ class mazeGUI:
             
     def startTrial(self):
         
-        # Display visual stimulus
-        if self.stimulusOnSwitch == False:
-            self.visualStimulus.startStimulus(display = True)
-            self.dataFrameStimulusStartTime.append(None)
-            
         # Display trial info in terminal
         if self.targetLocation == 0:
             targetLabel = "Left"
@@ -1581,14 +1832,19 @@ class mazeGUI:
         self.trialID += 1
         print("     Trial", self.trialID, "started...", " Target ->", targetLabel, "@ p =", self.probabilityTargetLeft, "(Left)")
         
+        # Display visual stimulus
+        if self.stimulusOnSwitch == False:
+            self.visualStimulus.startStimulus(display = True)
+            self.dataFrameStimulusStartTime.append(None)
+        
         # Append experiment data to data frame
+        self.dataFrameStartTime.append(time.time() - self.taskTimeStart)
         self.dataFrameTrial.append(self.trialID)
         self.dataFrameTarget.append(self.targetLocation)
         if self.startDoor == "left":
             self.dataFrameStartDoor.append(0)
         elif self.startDoor == "right":
             self.dataFrameStartDoor.append(1)
-        self.dataFrameStartTime.append(time.time() - self.taskTimeStart)
             
     def endTrial(self):
         
@@ -1596,10 +1852,18 @@ class mazeGUI:
         self.triggerTrialOutcome()
         
         # End visual stimulus
-        if self.stimulusOffSwitch == False:
+        if self.stimulusOffSwitch is False:
             self.visualStimulus.stopStimulus(display = False)
             self.dataFrameStimulusEndTime.append(None)
             
+        # Grab time stamp offset
+        self.timeStampOffest = ntplib.NTPClient().request('pool.ntp.org').offset
+        self.dataFrameTimeStampOffest.append(self.timeStampOffest)
+        if self.acquisitionPanelConnection is True:
+            self.command = ["grabTimeOffset", False]
+            self.command = pickle.dumps(self.command)
+            self.client.send(self.command)
+        
         # Append experiment data to data frame
         self.dataFrameDecision.append(self.lastDecision)
         self.datFrameForcedDecision.append(self.blockIncorrectDoor)
@@ -1618,13 +1882,13 @@ class mazeGUI:
             
         # Bias correction
         if self.trialID >= 10:
-            recentDecisions = self.dataFrameDecision[-10:]
-            self.recentBiasIndex = round((recentDecisions.count(0) - recentDecisions.count(1)) / len(recentDecisions), 2)
+            self.recentBiasDecisions = self.dataFrameDecision[-10:]
+            self.recentBiasIndex = round((self.recentBiasDecisions.count(0) - self.recentBiasDecisions.count(1)) / len(self.recentBiasDecisions), 2)
            
         # Alternation correction
         if self.trialID >= 11:
-            recentDecisions = self.dataFrameDecision[-11:]
-            self.recentAlternationIndex = round(sum(abs(np.diff(recentDecisions))) / len(recentDecisions), 2)
+            self.recentSwitchDecisions = self.dataFrameDecision[-11:]
+            self.recentAlternationIndex = round(sum(abs(np.diff(self.recentSwitchDecisions))) / len(self.recentSwitchDecisions), 2)
         
         # Updated target probability
         if (abs(self.recentBiasIndex) >= (self.recentAlternationIndex - 0.5) ) and self.trialID >= 10:
@@ -1667,11 +1931,11 @@ class mazeGUI:
     def updateBehaviorStats(self):
         
         # Update behavior stats in GUI
-        behaviorStats = [self.performance, self.biasIndex, self.alternationIndex, self.trialID, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
-        behaviorValues = [self.performanceValue, self.biasIndexValue, self.alternationIndexValue, self.trialValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
-        for i in range(len(behaviorValues)):
-            behaviorValues[i].config(text = behaviorStats[i])
-            behaviorValues[i].update_idletasks()
+        self.behaviorStats = [self.performance, self.biasIndex, self.alternationIndex, self.trialID, self.correct, self.incorrect, self.left,self.right, self.estimatedReward]
+        self.behaviorValues = [self.performanceValue, self.biasIndexValue, self.alternationIndexValue, self.trialValue, self.correctValue, self.incorrectValue, self.leftValue, self.rightValue, self.rewardValue]
+        for i in range(len(self.behaviorValues)):
+            self.behaviorValues[i].config(text = self.behaviorStats[i])
+            self.behaviorValues[i].update_idletasks()
         
         
     def triggerTrialOutcome(self):
@@ -1738,7 +2002,7 @@ class mazeGUI:
         
     def runTask(self):
         
-        if self.runningTask == False:
+        if self.runningTask is False:
         
             # Update startButton: task is running...
             self.startButton.config(fg = 'Blue', bg = '#99D492', relief = 'sunken', text = 'Running...')
@@ -1756,10 +2020,11 @@ class mazeGUI:
             elif self.startDoor == "right":
                 self.mazeState = 4
             self.updateDoors()
-            if self.stimulusOnSwitch == True or self.stimulusOffSwitch == True:
+            if self.stimulusOnSwitch is True or self.stimulusOffSwitch is True:
                 self.stimulusState = 5
                 self.updateStimulusDisplay()
             self.runningTask = True
+            self.timeStampOffest = None
             self.taskTimeStart = time.time()
             self.dataFrameRawTaskStartTime.append(self.taskTimeStart)
             print(" ")
@@ -1767,7 +2032,6 @@ class mazeGUI:
             # Start task
             self.currentRunningTask = Thread(target = self.checkTask())
             self.currentRunningTask.start()
-            self.resetTask()
             
         else:
             
@@ -1777,19 +2041,23 @@ class mazeGUI:
         
         # Check IR sensors and update task states
         while self.runningTask is True:
+            
             self.mainWindow.update()
             self.readPinStates()
             self.updateMazeState()
-            if self.stimulusOnSwitch == True or self.stimulusOffSwitch == True:
+            if self.stimulusOnSwitch is True or self.stimulusOffSwitch is True:
                 self.updateStimulusState()
             self.visualStimulus.updateStimulus()
-            currentTime =  time.time()
-            if currentTime > self.taskTimeStart + self.timeout:
+            if time.time() > self.taskTimeStart + self.timeout:
                 self.runningTask = False
                 print(" ")
                 print("The task has reached its time limit!")
             if self.runningTask is False:
                 break
+            
+        # Reset task once it is finished
+        if self.runningTask is False:
+            self.resetTask()
             
     def endTask(self):
         
@@ -1813,6 +2081,7 @@ class mazeGUI:
                 "forcedChoice": self.datFrameForcedDecision,
                 "correct": self.dataFrameCorrect,
                 "trialType": self.dataFrameTrialType,
+                "timeOffset": self.dataFrameTimeStampOffest,
                 "startTime": self.dataFrameStartTime,
                 "endTime": self.dataFrameEndTime,
                 "stimulusStartTime": self.dataFrameStimulusStartTime,
@@ -1864,3 +2133,12 @@ class mazeGUI:
         elif boardAvailable is True or self.closeGUIWithoutCheckouts is True:
             self.mainWindow.destroy()
             self.mainWindow.quit()
+            
+            
+"""
+Main Block
+
+"""
+
+if __name__ == "__main__":
+    mazeGUI = mazeGUI.__init__()

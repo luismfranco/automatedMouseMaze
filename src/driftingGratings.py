@@ -99,3 +99,12 @@ class driftingGratings:
     def closeWindow(self):
         
         self.stimulusWindow.close()
+        
+        
+"""
+Main Block
+
+"""
+
+if __name__ == "__main__":
+    driftingGratings = driftingGratings.__init__()

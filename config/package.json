@@ -53,9 +53,18 @@
          "screenHeight": "600"
      },
      
+     "acquisitionControlPanel": {
+         "controlPanelAddress": "127.0.0.1",
+         "mazeGUIaddress": "0.0.0.0"
+     },
+     
      "crownCameras": {
          "eyeCamera": "0",
          "worldCamera": "1"
+     },
+     
+     "openEphys": {
+         "openEphysPath": "C:\\Program Files\\Open Ephys\\open-ephys.exe"
      }
      
 }

@@ -10,7 +10,7 @@ from psychopy.visual.dot import DotStim
 
 
 """
-Drifting Gratings
+Motion Selectivity
 
 """
 
@@ -65,3 +65,12 @@ class motionSelectivity:
     def closeWindow(self):
         
         self.stimulusWindow.close()
+        
+        
+"""
+Main Block
+
+"""
+
+if __name__ == "__main__":
+    motionSelectivity = motionSelectivity.__init__()
