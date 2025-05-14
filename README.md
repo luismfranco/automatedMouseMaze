@@ -10,7 +10,7 @@ Currently under development in the [Niell Lab](https://nielllab.uoregon.edu/).
 ## Requirements
 
 1. Operating System: Windows.
-2. [Anaconda](https://www.anaconda.com/).
+2. [Anaconda](https://www.anaconda.com/). Set up its path to [environment variable](https://www.youtube.com/watch?v=Xa6m1hJHba0&ab_channel=DavidRajMicheal).
 3. [Git](https://git-scm.com/downloads).
 4. [Microsoft Visual C++ 14.0](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or greater.
 5. [Arduino IDE](https://www.arduino.cc/en/software/).
@@ -29,9 +29,11 @@ In the Command Prompt:
 ``cd Documents\automatedMouseMaze\Application\``
 4. Clone this repository:  
 ``git clone https://github.com/luismfranco/automatedMouseMaze.git .``
-5. Install dependencies in your environment:  
+5. Before installing dependencies, you might need to upgrade pip:  
+``python -m pip install --upgrade pip``
+6. Install dependencies in your environment (this might take a few minutes):  
 ``pip install .``
-6. This code was developed for Python - Teensy 4.0 communication. pyfirmata was developed for Arduino. There is bug in pyfirmata when trying to input the Teensy 4.0 layout. To fix it, run:  
+7. This code was developed for Python - Teensy 4.0 communication. pyfirmata was developed for Arduino. There is bug in pyfirmata when trying to input the Teensy 4.0 layout. To fix it, run:  
 ``python src\debugPyFirmata.py``
 
 If everything went well, you should be able to run the GUI:  
