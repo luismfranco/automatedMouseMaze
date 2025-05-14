@@ -118,13 +118,7 @@ class acquisitionGUI:
         # Maze GUI controls
         self.mazeGUIaddress = configurationData["acquisitionControlPanel"]["mazeGUIaddress"]
         self.acquisitionPanelConnection = False
-        
-        # Data synchronization
-        self.aRecordingWasStarted = False
-        self.timeStampOffest = None
-        self.timeStamp = None
-        self.dataFrameTimeStampOffest = []
-        self.dataFrameTimeStamp = []
+        self.aRecordingWasStarted = False        
         
         # Connection label
         tk.Label(frame2, font = buttonFont, text = "Maze GUI Connection", width = 25, anchor  = 'c').grid(row = 0, columnspan = 2, padx = 10, pady = 10, sticky = 'we')
@@ -284,6 +278,15 @@ class acquisitionGUI:
             
             print("Connection with Maze GUI has been already established.")
     
+    def resetTimeStamps(self):
+        
+        # Data synchronization
+        self.aRecordingWasStarted = False
+        self.timeStampOffest = None
+        self.timeStamp = None
+        self.dataFrameTimeStampOffest = []
+        self.dataFrameTimeStamp = []
+    
     def startCameraFeed(self):
         
         if self.cameraFeedStarted is False:
@@ -303,19 +306,24 @@ class acquisitionGUI:
             print("Acquisition Panel received experimental session data.")
         elif self.clientCommand == "initializeCameras":
             # Thread to handle starting camera feed
+            if self.aRecordingWasStarted is False:
+                self.resetTimeStamps()
+            elif self.aRecordingWasStarted is True:
+                print("A recording was previously started. Please save data before starting a new recording.")
             self.cameraFeedStarted = False
             cameraFeed = Thread(target = self.startCameraFeed)
             cameraFeed.start()
             # Initialize cameras
-            self.crownCameras = crownCameras.crownCameras(self.cameraIDs, self.pathForSavingData , self.sessionInfo)
-            if self.crownCameras.camerasAreOn is False:
-                del self.crownCameras
-            dataForClient = [self.crownCameras.camerasAreOn, self.crownCameras.eyeCameraAvailable, self.crownCameras.worldCameraAvailable]
-            self.dataForClient = pickle.dumps(dataForClient)
-            print("Crown Cameras have been initialized.")
+            try:
+                self.crownCameras = crownCameras.crownCameras(self.cameraIDs, self.pathForSavingData , self.sessionInfo)
+                dataForClient = [self.crownCameras.camerasAreOn, self.crownCameras.eyeCameraAvailable, self.crownCameras.worldCameraAvailable]
+                self.dataForClient = pickle.dumps(dataForClient)
+                print("Crown Cameras have been initialized.")
+            except:
+                print("Crown Cameras could not be initialized. Most likely a file with the same name already exists.")
         elif self.clientCommand == "recordVideo":
             # Start recording
-            self.aRecordingWasStarted == True
+            self.aRecordingWasStarted = True
             self.crownCameras.recordVideo()
             dataForClient = [self.crownCameras.saveVideo]
             self.dataForClient = pickle.dumps(dataForClient)
@@ -345,6 +353,10 @@ class acquisitionGUI:
             self.clientData = []
             print("Acquisition Panel received experimental session data.")
             # Launch Open Ephys GUI
+            if self.aRecordingWasStarted is False:
+                self.resetTimeStamps()
+            elif self.aRecordingWasStarted is True:
+                print("A recording was previously started. Please save data before starting a new recording.")
             self.openEphys = openEphys.openEphys(self.OpenEphysPath, self.pathForSavingData , self.sessionInfo)
             dataForClient = [self.openEphys.OpenEphysGUIHasBeenLaunched, self.openEphys.ephysPreviewIsOn, self.openEphys.ephysRecordingInProgress]
             self.dataForClient = pickle.dumps(dataForClient)            
@@ -360,7 +372,7 @@ class acquisitionGUI:
                 print("Open Ephys preview mode is off.")
         elif self.clientCommand == "startEphysRecording":
             # Start recording
-            self.aRecordingWasStarted == True
+            self.aRecordingWasStarted = True
             self.openEphys.startEphysRecording()
             dataForClient = [self.openEphys.ephysRecordingInProgress]
             self.dataForClient = pickle.dumps(dataForClient)
@@ -538,7 +550,7 @@ class acquisitionGUI:
                 self.recordCameraButton.update_idletasks()
                 
             # Start video recording
-            self.aRecordingWasStarted == True
+            self.aRecordingWasStarted = True
             self.crownCameras.recordVideo()
         
     def stopVideo(self):
@@ -688,7 +700,7 @@ class acquisitionGUI:
                 self.startEphysRecordingButton.update_idletasks()
                 
                 # Start ephys recording
-                self.aRecordingWasStarted == True
+                self.aRecordingWasStarted = True
                 self.openEphys.startEphysRecording()
         
     def stopEphysRecording(self):
@@ -748,39 +760,59 @@ class acquisitionGUI:
     
     def saveData(self):
         
-        # Build dataFrame
-        timeStamps = {
-                "timeOffset": self.dataFrameTimeStampOffest,
-                "timeStamps": self.dataFrameTimeStamp,
-                                                                   }
-        timeStamps = pd.DataFrame.from_dict(timeStamps, orient = 'index')
-        timeStamps = timeStamps.transpose()
-        
-        # Save time stamps
-        fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "timeStampOffsets" + "_" + str(self.blockID)
-        if timeStamps.empty:
-            print("DataFrame is empty. Most likely no recordings were started during this session.")
-        else:
-            if not os.path.isfile(fileName + self.fileExtension):
-                timeStamps.to_pickle(fileName + self.fileExtension)
-                messagebox.showinfo("Data Saved", "Time stamps have been saved at " + self.pathForSavingData)
-            else:
-                isNotSaved = True
-                while isNotSaved is True:
-                    blockID = fileName[-1]
-                    blockID = int(blockID)
-                    blockID += 1
-                    fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "timeStampOffsets" + "_" + str(blockID)
+        if self.aRecordingWasStarted is True:
+
+            programStillRunning = False
+            for name in (self.crownCameras, self.openEphys):
+                try:
+                    name
+                except:
+                    ...
+                else:
+                    programStillRunning = True
+    
+            if programStillRunning is False:
+                
+                # Build dataFrame
+                timeStamps = {
+                        "timeOffset": self.dataFrameTimeStampOffest,
+                        "timeStamps": self.dataFrameTimeStamp,
+                                                                           }
+                timeStamps = pd.DataFrame.from_dict(timeStamps, orient = 'index')
+                timeStamps = timeStamps.transpose()
+                
+                # Save time stamps
+                fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "timeStampOffsets" + "_" + str(self.blockID)
+                if timeStamps.empty:
+                    print("DataFrame is empty. Most likely no recordings were started during this session.")
+                else:
                     if not os.path.isfile(fileName + self.fileExtension):
                         timeStamps.to_pickle(fileName + self.fileExtension)
-                        messagebox.showwarning("Data Saved", "Time stamps have been saved at " + self.pathForSavingData +
-                                               "\n " +
-                                               "\nHowever, the block number was changed to " + str(blockID) + " to avoid overwriting existing file." +
-                                               "\n"
-                                               "\nIf video was recorded, make sure block numbers match.")
-                        isNotSaved = False
-            print("Time stamps have been saved successfully.")
-            print(" ")
+                        messagebox.showinfo("Data Saved", "Time stamps have been saved at " + self.pathForSavingData)
+                    else:
+                        isNotSaved = True
+                        while isNotSaved is True:
+                            blockID = fileName[-1]
+                            blockID = int(blockID)
+                            blockID += 1
+                            fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "timeStampOffsets" + "_" + str(blockID)
+                            if not os.path.isfile(fileName + self.fileExtension):
+                                timeStamps.to_pickle(fileName + self.fileExtension)
+                                messagebox.showwarning("Data Saved", "Time stamps have been saved at " + self.pathForSavingData +
+                                                       "\n " +
+                                                       "\nHowever, the block number was changed to " + str(blockID) + " to avoid overwriting existing file." +
+                                                       "\n"
+                                                       "\nIf video was recorded, make sure block numbers match.")
+                                isNotSaved = False
+                    print("Time stamps have been saved successfully.")
+                    print(" ")
+                    self.aRecordingWasStarted = False
+                
+            elif programStillRunning is True:
+                
+                messagebox.showinfo("No Data Saved", "The Crown Cameras and/or the Open Ephys GUI are still running." +
+                                    "\n"
+                                    "\nPlease close both programs before saving the time stamsp.")
         
     def closeMainWindow(self):
         
