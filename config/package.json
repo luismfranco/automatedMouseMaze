@@ -54,7 +54,7 @@
      },
      
      "acquisitionControlPanel": {
-         "controlPanelAddress": "127.0.0.1",
+         "controlPanelAddress": "184.171.85.162",
          "mazeGUIaddress": "0.0.0.0"
      },
      

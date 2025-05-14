@@ -261,8 +261,8 @@ class acquisitionGUI:
             
             # Start Acquisition Panel socket (server)
             self.server = socket.socket()
-            self.server.bind(('127.0.0.1', 12345))   #(('0.0.0.0', 12345))
-            # self.server.bind((self.mazeGUIaddress, 12345))
+            # self.server.bind(('127.0.0.1', 12345))
+            self.server.bind((self.mazeGUIaddress, 12345))
             self.server.listen(1)
             print("Acquisition Panel is listening. Waiting for maze GUI to connect...")
             (self.client, clientAddress) = self.server.accept()
@@ -298,8 +298,7 @@ class acquisitionGUI:
         if self.clientCommand == "cameraInput":
             # Experiment data
             self.cameraIDs = self.clientData[0]
-            self.pathForSavingData = self.clientData[1]
-            self.sessionInfo = self.clientData[2]
+            self.sessionInfo = self.clientData[1]
             self.clientData = []
             print("Acquisition Panel received experimental session data.")
         elif self.clientCommand == "initializeCameras":
@@ -342,13 +341,11 @@ class acquisitionGUI:
         # Open Ephys
         elif self.clientCommand == "launchOpenEphys":
             # Experiment data
-            OpenEphysPath = self.clientData[0]
-            pathForSavingData = self.clientData[1]
-            sessionInfo = self.clientData[2]
+            self.sessionInfo = self.clientData[0]
             self.clientData = []
             print("Acquisition Panel received experimental session data.")
             # Launch Open Ephys GUI
-            self.openEphys = openEphys.openEphys(OpenEphysPath, pathForSavingData , sessionInfo)
+            self.openEphys = openEphys.openEphys(self.OpenEphysPath, self.pathForSavingData , self.sessionInfo)
             dataForClient = [self.openEphys.OpenEphysGUIHasBeenLaunched, self.openEphys.ephysPreviewIsOn, self.openEphys.ephysRecordingInProgress]
             self.dataForClient = pickle.dumps(dataForClient)            
             print("Open Ephys GUI has been launched.")

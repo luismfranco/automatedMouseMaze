@@ -941,8 +941,8 @@ class mazeGUI:
             
             # Initialize Maze GUI socket (client)
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.client.connect(('127.0.0.1', 12345))                                #(('184.171.85.162', 12345))
-            # self.client.connect((self.controlPanelAddress, 12345)) 
+            # self.client.connect(('127.0.0.1', 12345))
+            self.client.connect((self.controlPanelAddress, 12345)) 
             self.acquisitionPanelConnection = True
             print("Connection with Acquisition Panel is ready.")
             
@@ -1052,7 +1052,7 @@ class mazeGUI:
                 self.crownCameras = shamCameraObject()
                 
                 # Input for camera object
-                dataForServer = ["cameraInput", self.cameraIDs, self.pathForSavingData , sessionInfo]
+                dataForServer = ["cameraInput", self.cameraIDs, sessionInfo]
                 dataForServer = pickle.dumps(dataForServer)
                 self.client.send(dataForServer)
                 time.sleep(1)
@@ -1294,7 +1294,7 @@ class mazeGUI:
                 self.openEphys = shamOpenEphysObject()
         
                 # Input for Open Ephys object
-                dataForServer = ["launchOpenEphys", self.OpenEphysPath, self.pathForSavingData , sessionInfo]
+                dataForServer = ["launchOpenEphys", sessionInfo]
                 dataForServer = pickle.dumps(dataForServer)
                 self.client.send(dataForServer)
                 time.sleep(1)
