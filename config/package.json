@@ -54,13 +54,13 @@
      },
      
      "acquisitionControlPanel": {
-         "controlPanelAddress": "184.171.85.162",
+         "controlPanelAddress": "128.223.141.161",
          "mazeGUIaddress": "0.0.0.0"
      },
      
      "crownCameras": {
-         "eyeCamera": "0",
-         "worldCamera": "1"
+         "eyeCamera": "1",
+         "worldCamera": "2"
      },
      
      "openEphys": {

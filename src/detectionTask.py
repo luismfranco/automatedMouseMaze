@@ -10,7 +10,7 @@ import pandas as pd
 
 
 """
-Drifting Gratings
+Detection Task
 
 """
 
@@ -23,18 +23,18 @@ class driftingGratings:
                                             size = screenSize, fullscr = True, color = (1.0, 1.0, 1.0))
         
         # Orientation
-        self.leftTargetOrientation = 90
+        self.leftTargetOrientation = 0
         self.rightTargetOrientation = 0
         
         # Stimulus
         self.showVisualStimulus = False
         
         # Stimulus settings
-        self.stimulusMask = None                                # "raisedCos", None
-        self.stimulusSize = self.stimulusWindow.size.tolist()   # self.stimulusWindow.size.tolist(), 20 (only relevant when mask is not None)
+        self.stimulusMask = "raisedCos"                         # "raisedCos", None
+        self.stimulusSize = 20                                  # self.stimulusWindow.size.tolist(), 20 (only relevant when mask is not None)
         self.targetPosition = [0, 0]                            # [0, 0] <-- centered in the middle of the screen
         self.spatialFrequency = 0.1                             # 0.1
-        self.xPositionOffset = 0                                # 0, 7 (only relevant when mask is not None)
+        self.xPositionOffset = 7                                # 0, 7 (only relevant when mask is not None)
         self.phaseOffset = 0.025                                # 0.025, move phase by 0.025 of a cycle
         
     def retrieveStimulusParameters(self):
@@ -83,7 +83,7 @@ class driftingGratings:
             
         if self.showVisualStimulus is True:
             if self.targetLocation == 0:
-                self.grating.setPhase(self.phaseOffset, '-')
+                self.grating.setPhase(self.phaseOffset, '+')
             elif self.targetLocation == 1:
                 self.grating.setPhase(self.phaseOffset, '+')
             self.grating.draw()

@@ -10,7 +10,7 @@ import pandas as pd
 
 
 """
-Drifting Gratings
+Discrimination Task
 
 """
 
@@ -23,18 +23,20 @@ class driftingGratings:
                                             size = screenSize, fullscr = True, color = (1.0, 1.0, 1.0))
         
         # Orientation
-        self.leftTargetOrientation = 90
+        self.leftTargetOrientation = 0
+        self.rightDistractorOrientation = 90
         self.rightTargetOrientation = 0
+        self.leftDistractorOrientation = 90
         
         # Stimulus
         self.showVisualStimulus = False
         
         # Stimulus settings
-        self.stimulusMask = None                                # "raisedCos", None
-        self.stimulusSize = self.stimulusWindow.size.tolist()   # self.stimulusWindow.size.tolist(), 20 (only relevant when mask is not None)
+        self.stimulusMask = "raisedCos"                         # "raisedCos", None
+        self.stimulusSize = 20                                  # self.stimulusWindow.size.tolist(), 20 (only relevant when mask is not None)
         self.targetPosition = [0, 0]                            # [0, 0] <-- centered in the middle of the screen
         self.spatialFrequency = 0.1                             # 0.1
-        self.xPositionOffset = 0                                # 0, 7 (only relevant when mask is not None)
+        self.xPositionOffset = 10                               # 0, 7 (only relevant when mask is not None)
         self.phaseOffset = 0.025                                # 0.025, move phase by 0.025 of a cycle
         
     def retrieveStimulusParameters(self):
@@ -43,6 +45,8 @@ class driftingGratings:
         stimulusParameters = {
                           "leftTargetOrientation": str(self.leftTargetOrientation),
                           "rightTargetOrientation": str(self.rightTargetOrientation),
+                          "rightDistractorOrientation": str(self.rightDistractorOrientation),
+                          "leftDistractorOrientation": str(self.leftDistractorOrientation),
                           "stimulusMask": str(self.stimulusMask),
                           "stimulusSize": str(self.stimulusSize),
                           "targetPosition": str(list(self.targetPosition)),
@@ -60,22 +64,29 @@ class driftingGratings:
         self.targetLocation = kwargs['target']
         if self.targetLocation == 0:
             self.targetOrientation = self.leftTargetOrientation
+            self.distractorOrientation = self.rightDistractorOrientation
         elif self.targetLocation == 1:
             self.targetOrientation = self.rightTargetOrientation
-        self.grating = visual.GratingStim(win = self.stimulusWindow, mask = self.stimulusMask, size = self.stimulusSize,
+            self.distractorOrientation = self.leftDistractorOrientation
+        self.targetObject = visual.GratingStim(win = self.stimulusWindow, mask = self.stimulusMask, size = self.stimulusSize,
                                           pos = self.targetPosition, sf = self.spatialFrequency, ori = self.targetOrientation)
+        self.distractorObject = visual.GratingStim(win = self.stimulusWindow, mask = self.stimulusMask, size = self.stimulusSize,
+                                                   pos = self.targetPosition, sf = self.spatialFrequency, ori = self.distractorOrientation)
         
     def startStimulus(self, **kwargs):
         
         # Stimulus offset
         if self.targetLocation == 0:
-            self.grating.setPos([-1 * self.xPositionOffset, 0])
+            self.targetObject.setPos([-1 * self.xPositionOffset, 0])
+            self.distractorObject.setPos([     self.xPositionOffset, 0])
         elif self.targetLocation == 1:
-            self.grating.setPos([     self.xPositionOffset, 0])
+            self.targetObject.setPos([     self.xPositionOffset, 0])
+            self.distractorObject.setPos([-1 * self.xPositionOffset, 0])
             
         # Start stimulus
         self.showVisualStimulus = kwargs['display']
-        self.grating.setOpacity(1)
+        self.targetObject.setOpacity(1)
+        self.distractorObject.setOpacity(1)
         self.stimulusWindow.update()
         
     # Draw and update the stimulus
@@ -83,16 +94,20 @@ class driftingGratings:
             
         if self.showVisualStimulus is True:
             if self.targetLocation == 0:
-                self.grating.setPhase(self.phaseOffset, '-')
+                self.targetObject.setPhase(self.phaseOffset, '+')
+                self.distractorObject.setPhase(self.phaseOffset, '-')
             elif self.targetLocation == 1:
-                self.grating.setPhase(self.phaseOffset, '+')
-            self.grating.draw()
+                self.targetObject.setPhase(self.phaseOffset, '+')
+                self.distractorObject.setPhase(self.phaseOffset, '-')
+            self.targetObject.draw()
+            self.distractorObject.draw()
             self.stimulusWindow.update()
             
     def stopStimulus(self, **kwargs):
         
         self.showVisualStimulus = kwargs['display']
-        self.grating.setOpacity(0)
+        self.targetObject.setOpacity(0)
+        self.distractorObject.setOpacity(0)
         self.stimulusWindow.update()
     
     # Cleanup

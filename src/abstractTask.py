@@ -10,7 +10,7 @@ import pandas as pd
 
 
 """
-Drifting Gratings
+Abstract Task
 
 """
 
@@ -30,8 +30,8 @@ class driftingGratings:
         self.showVisualStimulus = False
         
         # Stimulus settings
-        self.stimulusMask = None                                # "raisedCos", None
-        self.stimulusSize = self.stimulusWindow.size.tolist()   # self.stimulusWindow.size.tolist(), 20 (only relevant when mask is not None)
+        self.stimulusMask = "raisedCos"                         # "raisedCos", None
+        self.stimulusSize = 20                                  # self.stimulusWindow.size.tolist(), 20 (only relevant when mask is not None)
         self.targetPosition = [0, 0]                            # [0, 0] <-- centered in the middle of the screen
         self.spatialFrequency = 0.1                             # 0.1
         self.xPositionOffset = 0                                # 0, 7 (only relevant when mask is not None)
@@ -69,9 +69,9 @@ class driftingGratings:
         
         # Stimulus offset
         if self.targetLocation == 0:
-            self.grating.setPos([-1 * self.xPositionOffset, 0])
+            self.grating.setPos([self.xPositionOffset, 0])
         elif self.targetLocation == 1:
-            self.grating.setPos([     self.xPositionOffset, 0])
+            self.grating.setPos([self.xPositionOffset, 0])
             
         # Start stimulus
         self.showVisualStimulus = kwargs['display']

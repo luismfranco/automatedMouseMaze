@@ -35,6 +35,11 @@ import motionSelectivity
 import whiteNoise
 import objectDiscrimination
 
+# Temporary stimulus
+import detectionTask
+import discriminationTask
+import abstractTask
+
 # Valve calibration
 import valveCalibration
 
@@ -242,7 +247,7 @@ class mazeGUI:
         self.timeEntry.grid(row = 2, column = 1, sticky = 'w')
         
         # Task type list
-        self.taskList = ["driftingGratings", "motionSelectivity", "whiteNoise", "objectDiscrimination", "valveCalibration"]
+        self.taskList = ["driftingGratings", "detectionTask", "discriminationTask", "abstractTask", "motionSelectivity", "whiteNoise", "objectDiscrimination", "valveCalibration"]
         self.taskName = " "
         self.taskBox = ttk.Combobox(frame22, width = 12, font = 8, state = 'readonly', values = self.taskList)
         self.taskBox.grid(row = 3, column = 1, sticky ='w')
@@ -371,8 +376,8 @@ class mazeGUI:
         
         # Reward
         self.estimatedReward = 0
-        self.leftRewardStreak = [32, 36, 41, 45, 49, 54] # in ms
-        self.rightRewardStreak = [32, 37, 41, 46, 50, 55] # in ms
+        self.leftRewardStreak = [34, 39, 43, 48, 53, 57] # in ms
+        self.rightRewardStreak = [33, 37, 42, 46, 51, 55] # in ms
         self.rewardAmounts = [ 5,  6,  7,  8,  9, 10] # in μL
         
         # Behavior values in GUI
@@ -1534,6 +1539,7 @@ class mazeGUI:
         self.incorrectInterTrialTimeOut = 15
         self.probabilityTargetLeft = 0.5
         self.targetLocation = None
+        self.targetLabel = None
         
         # Behavior stats
         self.performance = 0
@@ -1699,6 +1705,15 @@ class mazeGUI:
             # Initialize visual stimulus
             if self.taskName == "driftingGratings":
                 self.visualStimulus = driftingGratings.driftingGratings(self.stimulusScreen, self.screenSize)
+                
+            # Temporary options for driftingGratings
+            elif self.taskName == "detectionTask":
+                self.visualStimulus = detectionTask.driftingGratings(self.stimulusScreen, self.screenSize)
+            elif self.taskName == "discriminationTask":
+                self.visualStimulus = discriminationTask.driftingGratings(self.stimulusScreen, self.screenSize)
+            elif self.taskName == "abstractTask":
+                self.visualStimulus = abstractTask.driftingGratings(self.stimulusScreen, self.screenSize)
+                
             elif self.taskName == "motionSelectivity":
                 self.visualStimulus = motionSelectivity.motionSelectivity(self.stimulusScreen, self.screenSize)
             elif self.taskName == "whiteNoise":
@@ -1721,7 +1736,7 @@ class mazeGUI:
                     entryBoxes[i].config(state = 'disabled')
                     entryBoxes[i].update_idletasks()
                 # Retrieve task and stimulus settings (for now, it will only work for driftingGratings)
-                if self.taskName == "driftingGratings":
+                if self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
                     self.retrieveTaskParameters()
                 # Prepare first trial
                 self.initializeUpcomingTrial()
@@ -1826,11 +1841,11 @@ class mazeGUI:
         
         # Display trial info in terminal
         if self.targetLocation == 0:
-            targetLabel = "Left"
+            self.targetLabel = "Left"
         elif self.targetLocation == 1:
-            targetLabel = "Right"
+            self.targetLabel = "Right"
         self.trialID += 1
-        print("     Trial", self.trialID, "started...", " Target ->", targetLabel, "@ p =", self.probabilityTargetLeft, "(Left)")
+        print("     Trial", self.trialID, "started...", " Target ->", self.targetLabel, "@ p =", self.probabilityTargetLeft, "(Left)")
         
         # Display visual stimulus
         if self.stimulusOnSwitch == False:
@@ -2092,7 +2107,7 @@ class mazeGUI:
         behaviorData = behaviorData.transpose()
         
         # Concatenate behavior data and task parameters (for now, it will only work for driftingGratings)
-        if self.taskName == "driftingGratings":
+        if self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
             taskData = [behaviorData, self.taskParameters]
             taskData = pd.concat(taskData, axis = 1, join = 'outer')
         else:
