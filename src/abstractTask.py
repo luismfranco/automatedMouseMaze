@@ -31,10 +31,11 @@ class driftingGratings:
         
         # Stimulus settings
         self.stimulusMask = "raisedCos"                         # "raisedCos", None
-        self.stimulusSize = 20                                  # self.stimulusWindow.size.tolist(), 20 (only relevant when mask is not None)
+        self.stimulusSize = 12.5                                # self.stimulusWindow.size.tolist(), 20 (only relevant when mask is not None)
         self.targetPosition = [0, 0]                            # [0, 0] <-- centered in the middle of the screen
         self.spatialFrequency = 0.1                             # 0.1
         self.xPositionOffset = 0                                # 0, 7 (only relevant when mask is not None)
+        self.yPositionOffset = -2                               # 0, -2 (only relevant when mask is not None)
         self.phaseOffset = 0.025                                # 0.025, move phase by 0.025 of a cycle
         
     def retrieveStimulusParameters(self):
@@ -48,6 +49,7 @@ class driftingGratings:
                           "targetPosition": str(list(self.targetPosition)),
                           "spatialFrequency": str(self.spatialFrequency),
                           "xPositionOffset": str(self.xPositionOffset),
+                          "yPositionOffset": str(self.yPositionOffset),
                           "phaseOffset": str(self.phaseOffset),
                                                                                }
         stimulusParameters = pd.DataFrame.from_dict(stimulusParameters, orient = 'index')
@@ -69,9 +71,9 @@ class driftingGratings:
         
         # Stimulus offset
         if self.targetLocation == 0:
-            self.grating.setPos([self.xPositionOffset, 0])
+            self.grating.setPos([self.xPositionOffset, self.yPositionOffset])
         elif self.targetLocation == 1:
-            self.grating.setPos([self.xPositionOffset, 0])
+            self.grating.setPos([self.xPositionOffset, self.yPositionOffset])
             
         # Start stimulus
         self.showVisualStimulus = kwargs['display']
