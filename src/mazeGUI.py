@@ -723,9 +723,11 @@ class mazeGUI:
             self.rightStartLabel.config(bg = 'pink', text = "closed")
             if (self.blockIncorrectDoor == 1 and self.targetLocation == 0) or self.blockIncorrectDoor == 0:
                 self.board.digital[self.leftDecisionDoor].write(0)
+                self.startDoorCloseTime = time.time()
                 self.leftDecisionLabel.config(bg = '#99D492', text = "open")
             if (self.blockIncorrectDoor == 1 and self.targetLocation == 1) or self.blockIncorrectDoor == 0:
                 self.board.digital[self.rightDecisionDoor].write(0)
+                self.startDoorCloseTime = time.time()
                 self.rightDecisionLabel.config(bg = '#99D492', text = "open")
                 
         # After a decision has been recorded
@@ -742,6 +744,7 @@ class mazeGUI:
             self.mazeStateLabel.config(bg = '#A9C6E3', text = "ITI-left")
             self.mazeStateValue.config(text = 3)
             self.board.digital[self.leftStartDoor].write(0)
+            self.startDoorOpenTime = time.time()
             self.leftStartLabel.config(bg = '#99D492', text = "open")
             
         # Mouse coming from the right
@@ -749,6 +752,7 @@ class mazeGUI:
             self.mazeStateLabel.config(bg = '#A9C6E3', text = "ITI-right")
             self.mazeStateValue.config(text = 4)
             self.board.digital[self.rightStartDoor].write(0)
+            self.startDoorOpenTime = time.time()
             self.rightStartLabel.config(bg = '#99D492', text = "open")
     
     def updateStimulusDisplay(self):
@@ -846,13 +850,14 @@ class mazeGUI:
         # Update maze states
         if self.mazeState == 1:
             if self.LD is False or self.RD is False:
-                self.mazeState = 2
-                self.endTrial()
-                self.interTrialStart = time.time()
-                if self.LD is False:
-                    self.startDoor = "left"
-                elif self.RD is False:
-                    self.startDoor = "right"
+                if self.stimulusWasTurnedOn is True or self.stimulusWasTurnedOff is True:
+                    self.mazeState = 2
+                    self.endTrial()
+                    self.interTrialStart = time.time()
+                    if self.LD is False:
+                        self.startDoor = "left"
+                    elif self.RD is False:
+                        self.startDoor = "right"
         elif self.mazeState == 2:
             if self.reward is False and self.initializeTrial is True:
                 self.initializeUpcomingTrial()
@@ -883,11 +888,13 @@ class mazeGUI:
         
         # Update stimulus states
         if self.stimulusState == 1:
-            if self.stimulusOn == False:
+            if self.stimulusOn is False:
                 self.stimulusState = 2
+                self.stimulusWasTurnedOn = True
         elif self.stimulusState == 2:
-            if self.stimulusOff == False:
+            if self.stimulusOff is False:
                 self.stimulusState = 3
+                self.stimulusWasTurnedOff = True
             # Fail-safe: in case stimulus is not turned off
             elif self.mazeState == 2:
                 self.stimulusState = 4
@@ -899,6 +906,8 @@ class mazeGUI:
                 self.stimulusState = 5
         elif self.stimulusState == 5:
             if self.mazeState == 1:
+                self.stimulusWasTurnedOn = False
+                self.stimulusWasTurnedOff = False
                 self.stimulusState = 1
         
         # Update stimulus
@@ -1533,6 +1542,8 @@ class mazeGUI:
         self.runningTask = False
         self.initializeTrial = True
         self.stimulusIsOn = False
+        self.stimulusWasTurnedOn = False
+        self.stimulusWasTurnedOff = False
         self.interTrialStart = 0
         self.interTrialTimeOut = 0
         self.correctInterTrialTimeOut = 3
@@ -1581,11 +1592,16 @@ class mazeGUI:
         self.dataFrameStartDoor = []
         self.dataFrameLeftProbability = []
         self.dataFrameTimeStampOffest = []
+        self.dataFrameStartDoorTime = []
         self.dataFrameStartTime = []
         self.dataFrameEndTime = []
         self.dataFrameStimulusStartTime = []
         self.dataFrameStimulusEndTime = []
         self.dataFrameRawTaskStartTime = []
+    
+        # For time synchronization
+        self.timeStampOffest = None
+        self.timeServer = ntplib.NTPClient()
     
         # Update behavior stats in GUI
         self.updateBehaviorStats()
@@ -1872,7 +1888,10 @@ class mazeGUI:
             self.dataFrameStimulusEndTime.append(None)
             
         # Grab time stamp offset
-        self.timeStampOffest = ntplib.NTPClient().request('pool.ntp.org').offset
+        try:
+            self.timeStampOffest = self.timeServer.request('pool.ntp.org').offset
+        except:
+            self.timeStampOffest = None
         self.dataFrameTimeStampOffest.append(self.timeStampOffest)
         if self.acquisitionPanelConnection is True:
             self.command = ["grabTimeOffset", False]
@@ -1884,6 +1903,9 @@ class mazeGUI:
         self.datFrameForcedDecision.append(self.blockIncorrectDoor)
         self.dataFrameTrialType.append(self.trialType)
         self.dataFrameEndTime.append(time.time() - self.taskTimeStart)
+        self.dataFrameStartDoorTime.append(self.startDoorCloseTime - self.startDoorOpenTime)
+        if self.startDoorCloseTime - self.startDoorOpenTime < 0.5:
+            print("Warning: The start door was open for very little time: ", self.startDoorCloseTime - self.startDoorOpenTime, " s")
         if self.trialType == 1 or self.trialType == 4:
             self.dataFrameCorrect.append(1)
         elif self.trialType == 2 or self.trialType == 3:
@@ -2039,7 +2061,6 @@ class mazeGUI:
                 self.stimulusState = 5
                 self.updateStimulusDisplay()
             self.runningTask = True
-            self.timeStampOffest = None
             self.taskTimeStart = time.time()
             self.dataFrameRawTaskStartTime.append(self.taskTimeStart)
             print(" ")
@@ -2090,6 +2111,7 @@ class mazeGUI:
         behaviorData = {
                 "trial": self.dataFrameTrial,
                 "startDoor": self.dataFrameStartDoor,
+                "startDoorTime": self.dataFrameStartDoorTime,
                 "leftTargetProbability": self.dataFrameLeftProbability,
                 "target": self.dataFrameTarget,
                 "decision": self.dataFrameDecision,
