@@ -250,12 +250,14 @@ class mazeGUI:
         self.experimentDataLabel = tk.Label(frame31, font = buttonFont, text = "Experiment Data", width = 12, anchor  = 'c')
         self.experimentDataLabel.grid(row = 0, column = 2, columnspan = 2, padx = 10, pady = 10, sticky = 'we')
         entryLabels0 = ["trials", "duration", "task", "start door", "cues", "stimulus", "stimulus", "forced choice"]
-        entryLabels2 = ["rig", "animal", "block", "path", "auto save", " ", " ", "error"]
+        entryLabels2 = ["rig", "animal", "block", "path", "auto save", " ", "door error", "notify"]
         nrow = 1
         for i in range(len(entryLabels0)):
             tk.Label(frame31, font = buttonFont, text = entryLabels0[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
             tk.Label(frame31, font = buttonFont, text = entryLabels2[i], width = 8, anchor  = 'e').grid(row = nrow, column = 2, padx = 10)
             nrow += 1
+        self.mazeErrorLabel = tk.Label(frame31, font = buttonFont, text = "Maze Error", width = 12, anchor  = 'c')
+        self.mazeErrorLabel.grid(row = 6, column = 2, columnspan = 2, padx = 10, sticky = 'we')
         
         # Maximum number of trials entry
         self.maximumTrialNumber = 200
@@ -370,10 +372,16 @@ class mazeGUI:
         self.autoSaveBox = tk.Checkbutton(frame31, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
         self.autoSaveBox.grid(row = 5, column = 3, sticky = 'w')
         
-        # Send error notification
+        # Pause maze upon door error
+        self.doorMinimumTime = 0.1
+        self.pauseMazeUponError = tk.BooleanVar(value = True)
+        self.pauseMazeBox = tk.Checkbutton(frame31, text = "pause maze", font = 8, variable = self.pauseMazeUponError, onvalue = True, offvalue = False)
+        self.pauseMazeBox.grid(row = 7, column = 3, sticky = 'w')
+        
+        # Send door error notification
         self.sendErrorNotification = tk.BooleanVar(value = True)
-        self.errorBox = tk.Checkbutton(frame31, text = "send email", font = 8, variable = self.sendErrorNotification, onvalue = True, offvalue = False)
-        self.errorBox.grid(row = 8, column = 3, sticky = 'w')
+        self.errorNotificationBox = tk.Checkbutton(frame31, text = "send email", font = 8, variable = self.sendErrorNotification, onvalue = True, offvalue = False)
+        self.errorNotificationBox.grid(row = 8, column = 3, sticky = 'w')
         
         
         """
@@ -760,24 +768,36 @@ class mazeGUI:
                 self.board.digital[self.rightDecisionDoor].write(0)
                 self.startDoorCloseTime = time.time()
                 self.rightDecisionLabel.config(bg = '#99D492', text = "open")
-            if self.startDoorCloseTime - self.startDoorOpenTime < 0.1:
+            if self.startDoorCloseTime - self.startDoorOpenTime < self.doorMinimumTime:
                 # Notify user of error
                 print(" ")
-                print("Warning: The start door was opened for a very short time:", "{:.4f}".format(self.startDoorCloseTime - self.startDoorOpenTime),
-                      "s. The maze has been temporarily stopped")
-                print(" ")
+                print("Warning: The start door was opened for a very short time:", "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)), "ms.")
                 if self.emailNotification is True:
                     self.errorMessage.sendEmail()
-                messagebox.showerror("Error", "The start door was opened for a very short time: " + "{:.4f}".format(self.startDoorCloseTime - self.startDoorOpenTime) + " s!")
-            
+                if self.pauseMaze is True:
+                    print("The maze has been paused.")
+                    messagebox.showerror("Error", "The start door was opened for a very short time: " + "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)) + " ms!")
+                print(" ")
+                
         # After a decision has been recorded
         elif self.mazeState == 2:
             self.mazeStateLabel.config(bg = 'pink', text = "end")
             self.mazeStateValue.config(text = 2)
             self.board.digital[self.leftDecisionDoor].write(1)
             self.board.digital[self.rightDecisionDoor].write(1)
+            self.decisionDoorCloseTime = time.time()
             self.leftDecisionLabel.config(bg = 'pink', text = "closed")
             self.rightDecisionLabel.config(bg = 'pink', text = "closed")
+            if self.decisionDoorCloseTime - self.startDoorCloseTime < self.doorMinimumTime:
+                # Notify user of error
+                print(" ")
+                print("Warning: The decision doors were opened for a very short time:", "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)), "ms.")
+                if self.emailNotification is True:
+                    self.errorMessage.sendEmail()
+                if self.pauseMaze is True:
+                    print("The maze has been paused.")
+                    messagebox.showerror("Error", "The decision doors were opened for a very short time: " + "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)) + " ms!")
+                print(" ")
             
         # Mouse coming from the left
         elif self.mazeState == 3:
@@ -1584,6 +1604,9 @@ class mazeGUI:
         self.stimulusIsOn = False
         self.stimulusWasTurnedOn = False
         self.stimulusWasTurnedOff = False
+        self.startDoorOpenTime = 0
+        self.startDoorCloseTime  = 0
+        self.decisionDoorCloseTime  = 0
         self.interTrialStart = 0
         self.interTrialTimeOut = 0
         self.correctInterTrialTimeOut = 3
@@ -1633,6 +1656,7 @@ class mazeGUI:
         self.dataFrameLeftProbability = []
         self.dataFrameTimeStampOffest = []
         self.dataFrameStartDoorTime = []
+        self.dataFrameDecisionDoorTime = []
         self.dataFrameStartTime = []
         self.dataFrameEndTime = []
         self.dataFrameStimulusStartTime = []
@@ -1665,6 +1689,7 @@ class mazeGUI:
         self.rigID = str(self.rigEntry.get())
         self.blockID = str(self.blockEntry.get())
         self.autoSave = bool(self.autoSaveData.get())
+        self.pauseMaze = bool(self.pauseMazeUponError.get())
         self.emailNotification = bool(self.sendErrorNotification.get())
     
     def retrieveTaskParameters(self):
@@ -1730,6 +1755,7 @@ class mazeGUI:
                 print("          Stop stimulus trigger:", str(self.stimulusOffSwitch).lower())
                 print("          Forced decision probability = ", str(self.forcedDecisions))
                 print("          AutoSave:", self.autoSave)
+                print("          Pause Maze:", self.pauseMaze)
                 print("          Email notification:", self.emailNotification)
             else:
                 # Display calibration curve example on terminal
@@ -1867,6 +1893,10 @@ class mazeGUI:
             self.calibrationWindow.destroy()
             
     def initializeUpcomingTrial(self):
+        
+        # Append experiment data to data frame
+        if self.trialID > 0:
+            self.dataFrameDecisionDoorTime.append(self.decisionDoorCloseTime - self.startDoorCloseTime)
         
         # Target for upcoming trial
         self.targetLocation = self.mazeRNG.choice([0,1], p = [self.probabilityTargetLeft, 1-self.probabilityTargetLeft])
@@ -2155,7 +2185,6 @@ class mazeGUI:
         behaviorData = {
                 "trial": self.dataFrameTrial,
                 "startDoor": self.dataFrameStartDoor,
-                "startDoorTime": self.dataFrameStartDoorTime,
                 "leftTargetProbability": self.dataFrameLeftProbability,
                 "target": self.dataFrameTarget,
                 "decision": self.dataFrameDecision,
@@ -2165,6 +2194,8 @@ class mazeGUI:
                 "timeOffset": self.dataFrameTimeStampOffest,
                 "startTime": self.dataFrameStartTime,
                 "endTime": self.dataFrameEndTime,
+                "startDoorTime": self.dataFrameStartDoorTime,
+                "decisionDoorTime": self.dataFrameDecisionDoorTime,
                 "stimulusStartTime": self.dataFrameStimulusStartTime,
                 "stimulusEndTime": self.dataFrameStimulusEndTime,
                 "taskRawStartTime": self.dataFrameRawTaskStartTime,
