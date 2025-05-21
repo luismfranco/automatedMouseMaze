@@ -17,6 +17,9 @@ from pathlib import Path
 import socket
 import select
 
+# Notifications
+import errorNotification
+
 # Crown cameras
 import crownCameras
 
@@ -75,8 +78,8 @@ class mazeGUI:
         # Geometry and location
         self.mainWindow = mainWindow
         self.mainWindow.title('Automated Mouse Maze')
-        windowWidth = 1000
-        windowHeight = 700
+        windowWidth = 1075
+        windowHeight = 600
         screenWidth = self.mainWindow.winfo_screenwidth()
         screenHeight = self.mainWindow.winfo_screenheight()
         x = (screenWidth/1.5) - (windowWidth/2)
@@ -86,36 +89,42 @@ class mazeGUI:
         buttonFont = tkFont.Font(family = 'helvetica', size = 12)
         
         # Frame 1: Maze states and mouse behavior
-        frame1 = tk.Frame(self.mainWindow, width = 225, height = 700)
+        frame1 = tk.Frame(self.mainWindow, width = 225, height = 600)
         frame1.grid(row = 0, rowspan = 3, column = 0, sticky = 'news')
-        frame11 = tk.Frame(frame1, width = 225, height = 235)
-        frame11.place(anchor = "c", relx = 0.5, rely = 0.15)
-        frame12 = tk.Frame(frame1, width = 225, height = 130)
-        frame12.place(anchor = "c", relx = 0.5, rely = 0.415)
-        frame13 = tk.Frame(frame1, width = 225, height = 335)
-        frame13.place(anchor = "c", relx = 0.5, rely = 0.75)
+        frame11 = tk.Frame(frame1, width = 225, height = 200)
+        frame11.place(anchor = "c", relx = 0.45, rely = 0.15)
+        frame12 = tk.Frame(frame1, width = 225, height = 110)
+        frame12.place(anchor = "c", relx = 0.45, rely = 0.415)
+        frame13 = tk.Frame(frame1, width = 225, height = 290)
+        frame13.place(anchor = "c", relx = 0.45, rely = 0.75)
         
-        # Frame 2: Logo and main task settings
-        frame2 = tk.Frame(self.mainWindow, width = 550, height = 550)
-        frame2.grid(row = 0, rowspan = 2, column = 1, sticky = 'news')
-        frame21 = tk.Frame(frame2, width = 550, height = 175)
-        frame21.place(anchor = "c", relx = 0.5, rely = 0.215)
-        frame22 = tk.Frame(frame2, width = 550, height = 375)
-        frame22.place(anchor = "c", relx = 0.5, rely = 0.71)
+        # Frame 2: Logo
+        frame2 = tk.Frame(mainWindow, width = 500, height = 175)
+        frame2.grid(row = 0, column = 1, sticky = 'news')
+        frame21 = tk.Frame(frame2, width = 500, height = 175)
+        frame21.place(anchor = "c", relx = 0.5, rely = 0.5)
         
-        # Frame 3: Task buttons
-        frame3 = tk.Frame(self.mainWindow, width = 550, height = 150)
-        frame3.grid(row = 2, column = 1, sticky = 'news')
-        frame31 = tk.Frame(frame3, width = 550, height = 150)
-        frame31.place(anchor = "c", relx = 0.5, rely = 0.5)
+        # Frame 3: Main task settings
+        frame3 = tk.Frame(self.mainWindow, width = 500, height = 300)
+        frame3.grid(row = 1, column = 1, sticky = 'news')
+        frame31 = tk.Frame(frame3, width = 500, height = 300)
+        frame31.place(anchor = "c", relx = 0.45, rely = 0.5)
         
-        # Frame 4: Camera and Open Ephys controls
-        frame4 = tk.Frame(self.mainWindow, width = 225, height = 700)
-        frame4.grid(row = 0, rowspan = 3, column = 2, sticky = 'news')
-        frame41 = tk.Frame(frame4, width = 225, height = 325)
-        frame41.place(anchor = "c", relx = 0.5, rely = 0.225)
-        frame42 = tk.Frame(frame4, width = 225, height = 375)
-        frame42.place(anchor = "c", relx = 0.5, rely = 0.725)
+        # Frame 4: Task buttons
+        frame4 = tk.Frame(self.mainWindow, width = 500, height = 125)
+        frame4.grid(row = 2, column = 1, sticky = 'news')
+        frame41 = tk.Frame(frame4, width = 500, height = 125)
+        frame41.place(anchor = "c", relx = 0.5, rely = 0.5)
+        
+        # Frame 5: Camera and Open Ephys controls
+        frame5 = tk.Frame(self.mainWindow, width = 350, height = 600)
+        frame5.grid(row = 0, rowspan = 3, column = 2, sticky = 'news')
+        frame51 = tk.Frame(frame5, width = 350, height = 250)
+        frame51.place(anchor = "c", relx = 0.425, rely = 0.225)
+        frame52 = tk.Frame(frame5, width = 175, height = 350)
+        frame52.place(anchor = "c", relx = 0.2, rely = 0.7)
+        frame53 = tk.Frame(frame5, width = 175, height = 350)
+        frame53.place(anchor = "c", relx = 0.7, rely = 0.7)
         
         # Logo
         imagePath = "assets/mazeGUIlogo.png"
@@ -124,7 +133,7 @@ class mazeGUI:
         self.img = ImageTk.PhotoImage(master = frame21, width = 490, height = 175, image = img)
         logo = tk.Label(frame21, image = self.img)
         logo.place(anchor = "c", relx = 0.5, rely = 0.5)
-            
+        
         # Save data
         self.fileExtension = ".pickle "
         
@@ -181,6 +190,21 @@ class mazeGUI:
         
         
         """
+        Error Notification
+
+        """
+        
+        # Server info
+        self.serverAddress = configurationData["errorNotifications"]["serverAddress"]
+        self.serverPort = int(configurationData["errorNotifications"]["serverPort"])
+        
+        # Sender and recipient info
+        self.senderAddress = configurationData["errorNotifications"]["senderAddress"]
+        self.senderPassword = configurationData["errorNotifications"]["senderPassword"]
+        self.recipientAddress = configurationData["errorNotifications"]["recipientAddress"]
+        
+        
+        """
         Visual Stimulus
         
         """
@@ -221,48 +245,47 @@ class mazeGUI:
         """
         
         # Settings labels
-        self.taskSettingsLabel = tk.Label(frame22, font = buttonFont, text = "Task Settings", width = 12, anchor  = 'c')
+        self.taskSettingsLabel = tk.Label(frame31, font = buttonFont, text = "Task Settings", width = 12, anchor  = 'c')
         self.taskSettingsLabel.grid(row = 0, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = 'we')
-        self.experimentDataLabel = tk.Label(frame22, font = buttonFont, text = "Experiment Data", width = 12, anchor  = 'c')
+        self.experimentDataLabel = tk.Label(frame31, font = buttonFont, text = "Experiment Data", width = 12, anchor  = 'c')
         self.experimentDataLabel.grid(row = 0, column = 2, columnspan = 2, padx = 10, pady = 10, sticky = 'we')
         entryLabels0 = ["trials", "duration", "task", "start door", "cues", "stimulus", "stimulus", "forced choice"]
-        entryLabels2 = ["rig", "animal", "block", "path", "auto save", " ", " ", " "]
+        entryLabels2 = ["rig", "animal", "block", "path", "auto save", " ", " ", "error"]
         nrow = 1
         for i in range(len(entryLabels0)):
-            tk.Label(frame22, font = buttonFont, text = entryLabels0[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
-            tk.Label(frame22, font = buttonFont, text = entryLabels2[i], width = 10, anchor  = 'e').grid(row = nrow, column = 2, padx = 10)
+            tk.Label(frame31, font = buttonFont, text = entryLabels0[i], width = 12, anchor  = 'e').grid(row = nrow, column = 0, padx = 10)
+            tk.Label(frame31, font = buttonFont, text = entryLabels2[i], width = 8, anchor  = 'e').grid(row = nrow, column = 2, padx = 10)
             nrow += 1
-        tk.Label(frame22, font = buttonFont, text = "Acquisition Panel", width = 12, anchor  = 'c').grid(row = 6, column = 2, columnspan = 2, padx = 10, pady = 10, sticky = 'we')
         
         # Maximum number of trials entry
         self.maximumTrialNumber = 200
-        self.trialsEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.trialsEntry = tk.Entry(frame31, font = 8, width = 14)
         self.trialsEntry.insert(0, self.maximumTrialNumber)
         self.trialsEntry.grid(row = 1, column = 1, sticky = 'w')
         
         # Time limit entry
         self.timeout = 60 * 60 # in seconds
-        self.timeEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.timeEntry = tk.Entry(frame31, font = 8, width = 14)
         self.timeEntry.insert(0, self.timeout)
         self.timeEntry.grid(row = 2, column = 1, sticky = 'w')
         
         # Task type list
         self.taskList = ["driftingGratings", "detectionTask", "discriminationTask", "abstractTask", "motionSelectivity", "whiteNoise", "objectDiscrimination", "valveCalibration"]
         self.taskName = " "
-        self.taskBox = ttk.Combobox(frame22, width = 12, font = 8, state = 'readonly', values = self.taskList)
+        self.taskBox = ttk.Combobox(frame31, width = 12, font = 8, state = 'readonly', values = self.taskList)
         self.taskBox.grid(row = 3, column = 1, sticky ='w')
         self.stimulusScreen = int(configurationData["stimulusScreen"]["screenNumber"])
         self.screenSize = (int(configurationData["stimulusScreen"]["screenWidth"]), int(configurationData["stimulusScreen"]["screenHeight"]))
         
         # Animal start list
         self.startList = ["left", "right"]   # 0 = left, 1 = right
-        self.startBox = ttk.Combobox(frame22, width = 12, font = 8, state = 'readonly', values = self.startList)
+        self.startBox = ttk.Combobox(frame31, width = 12, font = 8, state = 'readonly', values = self.startList)
         self.startBox.current(0)
         self.startBox.grid(row = 4, column = 1, sticky = 'w')
         
         # Cues checkBox
         self.useTrialCues = tk.BooleanVar(value = True)
-        self.cuesBox = tk.Checkbutton(frame22, text = "sounds + LEDs", font = 8, variable = self.useTrialCues, onvalue = True, offvalue = False)
+        self.cuesBox = tk.Checkbutton(frame31, text = "sounds + LEDs", font = 8, variable = self.useTrialCues, onvalue = True, offvalue = False)
         self.cuesBox.grid(row = 5, column = 1, sticky = 'w')
 
         # Sound for correct trials
@@ -292,18 +315,18 @@ class mazeGUI:
         
         # Start stimulus checkBox
         self.startStimulusTrigger = tk.BooleanVar(value = True)
-        self.startStimulusBox = tk.Checkbutton(frame22, text = "on switch", font = 8, variable = self.startStimulusTrigger, onvalue = True, offvalue = False)
+        self.startStimulusBox = tk.Checkbutton(frame31, text = "on switch", font = 8, variable = self.startStimulusTrigger, onvalue = True, offvalue = False)
         self.startStimulusBox.grid(row = 6, column = 1, sticky = 'w')
         
         # Stop stimulus checkBox
         self.stopStimulusTrigger = tk.BooleanVar(value = False)
-        self.stopStimulusBox = tk.Checkbutton(frame22, text = "off switch", font = 8, variable = self.stopStimulusTrigger, onvalue = True, offvalue = False)
+        self.stopStimulusBox = tk.Checkbutton(frame31, text = "off switch", font = 8, variable = self.stopStimulusTrigger, onvalue = True, offvalue = False)
         self.stopStimulusBox.grid(row = 7, column = 1, sticky = 'w')
 
         # Forced decisions checkBox
         self.forcedDecisionRNG = np.random.default_rng(seed = None)
         self.forcedDecisions = 0   # probability; float between 0 and 1
-        self.forcedDecisionEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.forcedDecisionEntry = tk.Entry(frame31, font = 8, width = 14)
         self.forcedDecisionEntry.insert(0, self.forcedDecisions)
         self.forcedDecisionEntry.grid(row = 8, column = 1, sticky = 'w')
         
@@ -315,19 +338,19 @@ class mazeGUI:
         
         # Rig ID entry
         self.rigID = "mazeRig"
-        self.rigEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.rigEntry = tk.Entry(frame31, font = 8, width = 14)
         self.rigEntry.insert(0, self.rigID)
         self.rigEntry.grid(row = 1, column = 3, sticky ='w')
         
         # Animal ID entry
         self.animalID = "J000NC"
-        self.animalEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.animalEntry = tk.Entry(frame31, font = 8, width = 14)
         self.animalEntry.insert(0, self.animalID)
         self.animalEntry.grid(row = 2, column = 3, sticky = 'w')
         
         # Block ID entry
         self.blockID = "1"
-        self.blockEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.blockEntry = tk.Entry(frame31, font = 8, width = 14)
         self.blockEntry.insert(0, self.blockID)
         self.blockEntry.grid(row = 3, column = 3, sticky = 'w')
         
@@ -335,7 +358,7 @@ class mazeGUI:
         userName = os.getlogin()
         self.currentDate = datetime.today().strftime("%y%m%d")
         self.pathForSavingData = "C:\\Users\\" + userName + "\\Documents\\automatedMouseMaze\\Data\\" + self.currentDate + "\\"
-        self.pathEntry = tk.Entry(frame22, font = 8, width = 14)
+        self.pathEntry = tk.Entry(frame31, font = 8, width = 14)
         self.pathEntry.insert(0, self.pathForSavingData)
         self.pathEntry.grid(row = 4, column = 3, sticky ='w')
         
@@ -344,8 +367,13 @@ class mazeGUI:
         
         # AutoSave checkBox
         self.autoSaveData = tk.BooleanVar(value = True)
-        self.autoSaveBox = tk.Checkbutton(frame22, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
+        self.autoSaveBox = tk.Checkbutton(frame31, text = "save to path", font = 8, variable = self.autoSaveData, onvalue = True, offvalue = False)
         self.autoSaveBox.grid(row = 5, column = 3, sticky = 'w')
+        
+        # Send error notification
+        self.sendErrorNotification = tk.BooleanVar(value = True)
+        self.errorBox = tk.Checkbutton(frame31, text = "send email", font = 8, variable = self.sendErrorNotification, onvalue = True, offvalue = False)
+        self.errorBox.grid(row = 8, column = 3, sticky = 'w')
         
         
         """
@@ -409,37 +437,37 @@ class mazeGUI:
         """
         
         # Ready button
-        self.readyButton = tk.Button(frame31, text = 'Initialize Task', font = buttonFont, width = 12, command = self.readyTask)
+        self.readyButton = tk.Button(frame41, text = 'Initialize Task', font = buttonFont, width = 12, command = self.readyTask)
         self.readyButton.grid(row = 0, column = 0, padx = 10, pady = 10)
         self.readyButton.bind('<Enter>', lambda e: self.readyButton.config(fg = 'Black', bg ='#A9C6E3'))
         self.readyButton.bind('<Leave>', lambda e: self.readyButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Cancel button
-        self.cancelButton = tk.Button(frame31, text = 'Cancel Task', font = buttonFont, width = 12, command = self.cancelTask)
+        self.cancelButton = tk.Button(frame41, text = 'Cancel Task', font = buttonFont, width = 12, command = self.cancelTask)
         self.cancelButton.grid(row = 1, column = 0,padx = 0, pady = 10)
         self.cancelButton.bind('<Enter>', lambda e: self.cancelButton.config(fg='Black', bg='#FFB844'))
         self.cancelButton.bind('<Leave>', lambda e: self.cancelButton.config(fg='Black', bg='SystemButtonFace'))
         
         # Start button
-        self.startButton = tk.Button(frame31, text = 'Start Task', font = buttonFont, width = 12, command = self.runTask)
+        self.startButton = tk.Button(frame41, text = 'Start Task', font = buttonFont, width = 12, command = self.runTask)
         self.startButton.grid(row = 0, column = 1, padx = 10, pady = 10)
         self.startButton.bind('<Enter>', lambda e: self.startButton.config(fg = 'Black', bg ='#99D492'))
         self.startButton.bind('<Leave>', lambda e: self.startButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # End task button
-        self.endButton = tk.Button(frame31, text = 'End Task', font = buttonFont, width = 12, command = self.endTask)
+        self.endButton = tk.Button(frame41, text = 'End Task', font = buttonFont, width = 12, command = self.endTask)
         self.endButton.grid(row = 1, column = 1,padx = 10, pady = 10)
         self.endButton.bind('<Enter>', lambda e: self.endButton.config(fg='Black', bg='#DC5B5B'))
         self.endButton.bind('<Leave>', lambda e: self.endButton.config(fg='Black', bg='SystemButtonFace'))
         
         # Save button
-        self.saveButton = tk.Button(frame31, text = 'Save Data', font = buttonFont, width = 12, command = self.saveData)
+        self.saveButton = tk.Button(frame41, text = 'Save Data', font = buttonFont, width = 12, command = self.saveData)
         self.saveButton.grid(row = 0, column = 2,padx = 10, pady = 10)
         self.saveButton.bind('<Enter>', lambda e: self.saveButton.config(fg='Black', bg='#84E0E0'))
         self.saveButton.bind('<Leave>', lambda e: self.saveButton.config(fg='Black', bg='SystemButtonFace'))
         
         # Close app button
-        self.closeButton = tk.Button(frame31, text = 'Close', font = buttonFont, width = 12, command = self.closeMainWindow)
+        self.closeButton = tk.Button(frame41, text = 'Close', font = buttonFont, width = 12, command = self.closeMainWindow)
         self.closeButton.grid(row = 1, column = 2,padx = 0, pady = 10)
         self.closeButton.bind('<Enter>', lambda e: self.closeButton.config(fg='Black', bg='#AFAFAA'))
         self.closeButton.bind('<Leave>', lambda e: self.closeButton.config(fg='Black', bg='SystemButtonFace'))
@@ -451,20 +479,23 @@ class mazeGUI:
         
         """
         
+        # Acquisition panel labels
+        tk.Label(frame51, font = buttonFont, text = "Acquisition Panel", width = 12, anchor  = 'c').grid(row = 0, column = 0, padx = 10, pady = 10, sticky = 'we')
+        
         # Acquisition panel controls
         self.controlPanelAddress = configurationData["acquisitionControlPanel"]["controlPanelAddress"]
         self.acquisitionPanelConnection = False
         self.command = None
         
         # Connect to acquisition panel
-        self.connectToPanelButton = tk.Button(frame22, text = 'Connect', font = buttonFont, width = 17, command = self.startConnection)
-        self.connectToPanelButton.grid(row = 7, column = 2, columnspan = 2, padx = 10, pady = 10)
+        self.connectToPanelButton = tk.Button(frame51, text = 'Connect', font = buttonFont, width = 17, command = self.startConnection)
+        self.connectToPanelButton.grid(row = 1, column = 0, padx = 10, pady = 10)
         self.connectToPanelButton.bind('<Enter>', lambda e: self.connectToPanelButton.config(fg = 'Black', bg ='#A9C6E3'))
         self.connectToPanelButton.bind('<Leave>', lambda e: self.connectToPanelButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Close connection with acquisition panel
-        self.disconnectFromPanelButton = tk.Button(frame22, text = 'Disconnect', font = buttonFont, width = 17, command = self.closeConnection)
-        self.disconnectFromPanelButton.grid(row = 8, column = 2, columnspan = 2, padx = 10, pady = 10)
+        self.disconnectFromPanelButton = tk.Button(frame51, text = 'Disconnect', font = buttonFont, width = 17, command = self.closeConnection)
+        self.disconnectFromPanelButton.grid(row = 2, column = 0, padx = 10, pady = 10)
         self.disconnectFromPanelButton.bind('<Enter>', lambda e: self.disconnectFromPanelButton.config(fg = 'Black', bg ='#AFAFAA'))
         self.disconnectFromPanelButton.bind('<Leave>', lambda e: self.disconnectFromPanelButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
@@ -480,29 +511,29 @@ class mazeGUI:
         self.cameraIDs = [eyeCameraID, worldCameraID]
         
         # Camera labels
-        tk.Label(frame41, font = buttonFont, text = "Camera Controls", width = 12, anchor  = 'c').grid(row = 0, column = 0, padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame52, font = buttonFont, text = "Camera Controls", width = 16, anchor  = 'c').grid(row = 0, column = 0, pady = 10, sticky = 'we')
         
         # Initialize cameras
-        self.startCameraButton = tk.Button(frame41, text = 'Start Cameras', font = buttonFont, width = 17, command = self.startCameras)
-        self.startCameraButton.grid(row = 1, column = 0, padx = 10, pady = 10)
+        self.startCameraButton = tk.Button(frame52, text = 'Start Cameras', font = buttonFont, width = 15, command = self.startCameras)
+        self.startCameraButton.grid(row = 1, column = 0, pady = 10)
         self.startCameraButton.bind('<Enter>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='#A9C6E3'))
         self.startCameraButton.bind('<Leave>', lambda e: self.startCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
 
         # Start recording
-        self.recordCameraButton = tk.Button(frame41, text = 'Record Video', font = buttonFont, width = 17, command = self.recordVideo)
-        self.recordCameraButton.grid(row = 2, column = 0, padx = 10, pady = 10)
+        self.recordCameraButton = tk.Button(frame52, text = 'Record Video', font = buttonFont, width = 15, command = self.recordVideo)
+        self.recordCameraButton.grid(row = 2, column = 0, pady = 10)
         self.recordCameraButton.bind('<Enter>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='#DC5B5B'))
         self.recordCameraButton.bind('<Leave>', lambda e: self.recordCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Stop recording
-        self.stopRecordCameraButton = tk.Button(frame41, text = 'Stop Recording', font = buttonFont, width = 17, command = self.stopVideo)
-        self.stopRecordCameraButton.grid(row = 3, column = 0, padx = 10, pady = 10)
+        self.stopRecordCameraButton = tk.Button(frame52, text = 'Stop Recording', font = buttonFont, width = 15, command = self.stopVideo)
+        self.stopRecordCameraButton.grid(row = 3, column = 0, pady = 10)
         self.stopRecordCameraButton.bind('<Enter>', lambda e: self.stopRecordCameraButton.config(fg = 'Black', bg ='#FFB844'))
         self.stopRecordCameraButton.bind('<Leave>', lambda e: self.stopRecordCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
 
         # Close cameras
-        self.closeCameraButton = tk.Button(frame41, text = 'Close Cameras', font = buttonFont, width = 17, command = self.closeCameras)
-        self.closeCameraButton.grid(row = 4, column = 0, padx = 10, pady = 10)
+        self.closeCameraButton = tk.Button(frame52, text = 'Close Cameras', font = buttonFont, width = 15, command = self.closeCameras)
+        self.closeCameraButton.grid(row = 4, column = 0, pady = 10)
         self.closeCameraButton.bind('<Enter>', lambda e: self.closeCameraButton.config(fg = 'Black', bg ='#AFAFAA'))
         self.closeCameraButton.bind('<Leave>', lambda e: self.closeCameraButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
@@ -516,35 +547,35 @@ class mazeGUI:
         self.OpenEphysPath = configurationData["openEphys"]["openEphysPath"]
         
         # Open Ephys labels
-        tk.Label(frame42, font = buttonFont, text = "Ephys and IMU Controls", width = 25, anchor  = 'c').grid(row = 0, column = 0, padx = 10, pady = 10, sticky = 'we')
+        tk.Label(frame53, font = buttonFont, text = "Ephys and IMU Controls", width = 18, anchor  = 'c').grid(row = 0, column = 0, pady = 10, sticky = 'we')
         
         # Initialize Open Ephys GUI
-        self.launchOpenEphysButton = tk.Button(frame42, text = 'Launch Open Ephys', font = buttonFont, width = 17, command = self.launchOpenEphysGUI)
-        self.launchOpenEphysButton.grid(row = 1, column = 0, padx = 10, pady = 10)
+        self.launchOpenEphysButton = tk.Button(frame53, text = 'Launch Open Ephys', font = buttonFont, width = 17, command = self.launchOpenEphysGUI)
+        self.launchOpenEphysButton.grid(row = 1, column = 0, pady = 10)
         self.launchOpenEphysButton.bind('<Enter>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='#A9C6E3'))
         self.launchOpenEphysButton.bind('<Leave>', lambda e: self.launchOpenEphysButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Preview
-        self.previewOpenEphysButton = tk.Button(frame42, text = 'Preview Off', font = buttonFont, width = 17, command = self.previewOpenEphysChannels)
-        self.previewOpenEphysButton.grid(row = 2, column = 0, padx = 10, pady = 10)
+        self.previewOpenEphysButton = tk.Button(frame53, text = 'Preview Off', font = buttonFont, width = 17, command = self.previewOpenEphysChannels)
+        self.previewOpenEphysButton.grid(row = 2, column = 0, pady = 10)
         self.previewOpenEphysButton.bind('<Enter>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='#99D492'))
         self.previewOpenEphysButton.bind('<Leave>', lambda e: self.previewOpenEphysButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Start recording
-        self.startEphysRecordingButton = tk.Button(frame42, text = 'Start Recording', font = buttonFont, width = 17, command = self.startEphysRecording)
-        self.startEphysRecordingButton.grid(row = 3, column = 0, padx = 10, pady = 10)
+        self.startEphysRecordingButton = tk.Button(frame53, text = 'Start Recording', font = buttonFont, width = 17, command = self.startEphysRecording)
+        self.startEphysRecordingButton.grid(row = 3, column = 0, pady = 10)
         self.startEphysRecordingButton.bind('<Enter>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='#DC5B5B'))
         self.startEphysRecordingButton.bind('<Leave>', lambda e: self.startEphysRecordingButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Stop recording
-        self.stopEphysRecordingButton = tk.Button(frame42, text = 'Stop Recording', font = buttonFont, width = 17, command = self.stopEphysRecording)
-        self.stopEphysRecordingButton.grid(row = 4, column = 0, padx = 10, pady = 10)
+        self.stopEphysRecordingButton = tk.Button(frame53, text = 'Stop Recording', font = buttonFont, width = 17, command = self.stopEphysRecording)
+        self.stopEphysRecordingButton.grid(row = 4, column = 0, pady = 10)
         self.stopEphysRecordingButton.bind('<Enter>', lambda e: self.stopEphysRecordingButton.config(fg = 'Black', bg ='#FFB844'))
         self.stopEphysRecordingButton.bind('<Leave>', lambda e: self.stopEphysRecordingButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Close Open Ephys GUI
-        self.closeOpenEphysGUIButton = tk.Button(frame42, text = 'Close Open Ephys', font = buttonFont, width = 17, command = self.closeOpenEphysGUI)
-        self.closeOpenEphysGUIButton.grid(row = 5, column = 0, padx = 10, pady = 10)
+        self.closeOpenEphysGUIButton = tk.Button(frame53, text = 'Close Open Ephys', font = buttonFont, width = 17, command = self.closeOpenEphysGUI)
+        self.closeOpenEphysGUIButton.grid(row = 5, column = 0, pady = 10)
         self.closeOpenEphysGUIButton.bind('<Enter>', lambda e: self.closeOpenEphysGUIButton.config(fg = 'Black', bg ='#AFAFAA'))
         self.closeOpenEphysGUIButton.bind('<Leave>', lambda e: self.closeOpenEphysGUIButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
@@ -729,7 +760,16 @@ class mazeGUI:
                 self.board.digital[self.rightDecisionDoor].write(0)
                 self.startDoorCloseTime = time.time()
                 self.rightDecisionLabel.config(bg = '#99D492', text = "open")
-                
+            if self.startDoorCloseTime - self.startDoorOpenTime < 0.1:
+                # Notify user of error
+                print(" ")
+                print("Warning: The start door was opened for a very short time:", "{:.4f}".format(self.startDoorCloseTime - self.startDoorOpenTime),
+                      "s. The maze has been temporarily stopped")
+                print(" ")
+                if self.emailNotification is True:
+                    self.errorMessage.sendEmail()
+                messagebox.showerror("Error", "The start door was opened for a very short time: " + "{:.4f}".format(self.startDoorCloseTime - self.startDoorOpenTime) + " s!")
+            
         # After a decision has been recorded
         elif self.mazeState == 2:
             self.mazeStateLabel.config(bg = 'pink', text = "end")
@@ -1598,14 +1638,18 @@ class mazeGUI:
         self.dataFrameStimulusStartTime = []
         self.dataFrameStimulusEndTime = []
         self.dataFrameRawTaskStartTime = []
-    
+        
         # For time synchronization
         self.timeStampOffest = None
         self.timeServer = ntplib.NTPClient()
-    
+        
+        # In case of maze errors
+        if self.emailNotification is True:
+            self.errorMessage = errorNotification.errorNotification(self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
+        
         # Update behavior stats in GUI
         self.updateBehaviorStats()
-    
+        
     def updateTrialSettings(self):
         
         # Input task settings
@@ -1621,6 +1665,7 @@ class mazeGUI:
         self.rigID = str(self.rigEntry.get())
         self.blockID = str(self.blockEntry.get())
         self.autoSave = bool(self.autoSaveData.get())
+        self.emailNotification = bool(self.sendErrorNotification.get())
     
     def retrieveTaskParameters(self):
         
@@ -1685,6 +1730,7 @@ class mazeGUI:
                 print("          Stop stimulus trigger:", str(self.stimulusOffSwitch).lower())
                 print("          Forced decision probability = ", str(self.forcedDecisions))
                 print("          AutoSave:", self.autoSave)
+                print("          Email notification:", self.emailNotification)
             else:
                 # Display calibration curve example on terminal
                 print(" ")
@@ -1904,8 +1950,6 @@ class mazeGUI:
         self.dataFrameTrialType.append(self.trialType)
         self.dataFrameEndTime.append(time.time() - self.taskTimeStart)
         self.dataFrameStartDoorTime.append(self.startDoorCloseTime - self.startDoorOpenTime)
-        if self.startDoorCloseTime - self.startDoorOpenTime < 0.5:
-            print("Warning: The start door was open for very little time: ", self.startDoorCloseTime - self.startDoorOpenTime, " s")
         if self.trialType == 1 or self.trialType == 4:
             self.dataFrameCorrect.append(1)
         elif self.trialType == 2 or self.trialType == 3:
