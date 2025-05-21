@@ -266,9 +266,9 @@ class mazeGUI:
         self.trialsEntry.grid(row = 1, column = 1, sticky = 'w')
         
         # Time limit entry
-        self.timeout = 60 * 60 # in seconds
+        self.timeOut = 60 * 60 # in seconds
         self.timeEntry = tk.Entry(frame31, font = 8, width = 14)
-        self.timeEntry.insert(0, self.timeout)
+        self.timeEntry.insert(0, self.timeOut)
         self.timeEntry.grid(row = 2, column = 1, sticky = 'w')
         
         # Task type list
@@ -373,7 +373,7 @@ class mazeGUI:
         self.autoSaveBox.grid(row = 5, column = 3, sticky = 'w')
         
         # Pause maze upon door error
-        self.doorMinimumTime = 0.1
+        self.doorMinimumTime = 0.2
         self.pauseMazeUponError = tk.BooleanVar(value = True)
         self.pauseMazeBox = tk.Checkbutton(frame31, text = "pause maze", font = 8, variable = self.pauseMazeUponError, onvalue = True, offvalue = False)
         self.pauseMazeBox.grid(row = 7, column = 3, sticky = 'w')
@@ -768,15 +768,17 @@ class mazeGUI:
                 self.board.digital[self.rightDecisionDoor].write(0)
                 self.startDoorCloseTime = time.time()
                 self.rightDecisionLabel.config(bg = '#99D492', text = "open")
+            # Notify user about error
             if self.startDoorCloseTime - self.startDoorOpenTime < self.doorMinimumTime:
-                # Notify user of error
                 print(" ")
-                print("Warning: The start door was opened for a very short time:", "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)), "ms.")
+                print("Warning: The start door was opened for a very short time:",
+                      "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)), "ms.")
                 if self.emailNotification is True:
                     self.errorMessage.sendEmail()
                 if self.pauseMaze is True:
                     print("The maze has been paused.")
-                    messagebox.showerror("Error", "The start door was opened for a very short time: " + "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)) + " ms!")
+                    messagebox.showerror("Error", "The start door was opened for a very short time: " +
+                                         "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)) + " ms!")
                 print(" ")
                 
         # After a decision has been recorded
@@ -788,15 +790,28 @@ class mazeGUI:
             self.decisionDoorCloseTime = time.time()
             self.leftDecisionLabel.config(bg = 'pink', text = "closed")
             self.rightDecisionLabel.config(bg = 'pink', text = "closed")
+            # Notify user about error
             if self.decisionDoorCloseTime - self.startDoorCloseTime < self.doorMinimumTime:
-                # Notify user of error
                 print(" ")
-                print("Warning: The decision doors were opened for a very short time:", "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)), "ms.")
+                print("Warning: The decision doors were opened for a very short time:",
+                      "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)), "ms.")
                 if self.emailNotification is True:
                     self.errorMessage.sendEmail()
                 if self.pauseMaze is True:
                     print("The maze has been paused.")
-                    messagebox.showerror("Error", "The decision doors were opened for a very short time: " + "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)) + " ms!")
+                    messagebox.showerror("Error", "The decision doors were opened for a very short time: " +
+                                         "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)) + " ms!")
+                print(" ")
+            elif (self.decisionDoorCloseTime - self.taskStartTime - self.dataFrameStimulusStartTime[-1]) < self.doorMinimumTime:
+                print(" ")
+                print("Warning: The visual stimulus was displayed for a very short time:",
+                      "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.taskStartTime - self.dataFrameStimulusStartTime[-1])), "ms.")
+                if self.emailNotification is True:
+                    self.errorMessage.sendEmail()
+                if self.pauseMaze is True:
+                    print("The maze has been paused.")
+                    messagebox.showerror("Error", "The visual stimulus was displayed for a very short time: " +
+                                         "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.taskStartTime - self.dataFrameStimulusStartTime[-1])) + " ms!")
                 print(" ")
             
         # Mouse coming from the left
@@ -821,28 +836,28 @@ class mazeGUI:
         if self.stimulusState == 0:
             self.stimulusStateLabel.config(bg = '#A9C6E3', text = "ready")
             self.stimulusStateValue.config(text = 0)
-            if self.stimulusOnSwitch == True:
+            if self.stimulusOnSwitch is True:
                 self.startStimulusLabel.config(bg = '#A9C6E3', text = "ready")
-            if self.stimulusOffSwitch == True:
+            if self.stimulusOffSwitch is True:
                 self.stopStimulusLabel.config(bg = '#A9C6E3', text = "ready")
             
         # After trial start, waiting to trigger stimulus
         elif self.stimulusState == 1:
             self.stimulusStateValue.config(text = 1)
-            if self.stimulusOnSwitch == True:
+            if self.stimulusOnSwitch is True:
                 self.stimulusStateLabel.config(bg = 'pink', text = "off")
                 self.startStimulusLabel.config(bg = 'pink', text = "off")
-            elif self.stimulusOnSwitch == False:
+            elif self.stimulusOnSwitch is False:
                 self.stimulusStateLabel.config(bg = '#99D492', text = "on")
-            if self.stimulusOffSwitch == True:
+            if self.stimulusOffSwitch is True:
                 self.stopStimulusLabel.config(bg = 'pink', text = "off")
             
         # Stimulus is on
         elif self.stimulusState == 2:
             self.stimulusStateValue.config(text = 2)
-            if self.stimulusOnSwitch == True:
+            if self.stimulusOnSwitch is True:
                 self.visualStimulus.startStimulus(display = True)
-                self.dataFrameStimulusStartTime.append(time.time() - self.taskTimeStart)
+                self.dataFrameStimulusStartTime.append(time.time() - self.taskStartTime)
                 self.stimulusIsOn = True
                 self.stimulusStateLabel.config(bg = '#99D492', text = "on")
                 self.startStimulusLabel.config(bg = '#99D492', text = "on")
@@ -850,11 +865,11 @@ class mazeGUI:
         # Stimulus is off
         elif self.stimulusState == 3:
             self.stimulusStateValue.config(text = 3)
-            if self.stimulusOnSwitch == True and self.stimulusOffSwitch == True:
+            if self.stimulusOnSwitch is True and self.stimulusOffSwitch is True:
                 self.startStimulusLabel.config(bg = 'pink', text = "off")
-            if self.stimulusOffSwitch == True:
+            if self.stimulusOffSwitch is True:
                 self.visualStimulus.stopStimulus(display = False)
-                self.dataFrameStimulusEndTime.append(time.time() - self.taskTimeStart)
+                self.dataFrameStimulusEndTime.append(time.time() - self.taskStartTime)
                 self.stimulusIsOn = False
                 self.stimulusStateLabel.config(bg = 'pink', text = "off")
                 self.stopStimulusLabel.config(bg = '#99D492', text = "on")
@@ -862,14 +877,14 @@ class mazeGUI:
         # Waiting for decision after stimulus is off
         elif self.stimulusState == 4:
             self.stimulusStateValue.config(text = 4)
-            if self.stimulusOffSwitch == True:
+            if self.stimulusOffSwitch is True:
                 self.stopStimulusLabel.config(bg = 'pink', text = "off")
                 # Fail-safe: in case stimulus is not turned off
-                if self.stimulusIsOn == True:
+                if self.stimulusIsOn is True:
                     self.visualStimulus.stopStimulus(display = False)
-                    self.dataFrameStimulusEndTime.append(None)
+                    self.dataFrameStimulusEndTime.append(time.time() - self.taskStartTime)
                     self.stimulusIsOn = False
-            elif self.stimulusOffSwitch == False:
+            elif self.stimulusOffSwitch is False:
                 self.stimulusStateLabel.config(bg = 'pink', text = "off")
                 self.startStimulusLabel.config(bg = 'pink', text = "off")
             
@@ -877,9 +892,9 @@ class mazeGUI:
         elif self.stimulusState == 5:
             self.stimulusStateLabel.config(bg = '#A9C6E3', text = "ready")
             self.stimulusStateValue.config(text = 5)
-            if self.stimulusOnSwitch == True:
+            if self.stimulusOnSwitch is True:
                 self.startStimulusLabel.config(bg = '#A9C6E3', text = "ready")
-            if self.stimulusOffSwitch == True:
+            if self.stimulusOffSwitch is True:
                 self.stopStimulusLabel.config(bg = '#A9C6E3', text = "ready")
                 
     def readPinStates(self):
@@ -922,7 +937,7 @@ class mazeGUI:
             if self.reward is False and self.initializeTrial is True:
                 self.initializeUpcomingTrial()
                 self.initializeTrial = False
-            if time.time() > self.interTrialStart + self.interTrialTimeOut:
+            if time.time() > self.interTrialStart + self.interTrialtimeOut:
                 if self.startDoor == "left":
                     self.mazeState = 3
                 elif self.startDoor == "right":
@@ -1608,9 +1623,9 @@ class mazeGUI:
         self.startDoorCloseTime  = 0
         self.decisionDoorCloseTime  = 0
         self.interTrialStart = 0
-        self.interTrialTimeOut = 0
-        self.correctInterTrialTimeOut = 3
-        self.incorrectInterTrialTimeOut = 15
+        self.interTrialtimeOut = 0
+        self.correctInterTrialtimeOut = 3
+        self.incorrectInterTrialtimeOut = 15
         self.probabilityTargetLeft = 0.5
         self.targetLocation = None
         self.targetLabel = None
@@ -1678,7 +1693,7 @@ class mazeGUI:
         
         # Input task settings
         self.maximumTrialNumber = int(self.trialsEntry.get())
-        self.timeout = int(self.timeEntry.get())
+        self.timeOut = int(self.timeEntry.get())
         self.taskName = str(self.taskBox.get())
         self.startDoor = str(self.startBox.get())
         self.trialCues = bool(self.useTrialCues.get())
@@ -1701,15 +1716,15 @@ class mazeGUI:
                           "blockID": str(self.blockID),
                           "taskName": self.taskName,
                           "maximumNumberOfTrials": str(self.maximumTrialNumber),
-                          "maximumSessionTime": str(self.timeout),
+                          "maximumSessionTime": str(self.timeOut),
                           "initialStartDoor": self.startDoor,
                           "useSoundCues": str(self.trialCues),
                           "startStimulusTrigger": str(self.stimulusOnSwitch),
                           "stopStimulusTrigger": str(self.stimulusOffSwitch),
                           "forcedDecisionProbability": str(self.forcedDecisions),
                           "initialLeftTargetProbability": str(self.probabilityTargetLeft),
-                          "correctInterTrialTimeOut": str(self.correctInterTrialTimeOut),
-                          "incorrectInterTrialTimeOut": str(self.incorrectInterTrialTimeOut),
+                          "correctInterTrialtimeOut": str(self.correctInterTrialtimeOut),
+                          "incorrectInterTrialtimeOut": str(self.incorrectInterTrialtimeOut),
                           "rewardAmounts": str(self.rewardAmounts),
                           "leftRewardStreak": str(self.leftRewardStreak),
                           "rightRewardStreak": str(self.rightRewardStreak),
@@ -1748,7 +1763,7 @@ class mazeGUI:
                 print("          Block ID:", self.blockID)
                 print("          Task name:", self.taskName)
                 print("          Maximum number of trials:", self.maximumTrialNumber)
-                print("          Maximum session time (s):", self.timeout)
+                print("          Maximum session time (s):", self.timeOut)
                 print("          Start door:", self.startDoor)
                 print("          Use sound cues:", str(self.trialCues).lower())
                 print("          Start stimulus trigger:", str(self.stimulusOnSwitch).lower())
@@ -1786,7 +1801,7 @@ class mazeGUI:
                     # Update maze
                     self.mazeState = 0
                     self.updateDoors()
-                    if self.stimulusOnSwitch == True or self.stimulusOffSwitch == True:
+                    if self.stimulusOnSwitch is True or self.stimulusOffSwitch is True:
                         self.stimulusState = 0
                         self.updateStimulusDisplay()
                 
@@ -1940,12 +1955,12 @@ class mazeGUI:
         print("     Trial", self.trialID, "started...", " Target ->", self.targetLabel, "@ p =", self.probabilityTargetLeft, "(Left)")
         
         # Display visual stimulus
-        if self.stimulusOnSwitch == False:
+        if self.stimulusOnSwitch is False:
             self.visualStimulus.startStimulus(display = True)
-            self.dataFrameStimulusStartTime.append(None)
+            self.dataFrameStimulusStartTime.append(time.time() - self.taskStartTime)
         
         # Append experiment data to data frame
-        self.dataFrameStartTime.append(time.time() - self.taskTimeStart)
+        self.dataFrameStartTime.append(time.time() - self.taskStartTime)
         self.dataFrameTrial.append(self.trialID)
         self.dataFrameTarget.append(self.targetLocation)
         if self.startDoor == "left":
@@ -1961,7 +1976,7 @@ class mazeGUI:
         # End visual stimulus
         if self.stimulusOffSwitch is False:
             self.visualStimulus.stopStimulus(display = False)
-            self.dataFrameStimulusEndTime.append(None)
+            self.dataFrameStimulusEndTime.append(time.time() - self.taskStartTime)
             
         # Grab time stamp offset
         try:
@@ -1978,7 +1993,7 @@ class mazeGUI:
         self.dataFrameDecision.append(self.lastDecision)
         self.datFrameForcedDecision.append(self.blockIncorrectDoor)
         self.dataFrameTrialType.append(self.trialType)
-        self.dataFrameEndTime.append(time.time() - self.taskTimeStart)
+        self.dataFrameEndTime.append(time.time() - self.taskStartTime)
         self.dataFrameStartDoorTime.append(self.startDoorCloseTime - self.startDoorOpenTime)
         if self.trialType == 1 or self.trialType == 4:
             self.dataFrameCorrect.append(1)
@@ -2065,7 +2080,7 @@ class mazeGUI:
                 self.giveReward()
                 if self.trialCues is True:
                     sa.play_buffer(self.correctSound, 1, 2, self.Fs)
-                self.interTrialTimeOut = self.correctInterTrialTimeOut
+                self.interTrialtimeOut = self.correctInterTrialtimeOut
                 self.trialType = 1
                 self.lastDecision = 0
                 self.correctStreak += 1
@@ -2074,7 +2089,7 @@ class mazeGUI:
                 # Incorrect left
                 if self.trialCues is True:
                     sa.play_buffer(self.incorrectSound, 1, 2, self.Fs)
-                self.interTrialTimeOut = self.incorrectInterTrialTimeOut
+                self.interTrialtimeOut = self.incorrectInterTrialtimeOut
                 self.trialType = 2
                 self.lastDecision = 0
                 self.correctStreak = 0
@@ -2090,7 +2105,7 @@ class mazeGUI:
                 # Incorrect right
                 if self.trialCues is True:
                     sa.play_buffer(self.incorrectSound, 1, 2, self.Fs)
-                self.interTrialTimeOut = self.incorrectInterTrialTimeOut
+                self.interTrialtimeOut = self.incorrectInterTrialtimeOut
                 self.trialType = 3
                 self.lastDecision = 1
                 self.correctStreak = 0
@@ -2100,7 +2115,7 @@ class mazeGUI:
                 self.giveReward()
                 if self.trialCues is True:
                     sa.play_buffer(self.correctSound, 1, 2, self.Fs)
-                self.interTrialTimeOut = self.correctInterTrialTimeOut
+                self.interTrialtimeOut = self.correctInterTrialtimeOut
                 self.trialType = 4
                 self.lastDecision = 1
                 self.correctStreak += 1
@@ -2131,12 +2146,11 @@ class mazeGUI:
             elif self.startDoor == "right":
                 self.mazeState = 4
             self.updateDoors()
-            if self.stimulusOnSwitch is True or self.stimulusOffSwitch is True:
-                self.stimulusState = 5
-                self.updateStimulusDisplay()
+            self.stimulusState = 5
+            self.updateStimulusDisplay()
             self.runningTask = True
-            self.taskTimeStart = time.time()
-            self.dataFrameRawTaskStartTime.append(self.taskTimeStart)
+            self.taskStartTime = time.time()
+            self.dataFrameRawTaskStartTime.append(self.taskStartTime)
             print(" ")
             
             # Start task
@@ -2155,10 +2169,9 @@ class mazeGUI:
             self.mainWindow.update()
             self.readPinStates()
             self.updateMazeState()
-            if self.stimulusOnSwitch is True or self.stimulusOffSwitch is True:
-                self.updateStimulusState()
+            self.updateStimulusState()
             self.visualStimulus.updateStimulus()
-            if time.time() > self.taskTimeStart + self.timeout:
+            if time.time() > self.taskStartTime + self.timeOut:
                 self.runningTask = False
                 print(" ")
                 print("The task has reached its time limit!")
