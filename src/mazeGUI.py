@@ -194,6 +194,11 @@ class mazeGUI:
 
         """
         
+        # Door error message
+        self.startDoorErrorMessage = "The start door was opened for a very short time. The maze has been temporarily stopped."
+        self.decisionDoorErrorMessage = "The decision doors were opened for a very short time. The maze has been temporarily stopped."
+        self.visualStimulusErrorMessage = "The visual stimulus was displayed for a very short time. The maze has been temporarily stopped."
+        
         # Server info
         self.serverAddress = configurationData["errorNotifications"]["serverAddress"]
         self.serverPort = int(configurationData["errorNotifications"]["serverPort"])
@@ -774,11 +779,13 @@ class mazeGUI:
                 print("Warning: The start door was opened for a very short time:",
                       "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)), "ms.")
                 if self.emailNotification is True:
-                    self.errorMessage.sendEmail()
+                    self.startDoorErrorNotification.sendEmail()
                 if self.pauseMaze is True:
                     print("The maze has been paused.")
                     messagebox.showerror("Error", "The start door was opened for a very short time: " +
-                                         "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)) + " ms!")
+                                         "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)) + " ms!"
+                                         "\n"
+                                         "\nThe maze has been paused.")
                 print(" ")
                 
         # After a decision has been recorded
@@ -796,22 +803,26 @@ class mazeGUI:
                 print("Warning: The decision doors were opened for a very short time:",
                       "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)), "ms.")
                 if self.emailNotification is True:
-                    self.errorMessage.sendEmail()
+                    self.decisionDoorErrorNotification.sendEmail()
                 if self.pauseMaze is True:
                     print("The maze has been paused.")
                     messagebox.showerror("Error", "The decision doors were opened for a very short time: " +
-                                         "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)) + " ms!")
+                                         "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)) + " ms!"
+                                         "\n"
+                                         "\nThe maze has been paused.")
                 print(" ")
             elif (self.decisionDoorCloseTime - self.taskStartTime - self.dataFrameStimulusStartTime[-1]) < self.doorMinimumTime:
                 print(" ")
                 print("Warning: The visual stimulus was displayed for a very short time:",
                       "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.taskStartTime - self.dataFrameStimulusStartTime[-1])), "ms.")
                 if self.emailNotification is True:
-                    self.errorMessage.sendEmail()
+                    self.visualStimulusErrorNotification.sendEmail()
                 if self.pauseMaze is True:
                     print("The maze has been paused.")
                     messagebox.showerror("Error", "The visual stimulus was displayed for a very short time: " +
-                                         "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.taskStartTime - self.dataFrameStimulusStartTime[-1])) + " ms!")
+                                         "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.taskStartTime - self.dataFrameStimulusStartTime[-1])) + " ms!"
+                                         "\n"
+                                         "\nThe maze has been paused.")
                 print(" ")
             
         # Mouse coming from the left
@@ -1684,7 +1695,9 @@ class mazeGUI:
         
         # In case of maze errors
         if self.emailNotification is True:
-            self.errorMessage = errorNotification.errorNotification(self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
+            self.startDoorErrorNotification = errorNotification.errorNotification(self.startDoorErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
+            self.decisionDoorErrorNotification = errorNotification.errorNotification(self.decisionDoorErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
+            self.visualStimulusErrorNotification = errorNotification.errorNotification(self.visualStimulusErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
         
         # Update behavior stats in GUI
         self.updateBehaviorStats()

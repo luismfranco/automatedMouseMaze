@@ -14,7 +14,7 @@ Error Notification
 
 class errorNotification:
 
-    def __init__(self, serverAddress, serverPort, senderAddress, senderPassword, recipientAddress):
+    def __init__(self, errorMessage, serverAddress, serverPort, senderAddress, senderPassword, recipientAddress):
 
         # Server info
         self.serverAddress = serverAddress
@@ -27,10 +27,10 @@ class errorNotification:
 
         # Message
         self.subject = "Maze Error"
-        self.body = "Start door error. The maze has been temporarily stopped."
+        self.errorMessage = errorMessage
         
     def sendEmail(self):
-        message = MIMEText(self.body)
+        message = MIMEText(self.errorMessage)
         message['Subject'] = self.subject
         message['From'] = self.sender
         message['To'] = ', '.join(self.recipients)
