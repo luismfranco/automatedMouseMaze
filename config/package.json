@@ -58,14 +58,6 @@
          "mazeGUIaddress": "0.0.0.0"
      },
      
-     "errorNotifications": {
-         "serverAddress": "smtp.gmail.com",
-         "serverPort": "465",
-         "senderAddress": "automatedmousemaze@gmail.com",
-         "senderPassword": "raem knbs tmzj jxsh",
-         "recipientAddress": ["luisfran@uoregon.edu", "keatonj@uoregon.edu"]
-     },
-     
      "crownCameras": {
          "eyeCamera": "1",
          "worldCamera": "2"

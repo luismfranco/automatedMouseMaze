@@ -20,7 +20,7 @@ class driftingGratings:
     
         # Create stimulus window
         self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen, units = "deg",
-                                            size = screenSize, fullscr = True, color = (1.0, 1.0, 1.0))
+                                            size = screenSize, fullscr = True, color = (0.5, 0.5, 0.5))
         
         # Orientation
         self.leftTargetOrientation = 90

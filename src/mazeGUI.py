@@ -67,7 +67,7 @@ class mazeGUI:
 
     """
     
-    def __init__(self, mainWindow, configurationData):
+    def __init__(self, mainWindow, configurationData, emailSettings):
         
         
         """
@@ -199,15 +199,24 @@ class mazeGUI:
         self.decisionDoorErrorMessage = "The decision doors were opened for a very short time. The maze has been temporarily stopped."
         self.visualStimulusErrorMessage = "The visual stimulus was displayed for a very short time. The maze has been temporarily stopped."
         
-        # Server info
-        self.serverAddress = configurationData["errorNotifications"]["serverAddress"]
-        self.serverPort = int(configurationData["errorNotifications"]["serverPort"])
+        if emailSettings is not None:
         
-        # Sender and recipient info
-        self.senderAddress = configurationData["errorNotifications"]["senderAddress"]
-        self.senderPassword = configurationData["errorNotifications"]["senderPassword"]
-        self.recipientAddress = configurationData["errorNotifications"]["recipientAddress"]
+            # Server info
+            self.serverAddress = emailSettings["errorNotifications"]["serverAddress"]
+            self.serverPort = int(emailSettings["errorNotifications"]["serverPort"])
+            
+            # Sender and recipient info
+            self.senderAddress = emailSettings["errorNotifications"]["senderAddress"]
+            self.senderPassword = emailSettings["errorNotifications"]["senderPassword"]
+            self.recipientAddress = emailSettings["errorNotifications"]["recipientAddress"]
         
+            # Email has been configured
+            self.skipErrorNotifications = False
+        
+        else:
+            
+            # In case no email has been configured yet
+            self.skipErrorNotifications = True
         
         """
         Visual Stimulus
@@ -384,7 +393,10 @@ class mazeGUI:
         self.pauseMazeBox.grid(row = 7, column = 3, sticky = 'w')
         
         # Send door error notification
-        self.sendErrorNotification = tk.BooleanVar(value = True)
+        if emailSettings is not None:
+            self.sendErrorNotification = tk.BooleanVar(value = True)
+        else:
+            self.sendErrorNotification = tk.BooleanVar(value = False)
         self.errorNotificationBox = tk.Checkbutton(frame31, text = "send email", font = 8, variable = self.sendErrorNotification, onvalue = True, offvalue = False)
         self.errorNotificationBox.grid(row = 8, column = 3, sticky = 'w')
         
@@ -778,7 +790,7 @@ class mazeGUI:
                 print(" ")
                 print("Warning: The start door was opened for a very short time:",
                       "{:.3f}".format(1000 * (self.startDoorCloseTime - self.startDoorOpenTime)), "ms.")
-                if self.emailNotification is True:
+                if self.emailNotification is True and self.skipErrorNotifications is False:
                     self.startDoorErrorNotification.sendEmail()
                 if self.pauseMaze is True:
                     print("The maze has been paused.")
@@ -802,7 +814,7 @@ class mazeGUI:
                 print(" ")
                 print("Warning: The decision doors were opened for a very short time:",
                       "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.startDoorCloseTime)), "ms.")
-                if self.emailNotification is True:
+                if self.emailNotification is True and self.skipErrorNotifications is False:
                     self.decisionDoorErrorNotification.sendEmail()
                 if self.pauseMaze is True:
                     print("The maze has been paused.")
@@ -815,7 +827,7 @@ class mazeGUI:
                 print(" ")
                 print("Warning: The visual stimulus was displayed for a very short time:",
                       "{:.3f}".format(1000 * (self.decisionDoorCloseTime - self.taskStartTime - self.dataFrameStimulusStartTime[-1])), "ms.")
-                if self.emailNotification is True:
+                if self.emailNotification is True and self.skipErrorNotifications is False:
                     self.visualStimulusErrorNotification.sendEmail()
                 if self.pauseMaze is True:
                     print("The maze has been paused.")
@@ -999,15 +1011,6 @@ class mazeGUI:
         # Update stimulus
         if self.currentStimulusState != self.stimulusState:
             self.updateStimulusDisplay()
-
-    def closeValve(self):
-        
-        # Close valve
-        while self.reward is True:
-            if time.time() > self.rewardStart + self.rewardTime:
-                self.board.digital[self.waterPort].write(0)
-                self.board.digital[self.LED].write(0)
-                self.reward = False
             
     def giveReward(self):
         
@@ -1023,11 +1026,10 @@ class mazeGUI:
             self.estimatedReward = self.estimatedReward + self.rewardSize
             self.board.digital[self.waterPort].write(1)
             self.board.digital[self.LED].write(1)
-            self.rewardStart = time.time()
-        
-        # Check on valve
-        self.rewardThread = Thread(target = self.closeValve())
-        self.rewardThread.start()
+            time.sleep(self.rewardTime)
+            self.board.digital[self.waterPort].write(0)
+            self.board.digital[self.LED].write(0)
+            self.reward = False
 
 
     """ 
@@ -1694,7 +1696,7 @@ class mazeGUI:
         self.timeServer = ntplib.NTPClient()
         
         # In case of maze errors
-        if self.emailNotification is True:
+        if self.emailNotification is True and self.skipErrorNotifications is False:
             self.startDoorErrorNotification = errorNotification.errorNotification(self.startDoorErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
             self.decisionDoorErrorNotification = errorNotification.errorNotification(self.decisionDoorErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
             self.visualStimulusErrorNotification = errorNotification.errorNotification(self.visualStimulusErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
