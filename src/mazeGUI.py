@@ -145,7 +145,6 @@ class mazeGUI:
         
         # Maze state
         self.mazeState = 0
-        self.currentMazeState = 0
         tk.Label(frame11, font = buttonFont, text = "maze state", width = 12, anchor  = 'e').grid(row = 1, column = 0, padx = 10)
         self.mazeStateLabel = tk.Label(frame11, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
         self.mazeStateLabel.grid(row = 1, column = 1)
@@ -195,6 +194,7 @@ class mazeGUI:
         """
         
         # Door error message
+        self.trialStartErrorMessage = "The start door did not close. The maze has been temporarily stopped."
         self.startDoorErrorMessage = "The start door was opened for a very short time. The maze has been temporarily stopped."
         self.decisionDoorErrorMessage = "The decision doors were opened for a very short time. The maze has been temporarily stopped."
         self.visualStimulusErrorMessage = "The visual stimulus was displayed for a very short time. The maze has been temporarily stopped."
@@ -225,7 +225,6 @@ class mazeGUI:
         
         # Stimulus state
         self.stimulusState = 0
-        self.currentStimulusState = 0
         tk.Label(frame12, font = buttonFont, text = "stimulus state", width = 12, anchor  = 'e').grid(row = 1, column = 0, padx = 10)
         self.stimulusStateLabel = tk.Label(frame12, bg = self.backGroundColor, font = buttonFont, text = "idle", width = 8)
         self.stimulusStateLabel.grid(row = 1, column = 1)
@@ -942,14 +941,12 @@ class mazeGUI:
             
     def updateMazeState(self):
         
-        # Maze state
-        self.currentMazeState = self.mazeState
-        
         # Update maze states
         if self.mazeState == 1:
             if self.LD is False or self.RD is False:
                 if self.stimulusWasTurnedOn is True or self.stimulusWasTurnedOff is True:
                     self.mazeState = 2
+                    self.updateDoors()
                     self.endTrial()
                     self.interTrialStart = time.time()
                     if self.LD is False:
@@ -965,53 +962,65 @@ class mazeGUI:
                     self.mazeState = 3
                 elif self.startDoor == "right":
                     self.mazeState = 4
+                self.updateDoors()
                 self.initializeTrial = True
         elif self.mazeState == 3:
             if self.LS is False:
                 self.mazeState = 1
+                self.updateDoors()
                 self.startTrial()
         elif self.mazeState == 4:
             if self.RS is False:
                 self.mazeState = 1
+                self.updateDoors()
                 self.startTrial()
-                
-        # Update doors
-        if self.currentMazeState != self.mazeState:
-            self.updateDoors()
 
     def updateStimulusState(self):
-        
-        # Stimulus state
-        self.currentStimulusState = self.stimulusState
         
         # Update stimulus states
         if self.stimulusState == 1:
             if self.stimulusOn is False:
                 self.stimulusState = 2
+                self.updateStimulusDisplay()
                 self.stimulusWasTurnedOn = True
         elif self.stimulusState == 2:
             if self.stimulusOff is False:
                 self.stimulusState = 3
+                self.updateStimulusDisplay()
                 self.stimulusWasTurnedOff = True
             # Fail-safe: in case stimulus is not turned off
             elif self.mazeState == 2:
                 self.stimulusState = 4
+                self.updateStimulusDisplay()
         elif self.stimulusState == 3:
             if self.mazeState == 2:
                 self.stimulusState = 4
+                self.updateStimulusDisplay()
         elif self.stimulusState == 4:
             if self.mazeState == 3 or self.mazeState == 4:
                 self.stimulusState = 5
+                self.updateStimulusDisplay()
         elif self.stimulusState == 5:
             if self.mazeState == 1:
+                self.stimulusState = 1
+                self.updateStimulusDisplay()
                 self.stimulusWasTurnedOn = False
                 self.stimulusWasTurnedOff = False
-                self.stimulusState = 1
-        
-        # Update stimulus
-        if self.currentStimulusState != self.stimulusState:
-            self.updateStimulusDisplay()
-            
+            # Raise error: in case the start door does not close
+            elif self.mazeState == 3 or self.mazeState == 4:
+                if self.stimulusOn is False or self.stimulusOff is False:
+                    # Notify user about error
+                    print(" ")
+                    print("Warning: The start door did not close.")
+                    if self.emailNotification is True and self.skipErrorNotifications is False:
+                        self.trialStartErrorNotification.sendEmail()
+                    if self.pauseMaze is True:
+                        print("The maze has been paused.")
+                        messagebox.showerror("Error", "The start door did not close!"
+                                             "\n"
+                                             "\nThe maze has been paused.")
+                    print(" ")
+                    
     def giveReward(self):
         
         # Trigger reward
@@ -1049,7 +1058,7 @@ class mazeGUI:
             print("Connection with Acquisition Panel is ready.")
             
             # Thread to handle initialization of camera feed
-            self.listenToServer = Thread(target = self.checkOnServer())
+            self.listenToServer = Thread(target = self.checkOnServer)
             self.listenToServer.start()
             
             # Update connectToPanelButton: connection has been established...
@@ -1658,6 +1667,7 @@ class mazeGUI:
         
         # Recent behavior
         self.recentPerformance = 0
+        self.recentCorrect = []
         self.recentBiasIndex = 0
         self.recentBiasDecisions = []
         self.recentAlternationIndex = 0
@@ -1697,6 +1707,7 @@ class mazeGUI:
         
         # In case of maze errors
         if self.emailNotification is True and self.skipErrorNotifications is False:
+            self.trialStartErrorNotification = errorNotification.errorNotification(self.trialStartErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
             self.startDoorErrorNotification = errorNotification.errorNotification(self.startDoorErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
             self.decisionDoorErrorNotification = errorNotification.errorNotification(self.decisionDoorErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
             self.visualStimulusErrorNotification = errorNotification.errorNotification(self.visualStimulusErrorMessage, self.serverAddress, self.serverPort, self.senderAddress, self.senderPassword, self.recipientAddress)
@@ -1945,6 +1956,8 @@ class mazeGUI:
         # Upcoming viual stimulus
         self.visualStimulus.initializeStimulus(target = self.targetLocation)
         
+        time.sleep(1)
+        
         # Reward for upcoming trial
         if self.correctStreak < len(self.rewardAmounts):
             if self.targetLocation == 0:
@@ -2018,8 +2031,8 @@ class mazeGUI:
         
         # Recent quick stats
         if self.trialID >= 10:
-            recentCorrect = self.dataFrameCorrect[-10:]
-            self.recentPerformance = round(recentCorrect.count(1) / len(recentCorrect), 2)
+            self.recentCorrect = self.dataFrameCorrect[-10:]
+            self.recentPerformance = round(self.recentCorrect.count(1) / len(self.recentCorrect), 2)
             
         # Bias correction
         if self.trialID >= 10:
@@ -2169,8 +2182,8 @@ class mazeGUI:
             print(" ")
             
             # Start task
-            self.currentRunningTask = Thread(target = self.checkTask())
-            self.currentRunningTask.start()
+            currentRunningTask = Thread(target = self.checkTask())
+            currentRunningTask.start()
             
         else:
             
