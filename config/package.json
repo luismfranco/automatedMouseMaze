@@ -59,8 +59,8 @@
      },
      
      "crownCameras": {
-         "eyeCamera": "1",
-         "worldCamera": "2"
+         "eyeCamera": "0",
+         "worldCamera": "1"
      },
      
      "openEphys": {
