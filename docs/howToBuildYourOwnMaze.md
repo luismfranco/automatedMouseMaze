@@ -38,11 +38,12 @@ This tutorial describes how we built our autoamted maze in the [Niell Lab](https
 9. Custom [3D-printed objects](https://github.com/luismfranco/automatedMouseMaze/tree/99c225861e82ac3776c7e1dc496d73c4fc0f3bcc/assets/hardware) to mount the pneumatic actuators, to cushion and limit the range of motion of actuators, and to secure the acrylic doors to the actuators.
 10. Foam [cushioning](https://www.amazon.com/Adhesive-Neoprene-Insulation-Furniture-Speakers/dp/B0CRQXWQVW/ref=sr_1_31?crid=1WAQENVGHAASI&dib=eyJ2IjoiMSJ9.xDBOrBm9YUYY52LlaKfoQZn7treA9NnboDS11bCZ1cS9WmyQNHZTXRrBV4mlwpaAVph5KWOLrZbCAz2k90Mw6IzJ3utfqgWq1d8K4ecApASypii6IHid7ceR9PI5BXThcq9WOmjDtjo4oupGnWj-pRGjheNhrXRMeZC-p__gf4SVxP2Ux_uf0FCsYi_BwsTJSVMe0bS4_WVuybONPMA-5H3so1UD-ifczPZHejo4v5QF1G60yC5xKDJBZKmKJecARzT7cGBr_sFQvAXn8t14im2XqmQXeDD8HagM82Hahu7wz5YRcz7_7jkRdiW9zGMuDFSm3ZyhervMte6CfHMUtMaYyjSsXuQKA8THTfEcsoVsjId5ZDDMHxb-q56tKma9OloKk3uxEIa89kH3iP9oPkKtxbOWncpXTuoaDst85lRNTO9hJL9YGzMSj0idDu_W.fZk5Qenglkk0ea6LycULhD6u9rnjPPaIzF6gw3f70w0&dib_tag=se&keywords=black%2Bfoam%2Bcushion%2Bpads%2Bwith%2Bglue&qid=1734548418&sprefix=black%2Bfoam%2Bcushion%2Bpads%2Bwith%2Bglu%2Caps%2C205&sr=8-31&th=1) for buffering the contact between 3D-printed objects that limit the range of motion of doors.
 
-## Teensy Circuit
-
 <p align="center">
-<img width="800" height="275" src="../assets/circuitTopView.png">
+<img width="225" height="500" src="../assets/closedMazeDoor.png">
+<img width="225" height="500" src="../assets/openMazeDoor.png">
 </p>
+
+## Teensy Circuit
 
 1. [Teensy 4.0](https://www.sparkfun.com/teensy-4-0-headers.html) for processing inputs and outputs between the computer and the different components in the maze.
 2. [Bread board](https://www.digikey.com/en/products/detail/sparkfun-electronics/PRT-12699/5762439?utm_adgroup=&utm_source=google&utm_medium=cpc&utm_campaign=PMax%20Shopping_Product_High%20ROAS%20Categories&utm_term=&utm_content=&utm_id=go_cmp-20222717502_adg-_ad-__dev-c_ext-_prd-5762439_sig-CjwKCAjwr7ayBhAPEiwA6EIGxH0-nJ1QtJauifHs8d_4uKSnMKyhCQBnSeDmUdDhgQHYUU73eKNs0RoCaYkQAvD_BwE&gad_source=1&gclid=CjwKCAjwr7ayBhAPEiwA6EIGxH0-nJ1QtJauifHs8d_4uKSnMKyhCQBnSeDmUdDhgQHYUU73eKNs0RoCaYkQAvD_BwE) for building the circuit.
@@ -56,6 +57,10 @@ This tutorial describes how we built our autoamted maze in the [Niell Lab](https
 10. 24 V wall adapter [power supply](https://www.amazon.com/gp/product/B095VWHPCC/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&th=1) for the door solenoid manifold.
 11. 12 V wall adapter [power supply](https://www.sparkfun.com/wall-adapter-power-supply-12vdc-600ma-barrel-jack.html) for water valves.
 12. [Push buttons](https://www.adafruit.com/product/558) for controlling water valves manually.
+
+<p align="center">
+<img width="800" height="275" src="../assets/circuitTopView.png">
+</p>
 
 ## Mouse Cameras and Inertial Measurement Unit (IMU)
 
