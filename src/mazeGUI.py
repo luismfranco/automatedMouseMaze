@@ -98,11 +98,13 @@ class mazeGUI:
         frame13 = tk.Frame(frame1, width = 225, height = 290)
         frame13.place(anchor = "c", relx = 0.45, rely = 0.75)
         
-        # Frame 2: Logo
+        # Frame 2: Logo area
         frame2 = tk.Frame(mainWindow, width = 500, height = 175)
         frame2.grid(row = 0, column = 1, sticky = 'news')
-        frame21 = tk.Frame(frame2, width = 500, height = 175)
-        frame21.place(anchor = "c", relx = 0.5, rely = 0.5)
+        
+        # Frame 21: Floating logo
+        frame21 = tk.Frame(mainWindow, width = 500, height = 175)
+        frame21.place(anchor = "c", relx = 0.475, rely = 0.175)
         
         # Frame 3: Main task settings
         frame3 = tk.Frame(self.mainWindow, width = 500, height = 300)
@@ -133,6 +135,7 @@ class mazeGUI:
         self.img = ImageTk.PhotoImage(master = frame21, width = 490, height = 175, image = img)
         logo = tk.Label(frame21, image = self.img)
         logo.place(anchor = "c", relx = 0.5, rely = 0.5)
+        frame21.lift()
         
         # Save data
         self.fileExtension = ".pickle "
