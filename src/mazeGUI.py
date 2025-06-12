@@ -488,7 +488,7 @@ class mazeGUI:
         self.endButton.bind('<Leave>', lambda e: self.endButton.config(fg='Black', bg='SystemButtonFace'))
         
         # Save button
-        self.saveButton = tk.Button(frame41, text = 'Save Data', font = buttonFont, width = 12, command = self.saveData)
+        self.saveButton = tk.Button(frame41, text = 'Save Data', font = buttonFont, width = 12, command = self.manuallySaveData)
         self.saveButton.grid(row = 0, column = 2,padx = 10, pady = 10)
         self.saveButton.bind('<Enter>', lambda e: self.saveButton.config(fg='Black', bg='#84E0E0'))
         self.saveButton.bind('<Leave>', lambda e: self.saveButton.config(fg='Black', bg='SystemButtonFace'))
@@ -1732,6 +1732,7 @@ class mazeGUI:
         self.animalID = str(self.animalEntry.get())
         self.rigID = str(self.rigEntry.get())
         self.blockID = str(self.blockEntry.get())
+        self.pathForSavingData = str(self.pathEntry.get())
         self.autoSave = bool(self.autoSaveData.get())
         self.pauseMaze = bool(self.pauseMazeUponError.get())
         self.emailNotification = bool(self.sendErrorNotification.get())
@@ -2222,6 +2223,30 @@ class mazeGUI:
             self.runningTask = False
         elif self.runningTask is False:
             print("There is no current task running at the moment.")
+        
+    def manuallySaveData(self):
+        
+        # Run some checks
+        self.currentDate = datetime.today().strftime("%y%m%d")
+        self.animalID = str(self.animalEntry.get())
+        self.rigID = str(self.rigEntry.get())
+        self.blockID = str(self.blockEntry.get())
+        self.pathForSavingData = str(self.pathEntry.get())
+        
+        # Prepare directory to save data
+        Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
+        
+        # Retrieve task and stimulus settings (for now, it will only work for driftingGratings)
+        if self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
+            self.retrieveTaskParameters()
+        
+        # Save data
+        try:
+            self.saveData()
+        except:
+            messagebox.showwarning("No Data Saved", "No experiment has been run yet."
+                                   "\n " +
+                                   "\nNo data available to be saved..")
         
     def saveData(self):
         
