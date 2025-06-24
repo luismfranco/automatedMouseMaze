@@ -33,8 +33,8 @@ class filledCircles:
         self.radius = 1                                         # radius of the circle
         self.stimulusSize = 5                                   # escaling factor of the circle
         self.targetPosition = [0, 0]                            # [0, 0] <-- centered in the middle of the screen
-        self.xPositionOffset = 8                                # 0, 7
-        self.yPositionOffset = -2                               # 0, -2
+        self.xPositionOffset = 10                               # 0, 10
+        self.yPositionOffset = -4                               # 0, -4
         
     def retrieveStimulusParameters(self):
         
