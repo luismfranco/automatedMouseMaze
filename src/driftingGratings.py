@@ -20,7 +20,7 @@ class driftingGratings:
     
         # Create stimulus window
         self.stimulusWindow = visual.Window(monitor = "testMonitor", screen = stimulusScreen, units = "deg",
-                                            size = screenSize, fullscr = True, color = (0.5, 0.5, 0.5))
+                                            size = screenSize, fullscr = True, color = (0, 0, 0))
         
         # Orientation
         self.leftTargetOrientation = 90
@@ -36,6 +36,7 @@ class driftingGratings:
         self.spatialFrequency = 0.1                             # 0.1
         self.xPositionOffset = 0                                # 0, 7 (only relevant when mask is not None)
         self.phaseOffset = 0.025                                # 0.025, move phase by 0.025 of a cycle
+        self.gratingColor = (-1, -1, -1)                        # Grating color
         
     def retrieveStimulusParameters(self):
         
@@ -49,6 +50,7 @@ class driftingGratings:
                           "spatialFrequency": str(self.spatialFrequency),
                           "xPositionOffset": str(self.xPositionOffset),
                           "phaseOffset": str(self.phaseOffset),
+                          "gratingColor": str(self.gratingColor),
                                                                                }
         stimulusParameters = pd.DataFrame.from_dict(stimulusParameters, orient = 'index')
         
@@ -63,7 +65,8 @@ class driftingGratings:
         elif self.targetLocation == 1:
             self.targetOrientation = self.rightTargetOrientation
         self.grating = visual.GratingStim(win = self.stimulusWindow, mask = self.stimulusMask, size = self.stimulusSize,
-                                          pos = self.targetPosition, sf = self.spatialFrequency, ori = self.targetOrientation)
+                                          pos = self.targetPosition, sf = self.spatialFrequency, ori = self.targetOrientation,
+                                          color = self.gratingColor, colorSpace = 'rgb')
         
     def startStimulus(self, **kwargs):
         
