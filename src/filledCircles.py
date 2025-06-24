@@ -24,7 +24,7 @@ class filledCircles:
         
         # Orientation
         self.leftTargetColor = (-1, -1, -1)
-        self.rightTargetColor = (1, 1, 1)
+        self.rightTargetColor = (-1, -1, -1)
         
         # Stimulus
         self.showVisualStimulus = False
