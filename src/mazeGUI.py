@@ -283,7 +283,7 @@ class mazeGUI:
         self.trialsEntry.grid(row = 1, column = 1, sticky = 'w')
         
         # Time limit entry
-        self.timeOut = 60 * 60 # in seconds
+        self.timeOut = 30 * 60 # in seconds
         self.timeEntry = tk.Entry(frame31, font = 8, width = 14)
         self.timeEntry.insert(0, self.timeOut)
         self.timeEntry.grid(row = 2, column = 1, sticky = 'w')
