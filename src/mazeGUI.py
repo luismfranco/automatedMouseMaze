@@ -1869,7 +1869,7 @@ class mazeGUI:
             if self.taskName in self.taskList and not self.taskName == "valveCalibration":
                 # Disable task parameter boxes
                 entryBoxes = [self.taskSettingsLabel, self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
-                              self.experimentDataLabel, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+                              self.experimentDataLabel, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox, self.mazeErrorLabel, self.pauseMazeBox, self.errorNotificationBox]
                 for i in range(len(entryBoxes)):
                     entryBoxes[i].config(state = 'disabled')
                     entryBoxes[i].update_idletasks()
@@ -1927,7 +1927,7 @@ class mazeGUI:
         
         # Reactivate task parameter boxes
         entryBoxes = [self.taskSettingsLabel, self.trialsEntry, self.timeEntry, self.taskBox, self.startBox, self.cuesBox, self.startStimulusBox, self.stopStimulusBox, self.forcedDecisionEntry,
-                      self.experimentDataLabel, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox]
+                      self.experimentDataLabel, self.animalEntry, self.rigEntry, self.blockEntry, self.pathEntry, self.autoSaveBox, self.mazeErrorLabel, self.pauseMazeBox, self.errorNotificationBox]
         for i in range(len(entryBoxes)):
             entryBoxes[i].config(state = 'normal')
             entryBoxes[i].update_idletasks()
