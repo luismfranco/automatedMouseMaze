@@ -173,7 +173,6 @@ class crownCameras:
             self.eyeCamRet, self.eyeCamFrame = self.eyeCamera.read()
             self.worldCamRet, self.worldCamFrame = self.worldCamera.read()
             self.cameraTimeStamps.append(time.time())
-            self.worldCamFrame = cv2.rotate(self.worldCamFrame, cv2.ROTATE_180)
             
             if self.eyeCamRet is True or self.worldCamRet is True:
                 
