@@ -285,7 +285,7 @@ class acquisitionGUI:
         self.aRecordingWasStarted = False
         self.timeStampOffest = None
         self.timeStamp = None
-        self.dataFrameTimeStampOffest = []
+        self.dataFrameTimeStampOffset = []
         self.dataFrameTimeStamp = []
     
     def startCameraFeed(self):
@@ -343,6 +343,8 @@ class acquisitionGUI:
             self.dataForClient = pickle.dumps(dataForClient)
             del self.crownCameras
             self.cameraFeedStarted = False
+            if self.aRecordingWasStarted is True:
+                self.saveData()
             print("Crown Cameras have been closed.")
         elif self.clientCommand == "deleteCameras":
             # Delete camera object
@@ -401,7 +403,7 @@ class acquisitionGUI:
             except:
                 self.timeStampOffest = None
             self.timeStamp = time.time()
-            self.dataFrameTimeStampOffest.append(self.timeStampOffest)
+            self.dataFrameTimeStampOffset.append(self.timeStampOffest)
             self.dataFrameTimeStamp.append(self.timeStamp)
         
         # Connection with Maze GUI
@@ -609,12 +611,12 @@ class acquisitionGUI:
                 # Close crown cameras
                 self.crownCameras.closeCameras()
                 
-                # Save time stamps
-                if self.aRecordingWasStarted is True:
-                    self.saveData()
-                
             # Delete camera object
             del self.crownCameras
+            
+            # Save time stamps
+            if self.aRecordingWasStarted is True:
+                self.saveData()
 
 
     """ 
@@ -785,7 +787,7 @@ class acquisitionGUI:
                 
                 # Build dataFrame
                 timeStamps = {
-                        "timeOffset": self.dataFrameTimeStampOffest,
+                        "timeOffset": self.dataFrameTimeStampOffset,
                         "timeStamps": self.dataFrameTimeStamp,
                                                                            }
                 timeStamps = pd.DataFrame.from_dict(timeStamps, orient = 'index')
