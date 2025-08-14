@@ -101,8 +101,7 @@ class acquisitionGUI:
         
         """
         
-        self.animalID = "J700NC"
-        self.currentDate = "250101"
+        self.animalID = "J000NC"
         self.blockID = "1"
         userName = os.getlogin()
         self.currentDate = datetime.today().strftime("%y%m%d")
@@ -136,7 +135,7 @@ class acquisitionGUI:
         self.closeConnectionButton.bind('<Leave>', lambda e: self.closeConnectionButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Save button
-        self.saveButton = tk.Button(frame5, text = 'Save Offsets', font = buttonFont, width = 17, command = self.saveTimeStampOffsets)
+        self.saveButton = tk.Button(frame5, text = 'Save Offsets', font = buttonFont, width = 17, command = self.saveOffsets)
         self.saveButton.grid(row = 1, column = 0,padx = 10, pady = 10)
         self.saveButton.bind('<Enter>', lambda e: self.saveButton.config(fg='Black', bg='#84E0E0'))
         self.saveButton.bind('<Leave>', lambda e: self.saveButton.config(fg='Black', bg='SystemButtonFace'))
@@ -280,13 +279,22 @@ class acquisitionGUI:
     
     def resetTimeStamps(self):
         
-        # Data synchronization
-        self.timeServer = ntplib.NTPClient()
-        self.aRecordingWasStarted = False
-        self.timeStampOffest = None
-        self.timeStamp = None
-        self.dataFrameTimeStampOffset = []
-        self.dataFrameTimeStamp = []
+        if self.aRecordingWasStarted is True and self.timeOffsetsAlreadySaved is False:
+            
+            messagebox.showwarning("Data Not Saved", "The Crown Cameras and/or the Open Ephys GUI are still running." +
+                                   "\n"
+                                   "\nPlease close both programs to save time offsets before starting a new experiment.")
+            
+        else:
+        
+            # Data synchronization
+            self.timeServer = ntplib.NTPClient()
+            self.aRecordingWasStarted = False
+            self.timeOffsetsAlreadySaved = False
+            self.timeStampOffest = None
+            self.timeStamp = None
+            self.dataFrameTimeStampOffset = []
+            self.dataFrameTimeStamp = []
     
     def startCameraFeed(self):
         
@@ -394,6 +402,8 @@ class acquisitionGUI:
             dataForClient = [self.openEphys.OpenEphysGUIHasBeenLaunched]
             self.dataForClient = pickle.dumps(dataForClient)
             del self.openEphys
+            if self.aRecordingWasStarted is True:
+                self.saveTimeStampOffsets()
             print("Open Ephys GUI has been closed.")
         
         # Time synchronization
@@ -762,24 +772,28 @@ class acquisitionGUI:
 
 
     """ 
-    App Buttons
+    Save Data
     
     """
-    
+
+    def checkIfProgramsAreOpen(self):
+        
+        self.programStillRunning = False
+        for name in ("self.crownCameras", "self.openEphys"):
+            try:
+                exec(name)
+            except:
+                ...
+            else:
+                self.programStillRunning = True
+
     def saveTimeStampOffsets(self):
         
         if self.aRecordingWasStarted is True:
 
-            programStillRunning = False
-            for name in ("self.crownCameras", "self.openEphys"):
-                try:
-                    exec(name)
-                except:
-                    ...
-                else:
-                    programStillRunning = True
-    
-            if programStillRunning is False:
+            self.checkIfProgramsAreOpen()
+
+            if self.programStillRunning is False and self.timeOffsetsAlreadySaved is False:
                 
                 # Build dataFrame
                 timeStamps = {
@@ -815,20 +829,44 @@ class acquisitionGUI:
                     print("Time stamps have been saved successfully.")
                     print(" ")
                     self.aRecordingWasStarted = False
-                
-            elif programStillRunning is True:
-                
-                messagebox.showinfo("No Data Saved", "The Crown Cameras and/or the Open Ephys GUI are still running." +
+                    self.timeOffsetsAlreadySaved = True
+
+
+    """ 
+    App Buttons
+    
+    """
+    
+    def saveOffsets(self):
+        
+        # Save time offsets manually
+        if self.aRecordingWasStarted is True:
+            if self.programStillRunning is False:
+                self.saveTimeStampOffsets()
+            elif self.programStillRunning is True:
+                print("Data not saved. Either the crown cameras or the Open Ephys GUI are still running.")
+                messagebox.showwarning("No Data Saved", "The Crown Cameras and/or the Open Ephys GUI are still running." +
                                     "\n"
                                     "\nPlease close both programs before saving time stamps.")
-        
+        elif self.aRecordingWasStarted is False:
+            print("No data available. A recording has not been started yet.")
+            messagebox.showwarning("No Data Saved", "No recording has been started yet."
+                                   "\n " +
+                                   "\nNo data available to be saved.")
+            
     def closeMainWindow(self):
         
         # Kill GUI
+        self.checkIfProgramsAreOpen()
         if self.acquisitionPanelConnection is False:
-            self.mainWindow.destroy()
-            self.mainWindow.quit()
-            
+            if self.programStillRunning is False:
+                self.mainWindow.destroy()
+                self.mainWindow.quit()
+            else:
+                print("The Crown Cameras and/or the Open Ephys GUI are still running. Please close all programs before closing Acquisition GUI.")
+        else:
+            print("Connection with the Automated Maze GUI is still ongoing. Please end this connection before closing the Acquisition GUI.")
+
 
 """
 Main Block

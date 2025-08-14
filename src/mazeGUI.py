@@ -2246,7 +2246,7 @@ class mazeGUI:
         except:
             messagebox.showwarning("No Data Saved", "No experiment has been run yet."
                                    "\n " +
-                                   "\nNo data available to be saved..")
+                                   "\nNo data available to be saved.")
         
     def saveData(self):
         
@@ -2312,8 +2312,11 @@ class mazeGUI:
         if boardAvailable is False and self.closeGUIWithoutCheckouts is False:
             print("Please click on 'End Task' before closing this program.")
         elif boardAvailable is True or self.closeGUIWithoutCheckouts is True:
-            self.mainWindow.destroy()
-            self.mainWindow.quit()
+            if self.acquisitionPanelConnection is False:
+                self.mainWindow.destroy()
+                self.mainWindow.quit()
+            elif self.acquisitionPanelConnection is True:
+                print("Connection with the Acquisition GUI is still ongoing. Please end this connection before closing the Automated Maze GUI.")
             
             
 """
