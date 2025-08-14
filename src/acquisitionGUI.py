@@ -136,7 +136,7 @@ class acquisitionGUI:
         self.closeConnectionButton.bind('<Leave>', lambda e: self.closeConnectionButton.config(fg = 'Black', bg ='SystemButtonFace'))
         
         # Save button
-        self.saveButton = tk.Button(frame5, text = 'Save Data', font = buttonFont, width = 17, command = self.saveData)
+        self.saveButton = tk.Button(frame5, text = 'Save Offsets', font = buttonFont, width = 17, command = self.saveTimeStampOffsets)
         self.saveButton.grid(row = 1, column = 0,padx = 10, pady = 10)
         self.saveButton.bind('<Enter>', lambda e: self.saveButton.config(fg='Black', bg='#84E0E0'))
         self.saveButton.bind('<Leave>', lambda e: self.saveButton.config(fg='Black', bg='SystemButtonFace'))
@@ -344,7 +344,7 @@ class acquisitionGUI:
             del self.crownCameras
             self.cameraFeedStarted = False
             if self.aRecordingWasStarted is True:
-                self.saveData()
+                self.saveTimeStampOffsets()
             print("Crown Cameras have been closed.")
         elif self.clientCommand == "deleteCameras":
             # Delete camera object
@@ -613,10 +613,6 @@ class acquisitionGUI:
                 
             # Delete camera object
             del self.crownCameras
-            
-            # Save time stamps
-            if self.aRecordingWasStarted is True:
-                self.saveData()
 
 
     """ 
@@ -770,7 +766,7 @@ class acquisitionGUI:
     
     """
     
-    def saveData(self):
+    def saveTimeStampOffsets(self):
         
         if self.aRecordingWasStarted is True:
 
@@ -796,7 +792,7 @@ class acquisitionGUI:
                 # Save time stamps
                 fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "timeStampOffsets" + "_" + str(self.blockID)
                 if timeStamps.empty:
-                    print("DataFrame is empty. Most likely no recordings were started during this session.")
+                    print("DataFrame is empty. Most likely an experiment has not been run yet.")
                 else:
                     if not os.path.isfile(fileName + self.fileExtension):
                         timeStamps.to_pickle(fileName + self.fileExtension)
@@ -827,10 +823,6 @@ class acquisitionGUI:
                                     "\nPlease close both programs before saving time stamps.")
         
     def closeMainWindow(self):
-        
-        # # Save data
-        # if self.aRecordingWasStarted is True:
-        #     self.saveData()
         
         # Kill GUI
         if self.acquisitionPanelConnection is False:
