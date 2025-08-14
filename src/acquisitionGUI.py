@@ -281,6 +281,7 @@ class acquisitionGUI:
     def resetTimeStamps(self):
         
         # Data synchronization
+        self.timeServer = ntplib.NTPClient()
         self.aRecordingWasStarted = False
         self.timeStampOffest = None
         self.timeStamp = None
@@ -294,7 +295,7 @@ class acquisitionGUI:
                 self.cameraFeedStarted = True
                 self.crownCameras.startCameras()
             self.mainWindow.after(100, self.startCameraFeed)
-            
+    
     def updateClientCommand(self):
     
         # Crown Cameras
@@ -395,7 +396,10 @@ class acquisitionGUI:
         
         # Time synchronization
         elif self.clientCommand == "grabTimeOffset":
-            self.timeStampOffest = ntplib.NTPClient().request('pool.ntp.org').offset
+            try:
+                self.timeStampOffest = self.timeServer.request('pool.ntp.org').offset
+            except:
+                self.timeStampOffest = None
             self.timeStamp = time.time()
             self.dataFrameTimeStampOffest.append(self.timeStampOffest)
             self.dataFrameTimeStamp.append(self.timeStamp)
@@ -604,7 +608,11 @@ class acquisitionGUI:
     
                 # Close crown cameras
                 self.crownCameras.closeCameras()
-            
+                
+                # Save time stamps
+                if self.aRecordingWasStarted is True:
+                    self.saveData()
+                
             # Delete camera object
             del self.crownCameras
 
@@ -818,9 +826,9 @@ class acquisitionGUI:
         
     def closeMainWindow(self):
         
-        # Save data
-        if self.aRecordingWasStarted is True:
-            self.saveData()
+        # # Save data
+        # if self.aRecordingWasStarted is True:
+        #     self.saveData()
         
         # Kill GUI
         if self.acquisitionPanelConnection is False:
