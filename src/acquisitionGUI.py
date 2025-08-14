@@ -796,7 +796,7 @@ class acquisitionGUI:
                 else:
                     if not os.path.isfile(fileName + self.fileExtension):
                         timeStamps.to_pickle(fileName + self.fileExtension)
-                        messagebox.showinfo("Data Saved", "Time stamps have been saved at " + self.pathForSavingData)
+                        messagebox.showinfo("Data Saved", "Time offsets with maze have been saved at " + self.pathForSavingData)
                     else:
                         isNotSaved = True
                         while isNotSaved is True:
@@ -806,7 +806,7 @@ class acquisitionGUI:
                             fileName = self.pathForSavingData + self.animalID + "_" + self.currentDate + "_" + "timeStampOffsets" + "_" + str(blockID)
                             if not os.path.isfile(fileName + self.fileExtension):
                                 timeStamps.to_pickle(fileName + self.fileExtension)
-                                messagebox.showwarning("Data Saved", "Time stamps have been saved at " + self.pathForSavingData +
+                                messagebox.showwarning("Data Saved", "Time offsets with maze have been saved at " + self.pathForSavingData +
                                                        "\n " +
                                                        "\nHowever, the block number was changed to " + str(blockID) + " to avoid overwriting existing file." +
                                                        "\n"
