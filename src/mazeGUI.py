@@ -1841,11 +1841,11 @@ class mazeGUI:
                 
             # Learning speed experiment
             elif self.taskName == "detectionTask":
-                self.visualStimulus = detectionTask.filledCircles(self.stimulusScreen, self.screenSize)
+                self.visualStimulus = detectionTask.staticGratings(self.stimulusScreen, self.screenSize)
             elif self.taskName == "discriminationTask":
-                self.visualStimulus = discriminationTask.filledCircles(self.stimulusScreen, self.screenSize)
+                self.visualStimulus = discriminationTask.staticGratings(self.stimulusScreen, self.screenSize)
             elif self.taskName == "abstractTask":
-                self.visualStimulus = abstractTask.filledCircles(self.stimulusScreen, self.screenSize)
+                self.visualStimulus = abstractTask.staticGratings(self.stimulusScreen, self.screenSize)
             
             elif self.taskName == "motionSelectivity":
                 self.visualStimulus = motionSelectivity.motionSelectivity(self.stimulusScreen, self.screenSize)
