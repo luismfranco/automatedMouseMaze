@@ -48,19 +48,19 @@
      },
      
      "stimulusScreen": {
-         "screenNumber": "2",
+         "screenNumber": "1",
          "screenWidth": "1024",
          "screenHeight": "600"
      },
      
      "acquisitionControlPanel": {
-         "controlPanelAddress": "128.223.141.161",
+         "controlPanelAddress": "128.223.140.54",
          "mazeGUIaddress": "0.0.0.0"
      },
      
      "crownCameras": {
-         "eyeCamera": "0",
-         "worldCamera": "1"
+         "eyeCamera": "2",
+         "worldCamera": "3"
      },
      
      "openEphys": {
