@@ -30,7 +30,7 @@
      },
      
      "teensyConfiguration": {
-         "port": "COM4",
+         "port": "COM3",
          "leftStartIRsensor": "22",
          "rightStartIRsensor": "20",
          "leftDecisionIRsensor": "18",
