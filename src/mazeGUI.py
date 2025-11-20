@@ -373,7 +373,9 @@ class mazeGUI:
         self.blockEntry.grid(row = 3, column = 3, sticky = 'w')
         
         # Path entry
-        userName = os.getlogin()
+        userProfilePath = os.environ.get('USERPROFILE')
+        userName = os.path.basename(userProfilePath)
+        # userName = os.getlogin()
         self.currentDate = datetime.today().strftime("%y%m%d")
         self.pathForSavingData = "C:\\Users\\" + userName + "\\Documents\\automatedMouseMaze\\Data\\" + self.currentDate + "\\"
         self.pathEntry = tk.Entry(frame31, font = 8, width = 14)

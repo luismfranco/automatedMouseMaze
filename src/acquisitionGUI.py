@@ -103,7 +103,9 @@ class acquisitionGUI:
         
         self.animalID = "J000NC"
         self.blockID = "1"
-        userName = os.getlogin()
+        userProfilePath = os.environ.get('USERPROFILE')
+        userName = os.path.basename(userProfilePath)
+        # userName = os.getlogin()
         self.currentDate = datetime.today().strftime("%y%m%d")
         self.pathForSavingData = "C:\\Users\\" + userName + "\\Documents\\automatedMouseMaze\\Data\\" + self.currentDate + "\\"        
         Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
