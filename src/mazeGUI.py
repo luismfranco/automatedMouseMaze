@@ -34,6 +34,7 @@ import simpleaudio as sa
 
 # Visual stimulus
 import driftingGratings
+import staticGratings
 import motionSelectivity
 import whiteNoise
 import objectDiscrimination
@@ -288,7 +289,7 @@ class mazeGUI:
         self.timeEntry.grid(row = 2, column = 1, sticky = 'w')
         
         # Task type list
-        self.taskList = ["driftingGratings", "detectionTask", "discriminationTask", "abstractTask", "motionSelectivity", "whiteNoise", "objectDiscrimination", "valveCalibration"]
+        self.taskList = ["staticGratings", "driftingGratings", "detectionTask", "discriminationTask", "abstractTask", "motionSelectivity", "whiteNoise", "objectDiscrimination", "valveCalibration"]
         self.taskName = " "
         self.taskBox = ttk.Combobox(frame31, width = 12, font = 8, state = 'readonly', values = self.taskList)
         self.taskBox.grid(row = 3, column = 1, sticky ='w')
@@ -1838,7 +1839,9 @@ class mazeGUI:
                         self.updateStimulusDisplay()
                 
             # Initialize visual stimulus
-            if self.taskName == "driftingGratings":
+            if self.taskName == "staticGratings":
+                self.visualStimulus = staticGratings.staticGratings(self.stimulusScreen, self.screenSize)
+            elif self.taskName == "driftingGratings":
                 self.visualStimulus = driftingGratings.driftingGratings(self.stimulusScreen, self.screenSize)
                 
             # Learning speed experiment
@@ -1870,8 +1873,8 @@ class mazeGUI:
                 for i in range(len(entryBoxes)):
                     entryBoxes[i].config(state = 'disabled')
                     entryBoxes[i].update_idletasks()
-                # Retrieve task and stimulus settings (for now, it will only work for driftingGratings)
-                if self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
+                # Retrieve task and stimulus settings (for now, it will only work for gratings tasks)
+                if self.taskName == "staticGratings" or self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
                     self.retrieveTaskParameters()
                 # Prepare first trial
                 self.initializeUpcomingTrial()
@@ -2238,8 +2241,8 @@ class mazeGUI:
         # Prepare directory to save data
         Path(self.pathForSavingData).mkdir(parents = True, exist_ok = True)
         
-        # Retrieve task and stimulus settings (for now, it will only work for driftingGratings)
-        if self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
+        # Retrieve task and stimulus settings (for now, it will only work for gratings tasks)
+        if self.taskName == "staticGratings" or self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
             self.retrieveTaskParameters()
         
         # Save data
@@ -2274,8 +2277,8 @@ class mazeGUI:
         behaviorData = pd.DataFrame.from_dict(behaviorData, orient = 'index')
         behaviorData = behaviorData.transpose()
         
-        # Concatenate behavior data and task parameters (for now, it will only work for driftingGratings)
-        if self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
+        # Concatenate behavior data and task parameters (for now, it will only work for gratings tasks)
+        if self.taskName == "staticGratings" or self.taskName == "driftingGratings" or self.taskName == "detectionTask" or self.taskName == "discriminationTask" or self.taskName == "abstractTask":
             taskData = [behaviorData, self.taskParameters]
             taskData = pd.concat(taskData, axis = 1, join = 'outer')
         else:
