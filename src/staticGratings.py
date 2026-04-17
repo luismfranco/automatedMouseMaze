@@ -79,6 +79,7 @@ class staticGratings:
         # Start stimulus
         self.showVisualStimulus = kwargs['display']
         self.grating.setOpacity(1)
+        self.grating.draw()
         self.stimulusWindow.update()
         
     # Draw and update the stimulus
