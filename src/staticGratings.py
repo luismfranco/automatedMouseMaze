@@ -10,11 +10,11 @@ import pandas as pd
 
 
 """
-Drifting Gratings
+Static Gratings
 
 """
 
-class driftingGratings:
+class staticGratings:
     
     def __init__(self, stimulusScreen, screenSize):
     
@@ -84,13 +84,8 @@ class driftingGratings:
     # Draw and update the stimulus
     def updateStimulus(self):
             
-        if self.showVisualStimulus is True:
-            if self.targetLocation == 0:
-                self.grating.setPhase(self.phaseOffset, '-')
-            elif self.targetLocation == 1:
-                self.grating.setPhase(self.phaseOffset, '+')
-            self.grating.draw()
-            self.stimulusWindow.update()
+        # Gratings are static. No need to update them.
+        ...
             
     def stopStimulus(self, **kwargs):
         
@@ -110,4 +105,4 @@ Main Block
 """
 
 if __name__ == "__main__":
-    driftingGratings = driftingGratings.__init__()
+    staticGratings = staticGratings.__init__()
