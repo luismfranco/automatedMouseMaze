@@ -2,7 +2,7 @@
 
     "appInfo": {
         "name": "automatedMouseMaze",
-        "version": "0.1.0",
+        "version": "1.0.0",
         "description": "GUI for experiments in an automated maze for mice",
         "author": "Luis M. Franco",
         "authorEmail": "luisfran@uoregon.edu",
@@ -30,7 +30,7 @@
      },
      
      "teensyConfiguration": {
-         "port": "COM3",
+         "port": "COM4",
          "leftStartIRsensor": "22",
          "rightStartIRsensor": "20",
          "leftDecisionIRsensor": "18",
@@ -48,7 +48,7 @@
      },
      
      "stimulusScreen": {
-         "screenNumber": "1",
+         "screenNumber": "0",
          "screenWidth": "1024",
          "screenHeight": "600"
      },
